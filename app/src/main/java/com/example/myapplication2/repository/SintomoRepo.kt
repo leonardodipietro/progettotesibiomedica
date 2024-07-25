@@ -39,7 +39,7 @@ class SintomoRepo {
                             onComplete(true)
                         }
                         .addOnFailureListener { e ->
-                            Log.d("sintrepo", "Errore aggiunta sintomo: $e")
+                            Log.d("sintrepo", "Errore aggiunta sintomob AAAAAA: $e")
                             onComplete(false)
                         }
                 }
