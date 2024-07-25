@@ -29,7 +29,7 @@ class SecondActivity : AppCompatActivity() {
         val inviaButton: Button = findViewById(R.id.inviadati)
         inviaButton.setOnClickListener {
             val selectedSintomi = sintadapter.getSelectedSintomi()
-            Log.d("InviaButton", "Selected Sintomi: $selectedSintomi")
+            Log.d("InviaButton", "Selected Sintomi:$selectedSintomi ")
 
 
             Log.d("InviaButton", "CurrentUser: ${currentUser?.uid}")
@@ -84,7 +84,7 @@ class SecondActivity : AppCompatActivity() {
 
 
         //Usare per ogni sintomo
-        sintomoRepo.aggiungiSintomo("paranoia") { success ->
+        sintomoRepo.aggiungiSintomo("paura") { success ->
             if (success) {
                 Log.d("AGGIUNTASECONDACTIVIY","AGGIUNTA RIUSCITA")
             }

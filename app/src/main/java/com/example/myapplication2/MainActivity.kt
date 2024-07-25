@@ -26,85 +26,87 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
-        setContentView(R.layout.activity_main)
-
-        userRepo=UserRepo()
-
-
-        val firebaseDatabase = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
-        firebaseDatabase.setLogLevel(Logger.Level.DEBUG)//serve per il debug
-        database = firebaseDatabase.reference
         auth = FirebaseAuth.getInstance()
-
 
         val currentUser = auth.currentUser
         if (currentUser != null) {
+            // Ricarica l'utente e controlla se è ancora autenticato
             currentUser.reload().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Check if user still exists in Firebase Authentication
                     auth.currentUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
                         if (tokenTask.isSuccessful) {
-                            // User exists, proceed to SecondActivity
-                            Log.d("testmain", "testmain ${currentUser.email}")
-                            val intent = Intent(this, SecondActivity::class.java)
-                            startActivity(intent)
-                            finish()
+                            // L'utente esiste, avvia `SecondActivity`
+                            Log.d("MainActivity", "User is logged in: ${currentUser.email}")
+                            startSecondActivity()
                         } else {
-                            // UTENTE NON ESISTE
+                            // L'utente non esiste
                             auth.signOut()
+
+                            setContentView(R.layout.activity_main)
+                            setupUI()
                         }
                     }
+                } else {
+                    // Ricaricamento fallito, esegui il logout e mostra il layout di `MainActivity`
+                    auth.signOut()
+                    setContentView(R.layout.activity_main)
+                    setupUI()
                 }
             }
+        } else {
+            // Nessun utente autenticato, mostra il layout di `MainActivity`
+            setContentView(R.layout.activity_main)
+            setupUI()
         }
+    }
 
+    private fun setupUI() {
+        userRepo = UserRepo()
 
-        // per ottenere i riferimenti agli elementi del layout
+        val firebaseDatabase = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
+        firebaseDatabase.setLogLevel(Logger.Level.DEBUG) // Per il debug
+        database = firebaseDatabase.reference
+
         val emailEditText = findViewById<EditText>(R.id.email)
         val passwordEditText = findViewById<EditText>(R.id.password)
         val registerButton = findViewById<Button>(R.id.registerbutton)
 
         registerButton.setOnClickListener {
-            //prendono i campi di email e password scritti da utente e li convertono in stringhe
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
 
-            //se i campi non sono vuoti esegue l istruzione
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                //metodo predefinito della libreria di firebase
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
-                            // Registrazione riuscita
-                            // viene lanciato un messaggio
-                            Log.d("TESTSIGNIN","è ANDATA BENE")
-                            Toast.makeText(this, "Registrazione riuscita!", Toast.LENGTH_SHORT).show()
-
+                            Log.d("MainActivity", "Registrationee fatta")
                             userRepo.saveUserIdToFirebase()
-
-                            //Apro la main page dell'app con un Intent
-                            val intent = Intent(this, SecondActivity::class.java)
-                            startActivity(intent)
-
+                            startSecondActivity()
                         } else {
-                            // Registrazione fallita
-                            Log.d("TESTSIGNIN","è ANDATA MALE:  ${task.exception?.message}")
-                            Toast.makeText(this, "Registrazione fallita:", Toast.LENGTH_SHORT).show()
+                            Log.d("MainActivity", "Registration fllita: ${task.exception?.message}")
+
                         }
                     }
             } else {
-                Toast.makeText(this, "Email e password non possono essere vuoti", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Email and password cannot be empty", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun startSecondActivity() {
+        val intent = Intent(this, SecondActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
 
 
 
 
 
-        /*Log.d("PROVIAMO", "Database reference initialized: ${database.root}")
-        Log.d("PROVIAMO", "Database URL: ${FirebaseDatabase.getInstance().reference.database.getReference()}")
-        writeTestData()
-        readDataFromDatabase()*/
+    /*Log.d("PROVIAMO", "Database reference initialized: ${database.root}")
+    Log.d("PROVIAMO", "Database URL: ${FirebaseDatabase.getInstance().reference.database.getReference()}")
+    writeTestData()
+    readDataFromDatabase()*/
     }
 
     /*private fun writeTestData() {
@@ -133,4 +135,4 @@ class MainActivity : AppCompatActivity() {
         })
     }*/
 
-}
+
