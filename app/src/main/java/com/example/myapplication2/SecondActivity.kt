@@ -54,7 +54,7 @@ class SecondActivity : AppCompatActivity() {
         sintomoRepo.fetchSintomi()
 
         sintomoRepo.sintomi.observe(this, Observer { sintomiList ->
-            Log.d("Recuperoactivity", "Listasintomi: $sintomiList")
+            Log.d("Recuperoactivit", "Listasintomi: $sintomiList")
             sintadapter.submitlist(sintomiList)
         })
 
