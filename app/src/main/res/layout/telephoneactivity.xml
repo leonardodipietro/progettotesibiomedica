@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/phoneEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="INserisci numero di telefono"
+        android:inputType="phone"
+        android:layout_alignParentTop="true" />
+
+    <EditText
+        android:id="@+id/codeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci codice di verifica"
+        android:inputType="number"
+        android:layout_below="@id/phoneEditText"
+        android:layout_marginTop="16dp" />
+
+
+    <Button
+        android:id="@+id/sendCodeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Invia Codice"
+        android:layout_below="@id/codeEditText"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true" />
+
+
+    <Button
+        android:id="@+id/verifyCodeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Verifica codice"
+        android:layout_below="@id/codeEditText"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentEnd="true" />
+
+
+</RelativeLayout>

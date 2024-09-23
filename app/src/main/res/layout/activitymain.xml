@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/texttitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="scegli come registrarti"
+        android:layout_centerHorizontal="true"
+        android:textSize="30dp"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pulsantemail"
+        android:layout_below="@+id/texttitle"
+        android:text="Registrati con email"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/texttitle"
+        android:id="@+id/pulsantetel"
+        android:layout_toRightOf="@+id/pulsantemail"
+        android:text="Registrati con il numero di telefono"/>
+
+</RelativeLayout>

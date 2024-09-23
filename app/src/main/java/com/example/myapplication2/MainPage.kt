@@ -12,14 +12,16 @@ import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.auth.FirebaseAuth
 
-class SecondActivity : AppCompatActivity() {
+class MainPage : AppCompatActivity() {
     private lateinit var sintomoRepo: SintomoRepo
     private lateinit var sintadapter: SintomiAdapter
     private lateinit var userRepo: UserRepo
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_second)
+        setContentView(R.layout.mainpageactivity)
 
+
+        //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         // Inizializza il repository
