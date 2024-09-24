@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
@@ -22,6 +23,7 @@ class TelephoneActivity: AppCompatActivity()   {
     private lateinit var auth: FirebaseAuth
     //codice che viene inviato all'utente
     private var code: String? = null
+    private lateinit var userRepo: UserRepo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,11 +130,17 @@ class TelephoneActivity: AppCompatActivity()   {
 
 
     private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
+        userRepo = UserRepo()
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = task.result?.user
                     Toast.makeText(this, "Autenticazione riuscita", Toast.LENGTH_SHORT).show()
+
+
+                    // Salva l'utente Su Firebase
+                    userRepo.savePhoneUserToFirebase()
+
                     startSecondActivity()
                 } else {
                     Toast.makeText(this, "Autenticazione fallita", Toast.LENGTH_SHORT).show()

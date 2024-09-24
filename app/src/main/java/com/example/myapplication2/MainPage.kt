@@ -1,7 +1,10 @@
 package com.example.myapplication2
 
+import OnSwipeTouchListener
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -10,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication2.adapter.SintomiAdapter
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 
 class MainPage : AppCompatActivity() {
@@ -21,7 +25,11 @@ class MainPage : AppCompatActivity() {
         setContentView(R.layout.mainpageactivity)
 
 
+
+
         //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
+        //todo verificare effetto della recycler sulla navbar
+
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         // Inizializza il repository
@@ -50,6 +58,16 @@ class MainPage : AppCompatActivity() {
 
         val recyclerView: RecyclerView = findViewById(R.id.recyclerSintomi)
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        recyclerView.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeLeft() {
+                // Naviga alla ProfileActivity
+                startActivity(Intent(this@MainPage, ProfileActivity::class.java))
+            }
+        })
+       /* val recyclerView: SwipeableRecyclerView = findViewById(R.id.recyclerSintomi)
+        recyclerView.setSwipeEnabled(false)*/
+
         sintadapter = SintomiAdapter(emptyList())
         recyclerView.adapter = sintadapter
 
@@ -99,5 +117,34 @@ class MainPage : AppCompatActivity() {
                 Log.d("Rimozione riuscita","rimozione riuscita")
             }
         }
-    }
+
+
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.selectedItemId = R.id.nav_home // Set the default selection
+
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    // Sei già su questa Activity, non fare nulla
+                    true
+                }
+                R.id.nav_profile -> {
+                    // Passa alla ProfileActivity
+                    startActivity(Intent(this, ProfileActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+        val mainpageLayout: View = findViewById(R.id.mainpageroot) // Il layout radice della tua Activity
+
+        // Rileva il movimento di swipe
+        mainpageLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
+            override fun onSwipeLeft() {
+                // Naviga alla ProfileActivity
+                val intent = Intent(this@MainPage, ProfileActivity::class.java)
+                startActivity(intent)
+            }
+    })
+}
 }

@@ -13,6 +13,9 @@ class UserRepo {
 
 
 
+
+
+
     fun saveUserIdToFirebase() {
         Log.d("userrepo", "funzione chiamata ")
         try {
@@ -37,6 +40,33 @@ class UserRepo {
         }
     }
 
+
+    fun savePhoneUserToFirebase() {
+        Log.d("userrepo", "Funzione chiamata per l'autenticazione con numero di telefono")
+        try {
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                Log.d("userrepo", "CurrentUser non è null (telefono)")
+                val userRef = database.reference.child("users").child(currentUser.uid)
+                val nuovoUser = Utente(id = currentUser.uid, phoneNumber = currentUser.phoneNumber)
+                Log.d("userrepo", "Creazione oggetto completata $nuovoUser")
+                userRef.setValue(nuovoUser)
+                    .addOnSuccessListener {
+                        Log.d("userrepo", "Utente con numero di telefono aggiunto")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.d("userrepo", "Utente non aggiunto: $e")
+                    }
+            } else {
+                Log.d("userrepo", "CurrentUser è null (telefono)")
+            }
+        } catch (e: Exception) {
+            Log.e("userrepo", "Eccezione: ${e.message}")
+        }
+    }
+
+
+    
     fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
 
         // Estrai solo gli ID dei sintomi
