@@ -66,7 +66,7 @@ class UserRepo {
     }
 
 
-    
+    /*
     fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
 
         // Estrai solo gli ID dei sintomi
@@ -81,6 +81,34 @@ class UserRepo {
                 Log.e("SubmitSintomi", "Errore nell'invio al db per : $userId", task.exception)
             }
         }
+    }*/
+    fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
+        val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
+
+        // Crea una mappa dei sintomi con il loro ID e gravità
+        val sintomiMap = sintomiList.associate { it.id to it.gravita }
+
+        Log.d("SubmitSintomi", "Invio dei sintomi al DB: $sintomiMap")
+
+        userSintomiRef.setValue(sintomiMap).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("SubmitSintomi", "Sintomi e gravità inviati al db per: $userId")
+            } else {
+                Log.e("SubmitSintomi", "Errore nell'invio al db per: $userId", task.exception)
+            }
+        }
+    }
+
+    fun removeSintomo(userId: String, sintomoId: String) {
+        val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi").child(sintomoId)
+
+        userSintomiRef.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("RemoveSintomo", "Sintomo rimosso dal db per: $userId")
+            } else {
+                Log.e("RemoveSintomo", "Errore nella rimozione del sintomo dal db per: $userId", task.exception)
+            }
+        }
     }
 
     fun fetchSelectedSintomiForUser(userId: String, callback: (List<Sintomo>) -> Unit) {
@@ -90,7 +118,9 @@ class UserRepo {
 
         userSintomiRef.get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val selectedSintomiIds = task.result.children.map { it.getValue(String::class.java) ?: "" }.filter { it.isNotEmpty() }
+                val selectedSintomiIds = task.result.children.map { it.getValue(Long::class.java)?.toString() ?: "" }.filter { it.isNotEmpty() }
+
+                //val selectedSintomiIds = task.result.children.map { it.getValue(String::class.java) ?: "" }.filter { it.isNotEmpty() }
                 Log.d("fetchSelectedSintomi", "Recuperati ID dei sintomi selezionati: $selectedSintomiIds")
 
                 val sintomiList = mutableListOf<Sintomo>()

@@ -52,6 +52,7 @@ class SintomoRepo {
         })
     }
 
+
     fun fetchSintomi() {
         sintomiRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

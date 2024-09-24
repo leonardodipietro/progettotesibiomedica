@@ -36,7 +36,7 @@ class MainPage : AppCompatActivity() {
         sintomoRepo = SintomoRepo()
         userRepo= UserRepo()
 
-        val inviaButton: Button = findViewById(R.id.inviadati)
+        /*val inviaButton: Button = findViewById(R.id.inviadati)
         inviaButton.setOnClickListener {
             val selectedSintomi = sintadapter.getSelectedSintomi()
             Log.d("InviaButton", "Selected Sintomi:$selectedSintomi ")
@@ -52,10 +52,31 @@ class MainPage : AppCompatActivity() {
             } else {
                 Log.d("InviaButton", "Nessun utente autenticato.")
             }
+        }*/
+        val inviaButton: Button = findViewById(R.id.inviadati)
+        inviaButton.setOnClickListener {
+            val selectedSintomi = sintadapter.getSelectedSintomi()
+            Log.d("InviaButton", "Selected Sintomi e Gravità: $selectedSintomi")
+
+            if (currentUser != null) {
+                val userId = currentUser.uid
+
+                // Invia i sintomi selezionati
+                userRepo.submitSintomi(userId, selectedSintomi)
+
+                // Rimuovi i sintomi deselezionati (quelli che non sono più nella lista selectedSintomi)
+                val allSintomi = sintadapter.getAllSintomi()
+                val allSintomiIds = allSintomi.map { it.id }
+                val selectedSintomiIds = selectedSintomi.map { it.id }
+                val sintomiDaRimuovere = allSintomiIds.minus(selectedSintomiIds)
+
+                sintomiDaRimuovere.forEach { sintomoId ->
+                    userRepo.removeSintomo(userId, sintomoId)
+                }
+            } else {
+                Log.d("InviaButton", "Nessun utente autenticato.")
+            }
         }
-
-
-
         val recyclerView: RecyclerView = findViewById(R.id.recyclerSintomi)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
