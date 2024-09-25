@@ -24,46 +24,88 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
 
         fun bind(sintomo: Sintomo, isSelected: Boolean, onSintomoClick: (Sintomo, Boolean) -> Unit, onGravitaSelected: (Sintomo, Int) -> Unit) {
             nomesintomo.text = sintomo.nomeSintomo
-            //sintomoCheckbox.isChecked = isSelected
+
             // Resetta tutte le checkbox prima di impostare lo stato
             gravita1.isChecked = false
             gravita2.isChecked = false
             gravita3.isChecked = false
             gravita4.isChecked = false
 
-            // Seleziona la gravità corrente
+            // Variabili per tenere traccia dello stato di selezione
+            var gravita1Selected = false
+            var gravita2Selected = false
+            var gravita3Selected = false
+            var gravita4Selected = false
+
+            // Seleziona la gravità corrente e imposta lo stato selezionato
             when (sintomo.gravita) {
-                1 -> gravita1.isChecked = true
-                2 -> gravita2.isChecked = true
-                3 -> gravita3.isChecked = true
-                4 -> gravita4.isChecked = true
-            }
-            // Listener per ogni checkbox, permettendo la selezione esclusiva di una gravità
-            gravita1.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    deselectOthers(gravita2, gravita3, gravita4)
-                    onGravitaSelected(sintomo, 1)
+                1 -> {
+                    gravita1.isChecked = true
+                    gravita1Selected = true
                 }
+                2 -> {
+                    gravita2.isChecked = true
+                    gravita2Selected = true
+                }
+                3 -> {
+                    gravita3.isChecked = true
+                    gravita3Selected = true
+                }
+                4 -> {
+                    gravita4.isChecked = true
+                    gravita4Selected = true
+                }
+            }
+
+            // Definiamo una funzione per gestire il secondo click
+            fun handleSecondClick(
+                checkBox: CheckBox,
+                gravita: Int,
+                isSelected: Boolean,
+                setSelected: (Boolean) -> Unit,
+                vararg others: CheckBox
+            ) {
+                if (checkBox.isChecked) {
+                    if (isSelected) {
+                        Log.d("SintomiAdapter", "Deselezionando gravità $gravita per sintomo ${sintomo.nomeSintomo}")
+                        // Se già selezionato, deseleziona al secondo click
+                        checkBox.isChecked = false
+                        onGravitaSelected(sintomo, 0) // Gravità annullata
+                        setSelected(false) // Aggiorna lo stato selezionato
+                    } else {
+                        // Deseleziona le altre checkbox e seleziona la corrente
+                        Log.d("SintomiAdapter", "Selezionata gravità $gravita per sintomo ${sintomo.nomeSintomo}")
+                        deselectOthers(*others)
+                        onGravitaSelected(sintomo, gravita) // Imposta la gravità
+                        setSelected(true) // Segna che questa checkbox è selezionata
+                    }
+                } else {
+                    // Aggiungiamo un controllo per quando la checkbox viene deselezionata manualmente
+                    Log.d("SintomiAdapter", "Checkbox gravità $gravita deselezionata per sintomo ${sintomo.nomeSintomo}")
+                    onGravitaSelected(sintomo, 0) // Aggiorna la gravità a 0 quando viene deselezionata
+                    setSelected(false) // Aggiorna lo stato a deselezionato
+                }
+            }
+
+            // Gestione del click e deselezione su ciascuna checkbox
+            gravita1.setOnCheckedChangeListener { _, isChecked ->
+                Log.d("SintomiAdapter", "Checkbox Gravità 1: $isChecked per sintomo ${sintomo.nomeSintomo}")
+                handleSecondClick(gravita1, 1, gravita1Selected, { gravita1Selected = it }, gravita2, gravita3, gravita4)
             }
             gravita2.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    deselectOthers(gravita1, gravita3, gravita4)
-                    onGravitaSelected(sintomo, 2)
-                }
+                Log.d("SintomiAdapter", "Checkbox Gravità 2: $isChecked per sintomo ${sintomo.nomeSintomo}")
+                handleSecondClick(gravita2, 2, gravita2Selected, { gravita2Selected = it }, gravita1, gravita3, gravita4)
             }
             gravita3.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    deselectOthers(gravita1, gravita2, gravita4)
-                    onGravitaSelected(sintomo, 3)
-                }
+                Log.d("SintomiAdapter", "Checkbox Gravità 3: $isChecked per sintomo ${sintomo.nomeSintomo}")
+                handleSecondClick(gravita3, 3, gravita3Selected, { gravita3Selected = it }, gravita1, gravita2, gravita4)
             }
             gravita4.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    deselectOthers(gravita1, gravita2, gravita3)
-                    onGravitaSelected(sintomo, 4)
-                }
+                Log.d("SintomiAdapter", "Checkbox Gravità 4: $isChecked per sintomo ${sintomo.nomeSintomo}")
+                handleSecondClick(gravita4, 4, gravita4Selected, { gravita4Selected = it }, gravita1, gravita2, gravita3)
             }
         }
+
         private fun deselectOthers(vararg others: CheckBox) {
             others.forEach { it.isChecked = false }
         }
@@ -71,25 +113,8 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
 
 
 
-
         // Imposta l'azione del checkbox per il sintomo
-            /*sintomoCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                onSintomoClick(sintomo, isChecked)
-            }
 
-            // Imposta i listener per la selezione della gravità
-            gravita1.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) onGravitaSelected(sintomo, 1)
-            }
-            gravita2.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) onGravitaSelected(sintomo, 2)
-            }
-            gravita3.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) onGravitaSelected(sintomo, 3)
-            }
-            gravita4.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) onGravitaSelected(sintomo, 4)
-            }*/
         }
 
 
@@ -102,29 +127,35 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
         val sintomo = itemList[position]
 
         // Controlliamo se il sintomo è già stato selezionato
+        //ritorna true se si
         val isSelected = selectedSintomi.any { it.id == sintomo.id }
 
         holder.bind(sintomo, isSelected, { item, isChecked ->
-            // Logica per l'aggiunta o rimozione del sintomo dalla lista, basata sulla gravità
+            // se il sintomo è selezionato
             if (isChecked) {
                 selectedSintomi.add(item)
+                //isChecked==false
             } else {
                 selectedSintomi.remove(item)
             }
-        }) { item, gravita ->
-            // Aggiorna la gravità e aggiungi il sintomo alla lista selezionati
-            item.gravita = gravita
-
-            // Aggiungiamo il sintomo alla lista solo se una gravità è stata selezionata
-            if (!selectedSintomi.contains(item)) {
-                selectedSintomi.add(item)
+        }) //prende il sintomo selezionatom e la sua gravita
+        { item, gravita ->
+            // Se gravità è deselezionata (ad esempio impostiamo gravita = 0 o altro valore per indicare deselezione)
+            if (gravita == 0) {
+                // Rimuovi il sintomo dalla lista se la gravità è stata deselezionata
+                selectedSintomi.remove(item)
+                Log.d("SintomiAdapter", "Sintomo rimosso: ${item.nomeSintomo}")
             } else {
-                // Se il sintomo è già selezionato, aggiorna la sua gravità
-                selectedSintomi.find { it.id == item.id }?.gravita = gravita
+                // Se la gravità è stata selezionata, aggiorna l'oggetto
+                item.gravita = gravita
+                if (!selectedSintomi.contains(item)) {
+                    selectedSintomi.add(item)
+                } else {
+                    // Se il sintomo è già presente nella lista, aggiorna solo la sua gravità
+                    selectedSintomi.find { it.id == item.id }?.gravita = gravita
+                }
+                Log.d("SintomiAdapter", "Sintomo aggiornato: ${item.nomeSintomo}, Gravità: $gravita")
             }
-
-            // Log per verificare se l'aggiornamento è corretto
-            Log.d("SintomiAdapter", "Sintomo aggiornato: ${item.nomeSintomo}, Gravità: $gravita")
         }
     }
 

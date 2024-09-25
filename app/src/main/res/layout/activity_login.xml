@@ -11,7 +11,7 @@
     tools:context=".LoginActivity">
 
     <EditText
-        android:id="@+id/username"
+        android:id="@+id/maillogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="96dp"
@@ -22,7 +22,7 @@
         android:layout_alignParentTop="true"/>
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/pswlogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -32,20 +32,70 @@
         android:inputType="textPassword"
         android:selectAllOnFocus="true"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/username" />
+        android:layout_below="@id/maillogin" />
 
 
     <Button
-        android:id="@+id/login"
+        android:id="@+id/loginconmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="64dp"
-        android:enabled="false"
-        android:text="accedi"
+        android:enabled="true"
+        android:text="accedi con email"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/password"/>
+        android:layout_below="@id/pswlogin"/>
         <!--android:text="@string/action_sign_in"-->
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="oppure"
+        android:layout_below="@+id/loginconmail"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/testodellopzione"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/edtextphonenumber"
+        android:layout_centerHorizontal="true"
+        android:imeOptions="actionDone"
+        android:inputType="phone"
+        android:layout_below="@+id/testodellopzione"
+        android:layout_marginTop="30sp"
+        android:selectAllOnFocus="true"
+        android:hint="Inserisci numero di telefono"/>
+
+    <EditText
+        android:id="@+id/codeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edtextphonenumber"
+        android:hint="Inserisci il codice di verifica"
+        android:visibility="gone"/> <!-- Lo mostrerai solo dopo aver inviato il codice -->
+
+    <Button
+        android:id="@+id/sendCodeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/codeEditText"
+        android:text="Invia codice di verifica" />
+
+    <Button
+        android:id="@+id/verifyCodeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Verifica codice"
+        android:layout_below="@+id/sendCodeButton"
+        android:visibility="gone"/> <!-- Anche questo diventerà visibile dopo l'invio del codice -->
+
+
+
+
+
+
 
 
 </RelativeLayout>

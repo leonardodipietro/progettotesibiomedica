@@ -35,6 +35,8 @@
         android:layout_below="@+id/pulsantemail"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
+        android:id="@+id/vaialoginactivity"
+        android:clickable="true"
         />
 
 </RelativeLayout>

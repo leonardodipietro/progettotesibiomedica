@@ -4,16 +4,39 @@ import OnSwipeTouchListener
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class ProfileActivity : AppCompatActivity() {
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+
+
+        // Inizializza FirebaseAuth
+        auth = FirebaseAuth.getInstance()
+
+        val logoutButton = findViewById<Button>(R.id.logoutbutton)
+        logoutButton.setOnClickListener {
+            // Effettua il logout
+            auth.signOut()
+
+            // Torna alla MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            //serve per rimuovere la main page dallo stack di memoria
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()  // Chiude l'activity corrente
+        }
+
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.nav_profile // Set the default selection
 
