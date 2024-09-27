@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Definizione dello stile per tutti i bottoni -->
+    <style name="GreenButton" parent="Widget.AppCompat.Button">
+        <!-- Colore del testo -->
+        <item name="android:textColor">#FFFFFF</item>
+        <!-- Sfondo verde -->
+        <item name="android:backgroundTint">#4CAF50</item>
+        <!-- Arrotondamento degli angoli -->
+        <item name="android:background">@drawable/button</item>
+        <!-- Altre proprietà personalizzabili -->
+        <item name="android:padding">10dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="buttonStyle">@style/GreenButton</item>
+
+    </style>
+</resources>

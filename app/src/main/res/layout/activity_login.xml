@@ -32,7 +32,12 @@
         android:inputType="textPassword"
         android:selectAllOnFocus="true"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/maillogin" />
+        android:layout_below="@id/maillogin"
+        android:paddingEnd="12dp"
+        android:paddingRight="12dp"/>
+
+
+
 
 
     <Button
@@ -44,6 +49,7 @@
         android:enabled="true"
         android:text="accedi con email"
         android:layout_centerHorizontal="true"
+        style="@style/GreenButton"
         android:layout_below="@id/pswlogin"/>
         <!--android:text="@string/action_sign_in"-->
 
@@ -81,6 +87,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/codeEditText"
+        style="@style/GreenButton"
         android:text="Invia codice di verifica" />
 
     <Button
@@ -88,6 +95,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Verifica codice"
+        style="@style/GreenButton"
         android:layout_below="@+id/sendCodeButton"
         android:visibility="gone"/> <!-- Anche questo diventerà visibile dopo l'invio del codice -->
 

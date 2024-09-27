@@ -5,6 +5,9 @@ import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class UserRepo {
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
@@ -85,19 +88,69 @@ class UserRepo {
     fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
         val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
 
-        // Crea una mappa dei sintomi con il loro ID e gravità
-        val sintomiMap = sintomiList.associate { it.id to it.gravita }
+        // Ottieni il timestamp corrente nel formato desiderato
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        val currentTime = dateFormat.format(Date())
+
+        // Crea una mappa dei sintomi con il loro ID, gravità e timestamp
+        val sintomiMap = sintomiList.associate { sintomo ->
+            sintomo.id to mapOf(
+                "gravita" to sintomo.gravita,
+                "timestamp" to currentTime
+            )
+        }
 
         Log.d("SubmitSintomi", "Invio dei sintomi al DB: $sintomiMap")
 
         userSintomiRef.setValue(sintomiMap).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Log.d("SubmitSintomi", "Sintomi e gravità inviati al db per: $userId")
+                Log.d("SubmitSintomi", "Sintomi, gravità e timestamp inviati al db per: $userId")
             } else {
                 Log.e("SubmitSintomi", "Errore nell'invio al db per: $userId", task.exception)
             }
         }
     }
+//VERSIONE CON STORIA
+    /*
+    fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
+        val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
+        val userHistoryRef = database.reference.child("users").child(userId).child("history")
+
+        // Ottieni il timestamp corrente nel formato desiderato
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        val currentTime = dateFormat.format(Date())
+
+        // Crea una mappa dei sintomi con il loro ID, gravità e timestamp
+        val sintomiMap = sintomiList.associate { sintomo ->
+            sintomo.id to mapOf(
+                "gravita" to sintomo.gravita,
+                "timestamp" to currentTime
+            )
+        }
+
+        // Salva i sintomi correnti nel nodo "selectedSintomi"
+        userSintomiRef.setValue(sintomiMap).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("SubmitSintomi", "Sintomi, gravità e timestamp inviati al db per: $userId")
+
+                // Aggiorna lo storico per ogni sintomo
+                sintomiList.forEach { sintomo ->
+                    val historyEntry = mapOf(
+                        "gravita" to sintomo.gravita,
+                        "timestamp" to currentTime
+                    )
+
+                    // Aggiungi un nuovo record nello storico usando il timestamp come chiave
+                    userHistoryRef.child(sintomo.id).child(currentTime).setValue(historyEntry)
+                }
+
+            } else {
+                Log.e("SubmitSintomi", "Errore nell'invio al db per: $userId", task.exception)
+            }
+        }
+    }
+*/
+
 
     fun removeSintomo(userId: String, sintomoId: String) {
         val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi").child(sintomoId)

@@ -12,13 +12,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.database.FirebaseDatabase
 import java.util.concurrent.TimeUnit
 
 class LoginActivity : AppCompatActivity() {
 
+    //todo vedere occhio
+    //TODO CREAREICONA
     private lateinit var auth: FirebaseAuth
     private var verificationId: String? = null
-
+    private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -36,13 +39,14 @@ class LoginActivity : AppCompatActivity() {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
-                            // Login riuscito, puoi avviare l'attività successiva (ad esempio, MainPage)
-                            Log.d("LoginActivity", "Login effettuato con successo: ${auth.currentUser?.email}")
-                            startMainPage()  // Funzione per avviare la nuova Activity dopo il login
+                            // Recupera l'utente autenticato
+                            val user = auth.currentUser
+                            if (user != null) {
+                                // Verifica se l'utente è admin o utente normale
+                                checkUserTypeAndRedirect(user.uid)
+                            }
                         } else {
-                            // Login fallito, mostra un messaggio all'utente
-                            Toast.makeText(this, "Login fallito: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                            Log.d("LoginActivity", "Login fallito: ${task.exception?.message}")
+                            Toast.makeText(this, "Login fallito", Toast.LENGTH_SHORT).show()
                         }
                     }
             } else {
@@ -131,9 +135,73 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
+    fun checkUserTypeAndRedirect(uid: String) {
+        val userRef = database.reference.child("users").child(uid)
+        Log.d("checkUserTypeAndRedirect", "Recupero dati utente per UID: $uid")  // Log per verificare l'UID dell'utente
+
+        userRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // Log per confermare che i dati dell'utente sono stati trovati nel database
+                Log.d("checkUserTypeAndRedirect", "Dati utente trovati: ${snapshot.value}")
+
+                // Estrae il valore di isAdmin dal database
+                val isAdmin = snapshot.child("admin").getValue(Boolean::class.java) ?: false
+                Log.d("checkUserTypeAndRedirect", "isAdmin: $isAdmin")  // Log per controllare il valore di isAdmin
+
+                if (isAdmin) {
+                    // Se l'utente è admin, reindirizza alla AdminActivity
+                    Log.d("checkUserTypeAndRedirect", "L'utente è un amministratore. Reindirizzamento alla AdminActivity.")
+                    val intent = Intent(this, AdminActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // Se è un utente normale, reindirizza alla MainPage
+                    Log.d("checkUserTypeAndRedirect", "L'utente non è un amministratore. Reindirizzamento alla MainPage.")
+                    val intent = Intent(this, MainPage::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            } else {
+                // Log per il caso in cui l'utente non sia trovato nel database
+                Log.d("checkUserTypeAndRedirect", "Dati utente non trovati per UID: $uid")
+                Toast.makeText(this, "Dati utente non trovati", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener { exception ->
+            // Log per errori durante il recupero dei dati
+            Log.e("checkUserTypeAndRedirect", "Errore nel recupero dati utente: ${exception.message}")
+            Toast.makeText(this, "Errore nel recupero dati utente", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
     private fun startMainPage() {
         val intent = Intent(this, MainPage::class.java)
         startActivity(intent)
         finish()
     }
     }
+
+/*
+pswEditText.setOnTouchListener { _, event ->
+    if (event.action == MotionEvent.ACTION_UP) {
+        // Verifica se l'utente ha toccato l'icona
+        if (event.rawX >= (pswEditText.right - pswEditText.compoundDrawables[2].bounds.width())) {
+            // Alterna la visibilità della password
+            if (isPasswordVisible) {
+                // Nascondi la password
+                pswEditText.transformationMethod = PasswordTransformationMethod.getInstance()
+                pswEditText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0)
+            } else {
+                // Mostra la password
+                pswEditText.transformationMethod = null
+                pswEditText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_closed, 0)
+            }
+            isPasswordVisible = !isPasswordVisible
+            // Sposta il cursore alla fine del testo
+            pswEditText.setSelection(pswEditText.text.length)
+            return@setOnTouchListener true
+        }
+    }
+    false
+}
+ */

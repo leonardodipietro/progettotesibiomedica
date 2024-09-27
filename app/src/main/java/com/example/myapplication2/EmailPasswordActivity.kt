@@ -16,6 +16,8 @@ import com.google.firebase.auth.FirebaseAuth
 
 class EmailPasswordActivity : AppCompatActivity() {
 
+
+    //todo gestire meglio toast
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private lateinit var userRepo: UserRepo
@@ -65,28 +67,37 @@ class EmailPasswordActivity : AppCompatActivity() {
 
         val emailEditText = findViewById<EditText>(R.id.email)
         val passwordEditText = findViewById<EditText>(R.id.password)
+        val confermaPasswordEditText = findViewById<EditText>(R.id.confermapassword)
         val registerButton = findViewById<Button>(R.id.registerbutton)
 
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
+            val confermaPassword = confermaPasswordEditText.text.toString()
 
-            //qui si crea l utente su firebase autentication non nel db
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this) { task ->
-                        if (task.isSuccessful) {
-                            Log.d("MainActivity", "Registrationee fatta")
-                            userRepo.saveUserIdToFirebase()
-                            startSecondActivity()
-                        } else {
-                            Toast.makeText(this, "Email e password non valide", Toast.LENGTH_SHORT).show()
-                            Log.d("MainActivity", "Registration fllita: ${task.exception?.message}")
-
+            // Controllo se i campi non sono vuoti
+            if (email.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty()) {
+                // Verifica se la password e la conferma della password corrispondono
+                if (password == confermaPassword) {
+                    // Procedi con la registrazione su Firebase Authentication
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this) { task ->
+                            if (task.isSuccessful) {
+                                Log.d("MainActivity", "Registrazione avvenuta con successo")
+                                userRepo.saveUserIdToFirebase()
+                                startSecondActivity()
+                            } else {
+                                Toast.makeText(this, "Registrazione fallita: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                                Log.d("MainActivity", "Errore registrazione: ${task.exception?.message}")
+                            }
                         }
-                    }
+                } else {
+                    // Mostra un messaggio di errore se le password non corrispondono
+                    Toast.makeText(this, "Le password non corrispondono", Toast.LENGTH_SHORT).show()
+                }
             } else {
-                Toast.makeText(this, "Email e password non possono essere vuote", Toast.LENGTH_SHORT).show()
+                // Mostra un messaggio di errore se uno dei campi è vuoto
+                Toast.makeText(this, "Email, password e conferma password non possono essere vuoti", Toast.LENGTH_SHORT).show()
             }
         }
     }

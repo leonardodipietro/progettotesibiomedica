@@ -12,11 +12,12 @@ import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.Logger
 
 class MainActivity: AppCompatActivity()  {
-    private lateinit var database: DatabaseReference
+
     private lateinit var auth: FirebaseAuth
+    //todo capire perche ci sta l url per forza
+    private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,41 +26,46 @@ class MainActivity: AppCompatActivity()  {
         val currentUser = auth.currentUser
 
         if (currentUser != null) {
-            // Ricarica l'utente e controlla se è ancora autenticato
             currentUser.reload().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    auth.currentUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
-                        if (tokenTask.isSuccessful) {
-                            // L'utente esiste, avvia `SecondActivity`
-                            Log.d("MainActivity", "User è autenticato: ${currentUser.email}")
-                            startsMainPage()
-                        } else {
-                            // L'utente non esiste
-                            auth.signOut()
-
-                            setContentView(R.layout.activitymain)
-                            interfacciagrafica()
-
-                        }
-                    }
+                    val uid = currentUser.uid
+                    checkUserTypeAndRedirect(uid)  // Verifica il tipo di utente dal database
                 } else {
-
                     auth.signOut()
                     setContentView(R.layout.activitymain)
                     interfacciagrafica()
-
                 }
             }
         } else {
-            // Nessun utente autenticato, mostra il layout di `MainActivity`
             setContentView(R.layout.activitymain)
             interfacciagrafica()
         }
-
-
-
     }
+    private fun checkUserTypeAndRedirect(uid: String) {
+        val userRef = database.getReference("users").child(uid)
 
+        userRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // Recupera il campo 'admin' dall'utente nel Realtime Database
+                val isAdmin = snapshot.child("admin").getValue(Boolean::class.java) ?: false
+                if (isAdmin) {
+                    // Se l'utente è un amministratore
+                    val intent = Intent(this, AdminActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // Se l'utente è un utente normale
+                    val intent = Intent(this, MainPage::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            } else {
+                Log.e("MainActivity", "Utente non trovato nel database")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("MainActivity", "Errore nel recupero dei dati: ${exception.message}")
+        }
+    }
     private fun interfacciagrafica() {
        val mailpswdbutton = findViewById<Button>(R.id.pulsantemail)
        val phonebutton=findViewById<Button>(R.id.pulsantetel)

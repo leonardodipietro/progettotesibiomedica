@@ -4,6 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true">
     <TextView
         android:id="@+id/texttitle"
         android:layout_width="wrap_content"
@@ -13,30 +18,46 @@
         android:textSize="30dp"
         />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/pulsantemail"
-        android:layout_below="@+id/texttitle"
-        android:text="Registrati con email"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/texttitle"
+            android:layout_marginTop="20sp"
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/texttitle"
-        android:id="@+id/pulsantetel"
-        android:layout_toRightOf="@+id/pulsantemail"
-        android:text="Registrati con il numero di telefono"/>
+            android:id="@+id/bottoni">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/pulsantemail"
+                android:layout_marginHorizontal="30sp"
+                android:text="email"
+                style="@style/GreenButton"
+                 />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/pulsantetel"
+                android:layout_marginHorizontal="30sp"
+                android:layout_toRightOf="@+id/pulsantemail"
+                android:text="telefono"
+                style="@style/GreenButton"
+                 />
+        </RelativeLayout>
+
+
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sei già registrato? Accedi"
-        android:layout_below="@+id/pulsantemail"
+        android:layout_below="@+id/bottoni"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="30sp"
         android:id="@+id/vaialoginactivity"
         android:clickable="true"
         />
+      </RelativeLayout>
 
 </RelativeLayout>

@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/titolo"
         android:id="@+id/inviadati"
+        style="@style/GreenButton"
         android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
         />
@@ -42,8 +43,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:menu="@menu/nav_bar"
-        android:background="?android:attr/windowBackground"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black"/>
+        android:background="#4CAF50"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white"
+           />
 
 </RelativeLayout>

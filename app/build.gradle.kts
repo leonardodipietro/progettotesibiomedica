@@ -57,9 +57,15 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation (libs.firebase.database)
-
+    implementation(libs.kotlin.coroutines.core)
+    implementation(libs.kotlin.coroutines.android)
     //per l'autenticazione di firebase
     implementation (libs.firebase.auth)
+
+    implementation(libs.firebase.messaging)
+    implementation(libs.work.runtime.ktx)
+
+
 
 
 }

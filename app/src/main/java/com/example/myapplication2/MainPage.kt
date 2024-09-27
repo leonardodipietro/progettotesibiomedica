@@ -1,7 +1,10 @@
 package com.example.myapplication2
 
 import OnSwipeTouchListener
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,11 +13,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.myapplication2.adapter.SintomiAdapter
+import com.example.myapplication2.repository.NotificaWorker
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import java.util.concurrent.TimeUnit
 
 class MainPage : AppCompatActivity() {
     private lateinit var sintomoRepo: SintomoRepo
@@ -29,30 +37,14 @@ class MainPage : AppCompatActivity() {
 
         //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
         //todo verificare effetto della recycler sulla navbar
-
+        //todo vedere in basso
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         // Inizializza il repository
         sintomoRepo = SintomoRepo()
         userRepo= UserRepo()
 
-        /*val inviaButton: Button = findViewById(R.id.inviadati)
-        inviaButton.setOnClickListener {
-            val selectedSintomi = sintadapter.getSelectedSintomi()
-            Log.d("InviaButton", "Selected Sintomi:$selectedSintomi ")
 
-
-            Log.d("InviaButton", "CurrentUser: ${currentUser?.uid}")
-
-            if (currentUser != null) {
-                val userId = currentUser.uid
-                Log.d("InviaButton", "User ID: $userId")
-
-                userRepo.submitSintomi(userId, selectedSintomi)
-            } else {
-                Log.d("InviaButton", "Nessun utente autenticato.")
-            }
-        }*/
         val inviaButton: Button = findViewById(R.id.inviadati)
         inviaButton.setOnClickListener {
             val selectedSintomi = sintadapter.getSelectedSintomi()
@@ -157,7 +149,7 @@ class MainPage : AppCompatActivity() {
                 else -> false
             }
         }
-        val mainpageLayout: View = findViewById(R.id.mainpageroot) // Il layout radice della tua Activity
+        val mainpageLayout: View = findViewById(R.id.mainpageroot)
 
         // Rileva il movimento di swipe
         mainpageLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
@@ -167,5 +159,62 @@ class MainPage : AppCompatActivity() {
                 startActivity(intent)
             }
     })
+
+        // Configurazione notifiche giornaliere se l'utente è loggato
+        if (currentUser != null) {
+            scheduleDailyNotification()
+        }
+
+        if (currentUser != null) {
+            scheduleTestNotification()  //Test ogni 15 sec sarà da rimuovere
+        }
+
+        // Crea il canale di notifica ùù
+        createNotificationChannel()
 }
+    private fun scheduleDailyNotification() {
+        val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(workRequest)
+    }
+
+    private fun scheduleTestNotification() {
+        Log.d("MainPage", "Scheduling the notification worker")
+        val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(15,TimeUnit.MINUTES)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(workRequest)
+        Log.d("MainPage", "Notification worker scheduled to run after 20 seconds")
+    }
+
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Daily Notification Channel"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("daily_notification", name, importance)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+
+        }
+    }
 }
+
+/*val inviaButton: Button = findViewById(R.id.inviadati)
+inviaButton.setOnClickListener {
+    val selectedSintomi = sintadapter.getSelectedSintomi()
+    Log.d("InviaButton", "Selected Sintomi:$selectedSintomi ")
+
+
+    Log.d("InviaButton", "CurrentUser: ${currentUser?.uid}")
+
+    if (currentUser != null) {
+        val userId = currentUser.uid
+        Log.d("InviaButton", "User ID: $userId")
+
+        userRepo.submitSintomi(userId, selectedSintomi)
+    } else {
+        Log.d("InviaButton", "Nessun utente autenticato.")
+    }
+}*/
