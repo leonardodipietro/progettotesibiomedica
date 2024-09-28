@@ -21,24 +21,34 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"/>
 
-    <EditText
-        android:id="@+id/pswlogin"
+    <FrameLayout
+        android:id="@+id/passwordframe"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="@string/prompt_password"
-        android:imeActionLabel="@string/action_sign_in_short"
-        android:imeOptions="actionDone"
-        android:inputType="textPassword"
-        android:selectAllOnFocus="true"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/maillogin"
-        android:paddingEnd="12dp"
-        android:paddingRight="12dp"/>
+        android:layout_marginTop="8dp">
 
+        <EditText
+            android:id="@+id/pswlogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/prompt_password"
+            android:imeActionLabel="@string/action_sign_in_short"
+            android:imeOptions="actionDone"
+            android:inputType="textPassword"
+            android:selectAllOnFocus="true"
+            android:paddingEnd="48dp" />
 
-
-
+        <ImageView
+            android:id="@+id/mostraPassword"
+            android:layout_width="40sp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
 
     <Button
         android:id="@+id/loginconmail"
@@ -47,12 +57,10 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="64dp"
         android:enabled="true"
-        android:text="accedi con email"
+        android:text="Accedi con email"
         android:layout_centerHorizontal="true"
         style="@style/GreenButton"
-        android:layout_below="@id/pswlogin"/>
-        <!--android:text="@string/action_sign_in"-->
-
+        android:layout_below="@id/passwordframe"/>
 
     <TextView
         android:layout_width="wrap_content"

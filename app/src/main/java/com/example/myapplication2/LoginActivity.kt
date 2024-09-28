@@ -1,10 +1,12 @@
 package com.example.myapplication2
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.FirebaseException
@@ -31,9 +33,14 @@ class LoginActivity : AppCompatActivity() {
         val mailEditText=findViewById<EditText>(R.id.maillogin)
         val pswEditText=findViewById<EditText>(R.id.pswlogin)
         val logmailbutton=findViewById<Button>(R.id.loginconmail)
+        val showPassword = findViewById<ImageView>(R.id.mostraPassword)
+        var isPasswordVisible = false //variabile che usiamo per gestire visibilita della password
+
         logmailbutton.setOnClickListener {
             val email = mailEditText.text.toString()
             val password = pswEditText.text.toString()
+
+
 
             if (email.isNotEmpty() && password.isNotEmpty()) {
                 auth.signInWithEmailAndPassword(email, password)
@@ -52,6 +59,20 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Email e password non possono essere vuote", Toast.LENGTH_SHORT).show()
             }
+        }
+        showPassword.setOnClickListener {
+            if (isPasswordVisible) {
+                // Nascondi la password
+                pswEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                // Mostra la password
+                pswEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            // Posiziona il cursore alla fine del testo
+            pswEditText.setSelection(pswEditText.text.length)
+            isPasswordVisible = !isPasswordVisible
         }
 
         val phoneEditText = findViewById<EditText>(R.id.edtextphonenumber)

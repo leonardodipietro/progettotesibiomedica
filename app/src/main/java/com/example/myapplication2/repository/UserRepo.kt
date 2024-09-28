@@ -12,7 +12,7 @@ import java.util.Locale
 class UserRepo {
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     private var auth = FirebaseAuth.getInstance()
-
+    private val usersRef = database.getReference("users")
 
 
 
@@ -43,7 +43,16 @@ class UserRepo {
         }
     }
 
-
+    fun deleteAccount(uid: String, callback: (Boolean) -> Unit) {
+        // Elimina i dati dell'utente dal Realtime Database
+        usersRef.child(uid).removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(true) // Dati eliminati con successo dal database
+            } else {
+                callback(false) // Errore nell'eliminazione dal database
+            }
+        }
+    }
     fun savePhoneUserToFirebase() {
         Log.d("userrepo", "Funzione chiamata per l'autenticazione con numero di telefono")
         try {
