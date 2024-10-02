@@ -7,40 +7,154 @@
     android:layout_height="match_parent"
     tools:context=".ProfileActivity">
 
-    <!-- LinearLayout per disporre i pulsanti uno sotto l'altro -->
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <!-- ScrollView per permettere lo scorrimento del contenuto -->
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:orientation="vertical"> <!-- Impostiamo l'orientamento verticale per i pulsanti -->
+        android:layout_alignParentTop="true"
+        android:layout_above="@id/bottom_navigation">
 
-        <Button
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Logout"
-            android:id="@+id/logoutbutton"
-            android:gravity="center"
-            style="@style/GreenButton"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Elimina Account"
-            android:id="@+id/deleteAccount"
-            android:gravity="center"
-            style="@style/GreenButton"
-            android:layout_marginTop="16dp"/>
+            <!-- Testo di benvenuto -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ciao [User], in questa pagina puoi modificare i tuoi dati di accesso"
+                android:textSize="16sp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"/>
 
-    </LinearLayout>
+            <!-- Modifica la tua email -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modifica la tua mail:"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
 
+            <EditText
+                android:id="@+id/edit_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci la tua nuova mail"
+                android:inputType="textEmailAddress"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
+            <!-- Modifica il tuo numero di telefono -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modifica il tuo telefono:"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <EditText
+                android:id="@+id/edit_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo numero di telefono"
+                android:inputType="phone"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
+            <!-- Modifica la tua password -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modifica la tua password:"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <EditText
+                android:id="@+id/edit_password_old"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci la vecchia password"
+                android:inputType="textPassword"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
+            <EditText
+                android:id="@+id/edit_password_new"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci la nuova password"
+                android:inputType="textPassword"
+                android:padding="10dp"
+                android:background="@drawable/edittext"
+                android:layout_marginTop="8dp"/>
+
+            <EditText
+                android:id="@+id/edit_password_confirm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Conferma la nuova password"
+                android:inputType="textPassword"
+                android:padding="10dp"
+                android:background="@drawable/edittext"
+                android:layout_marginTop="8dp"/>
+
+            <!-- Pulsante per salvare le modifiche -->
+            <Button
+                android:id="@+id/button_save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Salva le modifiche"
+                style="@style/GreenButton"
+                android:layout_marginTop="16dp"/>
+
+            <!-- Spazio destinato alle verifiche -->
+            <TextView
+                android:id="@+id/verify_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Spazio destinato alle verifiche"
+                android:textAlignment="center"
+                android:layout_marginTop="16dp"
+                android:padding="16dp"
+                android:background="#F0F0F0"
+                android:layout_gravity="center"/>
+            <!-- Pulsante Logout -->
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Logout"
+                android:id="@+id/logoutbutton"
+                android:gravity="center"
+                style="@style/GreenButton"
+                android:layout_marginTop="16dp"/>
+
+            <!-- Pulsante Elimina Account -->
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Elimina Account"
+                android:id="@+id/deleteAccount"
+                android:gravity="center"
+                style="@style/GreenButton"
+                android:layout_marginTop="16dp"
+                />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BottomNavigationView -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="7dp"
+        android:layout_marginBottom="0sp"
         android:background="#4CAF50"
+        android:layout_marginTop="5sp"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white"
         app:menu="@menu/nav_bar" />

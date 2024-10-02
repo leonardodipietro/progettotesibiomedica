@@ -2,23 +2,61 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
 
     <EditText
         android:id="@+id/phoneEditText"
         android:layout_width="match_parent"
+        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
-        android:hint="INserisci numero di telefono"
+        android:hint="Inserisci numero di telefono"
         android:inputType="phone"
+        android:layout_marginTop="30sp"
         android:layout_alignParentTop="true" />
+
+    <EditText
+        android:id="@+id/usernamepercellulare"
+        android:layout_width="match_parent"
+        android:background="@drawable/edittext"
+        android:layout_height="wrap_content"
+        android:hint=" Inserisci un username"
+        android:layout_marginTop="16sp"
+        android:layout_below="@id/phoneEditText"
+        />
+    <!-- Campo per la password -->
+    <EditText
+        android:id="@+id/passwordEditText"
+        android:layout_width="match_parent"
+        android:background="@drawable/edittext"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci una password"
+        android:inputType="textPassword"
+        android:layout_marginTop="16sp"
+        android:layout_below="@id/usernamepercellulare"
+        />
+
+    <!-- Campo per la conferma della password -->
+    <EditText
+        android:id="@+id/confirmPasswordEditText"
+        android:layout_width="match_parent"
+        android:background="@drawable/edittext"
+        android:layout_height="wrap_content"
+        android:hint="Conferma la password"
+        android:inputType="textPassword"
+        android:layout_marginTop="16sp"
+        android:layout_below="@id/passwordEditText"
+        />
+
 
     <EditText
         android:id="@+id/codeEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Inserisci codice di verifica"
+        android:background="@drawable/edittext"
         android:inputType="number"
-        android:layout_below="@id/phoneEditText"
+        android:layout_below="@id/confirmPasswordEditText"
         android:layout_marginTop="16dp" />
 
 
@@ -42,6 +80,8 @@
         android:layout_below="@id/codeEditText"
         android:layout_marginTop="16dp"
         android:layout_alignParentEnd="true" />
+
+
 
 
 </RelativeLayout>

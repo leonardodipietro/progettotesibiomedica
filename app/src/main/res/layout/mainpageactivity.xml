@@ -11,8 +11,11 @@
         android:id="@+id/titolo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="50dp"
-        android:text="pagina aperta"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="20sp"
+        android:layout_marginTop="20sp"
+        android:text="Benvenuto [User], come ti senti oggi?"
         />
     <Button
         android:layout_width="wrap_content"
@@ -20,6 +23,7 @@
         android:layout_below="@+id/titolo"
         android:id="@+id/inviadati"
         style="@style/GreenButton"
+        android:text="invia dati"
         android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
         />

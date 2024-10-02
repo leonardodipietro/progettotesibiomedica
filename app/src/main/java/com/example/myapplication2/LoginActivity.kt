@@ -7,8 +7,10 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -23,26 +25,50 @@ class LoginActivity : AppCompatActivity() {
     //TODO CREAREICONA
     private lateinit var auth: FirebaseAuth
     private var verificationId: String? = null
+    private lateinit var userRepo: UserRepo
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        userRepo= UserRepo()
 
         auth = FirebaseAuth.getInstance()
-        val mailEditText=findViewById<EditText>(R.id.maillogin)
+      //  val mailEditText=findViewById<EditText>(R.id.maillogin)
+        val usernameEditText=findViewById<EditText>(R.id.usernamelogin)
         val pswEditText=findViewById<EditText>(R.id.pswlogin)
         val logmailbutton=findViewById<Button>(R.id.loginconmail)
         val showPassword = findViewById<ImageView>(R.id.mostraPassword)
         var isPasswordVisible = false //variabile che usiamo per gestire visibilita della password
+        val resetPassword=findViewById<TextView>(R.id.iniziaresetpsw)
 
         logmailbutton.setOnClickListener {
-            val email = mailEditText.text.toString()
+           // val email = mailEditText.text.toString()
+            val username = usernameEditText.text.toString()
             val password = pswEditText.text.toString()
 
 
 
-            if (email.isNotEmpty() && password.isNotEmpty()) {
+
+            if (username.isNotEmpty() && password.isNotEmpty()) {
+                // Chiama la funzione verifyUserCredentials della UserRepo per gestire il login
+                userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage ->
+                    if (isSuccess) {
+                        // Login riuscito
+                        Toast.makeText(this, "Login avvenuto con successo", Toast.LENGTH_SHORT).show()
+                        startMainPage()
+                    } else {
+                        // Mostra un messaggio di errore
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Inserisci username e password", Toast.LENGTH_SHORT).show()
+            }
+
+
+
+           /* if (email.isNotEmpty() && password.isNotEmpty()) {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
@@ -58,7 +84,7 @@ class LoginActivity : AppCompatActivity() {
                     }
             } else {
                 Toast.makeText(this, "Email e password non possono essere vuote", Toast.LENGTH_SHORT).show()
-            }
+            }*/
         }
         showPassword.setOnClickListener {
             if (isPasswordVisible) {
@@ -74,8 +100,26 @@ class LoginActivity : AppCompatActivity() {
             pswEditText.setSelection(pswEditText.text.length)
             isPasswordVisible = !isPasswordVisible
         }
+        /*DA VEDERE POI
+        resetPassword.setOnClickListener {
+            val email = mailEditText.text.toString()
 
-        val phoneEditText = findViewById<EditText>(R.id.edtextphonenumber)
+            if (email.isNotEmpty()) {
+                auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val intent = Intent(this, ResetPassword::class.java)
+                            startActivity(intent)
+                        } else {
+                            Toast.makeText(this, "Errore nell'invio dell'email", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+            } else {
+                Toast.makeText(this, "Inserisci l'email", Toast.LENGTH_SHORT).show()
+            }
+        }*/
+
+      /*  val phoneEditText = findViewById<EditText>(R.id.edtextphonenumber)
         val codeEditText = findViewById<EditText>(R.id.codeEditText)
         val sendCodeButton = findViewById<Button>(R.id.sendCodeButton)
         val verifyCodeButton = findViewById<Button>(R.id.verifyCodeButton)
@@ -98,10 +142,10 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Inserisci il codice di verifica", Toast.LENGTH_SHORT).show()
             }
-        }
+        }*/
     }
 
-    private fun sendVerificationCode(phoneNumber: String) {
+   /* private fun sendVerificationCode(phoneNumber: String) {
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber(phoneNumber)       // Numero di telefono
             .setTimeout(60L, TimeUnit.SECONDS) // Timeout per il codice di verifica
@@ -154,7 +198,7 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this, "Autenticazione fallita", Toast.LENGTH_SHORT).show()
                 }
             }
-    }
+    }*/
 
     fun checkUserTypeAndRedirect(uid: String) {
         val userRef = database.reference.child("users").child(uid)

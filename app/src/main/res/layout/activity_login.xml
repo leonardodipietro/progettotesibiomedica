@@ -10,6 +10,72 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".LoginActivity">
 
+
+    <EditText
+        android:id="@+id/usernamelogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="96dp"
+        android:hint="Username"
+        android:inputType="textEmailAddress"
+        android:selectAllOnFocus="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/edittext"
+        android:layout_alignParentTop="true"/>
+
+    <FrameLayout
+        android:id="@+id/passwordframe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/usernamelogin"
+        android:layout_marginTop="8dp">
+
+        <EditText
+            android:id="@+id/pswlogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/prompt_password"
+            android:imeActionLabel="@string/action_sign_in_short"
+            android:imeOptions="actionDone"
+            android:background="@drawable/edittext"
+            android:inputType="textPassword"
+            android:selectAllOnFocus="true"
+            android:paddingEnd="48dp" />
+
+        <ImageView
+            android:id="@+id/mostraPassword"
+            android:layout_width="40sp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/loginconmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="20sp"
+        android:enabled="true"
+        android:text="Accedi"
+        android:layout_centerHorizontal="true"
+        style="@style/GreenButton"
+        android:layout_below="@id/passwordframe"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/iniziaresetpsw"
+        android:text="Password dimenticata? Nessun problema,clicca qui"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:clickable="true"
+        android:layout_marginTop="10sp"
+        android:layout_below="@id/loginconmail"/>
+    <!--
     <EditText
         android:id="@+id/maillogin"
         android:layout_width="match_parent"
@@ -55,7 +121,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="64dp"
+        android:layout_marginBottom="20sp"
         android:enabled="true"
         android:text="Accedi con email"
         android:layout_centerHorizontal="true"
@@ -65,8 +131,22 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/iniziaresetpsw"
+        android:text="Password dimenticata? Nessun problema,clicca qui"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:clickable="true"
+        android:layout_marginTop="10sp"
+        android:layout_below="@id/loginconmail"/>
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="oppure"
-        android:layout_below="@+id/loginconmail"
+        android:layout_marginTop="40sp"
+        android:layout_below="@+id/iniziaresetpsw"
         android:layout_centerHorizontal="true"
         android:id="@+id/testodellopzione"/>
 
@@ -88,7 +168,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/edtextphonenumber"
         android:hint="Inserisci il codice di verifica"
-        android:visibility="gone"/> <!-- Lo mostrerai solo dopo aver inviato il codice -->
+        android:visibility="gone"/>
 
     <Button
         android:id="@+id/sendCodeButton"
@@ -105,12 +185,12 @@
         android:text="Verifica codice"
         style="@style/GreenButton"
         android:layout_below="@+id/sendCodeButton"
-        android:visibility="gone"/> <!-- Anche questo diventerà visibile dopo l'invio del codice -->
+        android:visibility="gone"/>
 
 
 
 
-
+-->
 
 
 

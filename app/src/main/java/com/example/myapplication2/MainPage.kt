@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -33,8 +34,7 @@ class MainPage : AppCompatActivity() {
         setContentView(R.layout.mainpageactivity)
 
 
-
-
+        //todo salvare l utente con il nodo su firebase
         //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
         //todo verificare effetto della recycler sulla navbar
         //todo vedere in basso
@@ -105,7 +105,7 @@ class MainPage : AppCompatActivity() {
         })
 
 
-        userRepo.fetchSelectedSintomiForUser(currentUser!!.uid) { sintomiList ->
+       /* userRepo.fetchSelectedSintomiForUser(currentUser!!.uid) { sintomiList ->
             Log.d("FetchSintomo", "Numero di sintomi recuperati: ${sintomiList.size}")
 
             for (sintomo in sintomiList) {
@@ -113,7 +113,7 @@ class MainPage : AppCompatActivity() {
             }
 
             Log.d("FetchSintomo", "Fine gestione")
-        }
+        }*/
 
 
         //Usare per ogni sintomo
@@ -163,14 +163,16 @@ class MainPage : AppCompatActivity() {
         // Configurazione notifiche giornaliere se l'utente è loggato
         if (currentUser != null) {
             scheduleDailyNotification()
+            // Crea il canale di notifica ùù
+            createNotificationChannel()
         }
 
         if (currentUser != null) {
             scheduleTestNotification()  //Test ogni 15 sec sarà da rimuovere
+            // Crea il canale di notifica ùù
+            createNotificationChannel()
         }
 
-        // Crea il canale di notifica ùù
-        createNotificationChannel()
 }
     private fun scheduleDailyNotification() {
         val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS)
@@ -181,12 +183,16 @@ class MainPage : AppCompatActivity() {
 
     private fun scheduleTestNotification() {
         Log.d("MainPage", "Scheduling the notification worker")
-        val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(15,TimeUnit.MINUTES)
+
+        val workRequest = OneTimeWorkRequestBuilder<NotificaWorker>()
+            .setInitialDelay(10, TimeUnit.MINUTES)  // 10 min atest
             .build()
 
-        WorkManager.getInstance(this).enqueue(workRequest)
-        Log.d("MainPage", "Notification worker scheduled to run after 20 seconds")
+        WorkManager.getInstance(this)
+            .enqueueUniqueWork("DailyNotificationWork", ExistingWorkPolicy.REPLACE, workRequest)
+
     }
+
 
 
     private fun createNotificationChannel() {

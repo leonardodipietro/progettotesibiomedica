@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -66,17 +67,19 @@ class EmailPasswordActivity : AppCompatActivity() {
         database = firebaseDatabase.reference
 
         val emailEditText = findViewById<EditText>(R.id.email)
+        val usernameEditText = findViewById<EditText>(R.id.usernameregistrazione)
         val passwordEditText = findViewById<EditText>(R.id.password)
         val confermaPasswordEditText = findViewById<EditText>(R.id.confermapassword)
         val registerButton = findViewById<Button>(R.id.registerbutton)
 
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString()
+            val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
             val confermaPassword = confermaPasswordEditText.text.toString()
 
             // Controllo se i campi non sono vuoti
-            if (email.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty()) {
+            if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty()) {
                 // Verifica se la password e la conferma della password corrispondono
                 if (password == confermaPassword) {
                     // Procedi con la registrazione su Firebase Authentication
@@ -84,7 +87,12 @@ class EmailPasswordActivity : AppCompatActivity() {
                         .addOnCompleteListener(this) { task ->
                             if (task.isSuccessful) {
                                 Log.d("MainActivity", "Registrazione avvenuta con successo")
-                                userRepo.saveUserIdToFirebase()
+
+                                // Hash della password con BCrypt prima di salvarla nel database
+                                val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
+                                userRepo.saveUserToFirebase(username,hashedPassword)
+
+
                                 startSecondActivity()
                             } else {
                                 Toast.makeText(this, "Registrazione fallita: ${task.exception?.message}", Toast.LENGTH_SHORT).show()

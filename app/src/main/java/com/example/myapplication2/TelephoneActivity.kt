@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseException
@@ -16,6 +17,7 @@ import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.DatabaseReference
 import java.util.concurrent.TimeUnit
+
 
 class TelephoneActivity: AppCompatActivity()   {
 
@@ -68,18 +70,29 @@ class TelephoneActivity: AppCompatActivity()   {
     }
 
     private fun setupUIAndRegister() {
-
         val phoneEditText = findViewById<EditText>(R.id.phoneEditText)
+        val usernameEditText = findViewById<EditText>(R.id.usernamepercellulare)
+        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
+        val confirmPasswordEditText = findViewById<EditText>(R.id.confirmPasswordEditText)
         val codeEditText = findViewById<EditText>(R.id.codeEditText)
         val sendCodeButton = findViewById<Button>(R.id.sendCodeButton)
         val verifyCodeButton = findViewById<Button>(R.id.verifyCodeButton)
+
+
         sendCodeButton.setOnClickListener {
             val phoneNumber = phoneEditText.text.toString().trim()
-            if (phoneNumber.isNotEmpty()) {
-                sendVerificationCode(phoneNumber)
+            val username = usernameEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
+            val confirmPassword = confirmPasswordEditText.text.toString().trim()
+
+            if (phoneNumber.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
+                if (password == confirmPassword) {
+                    sendVerificationCode(phoneNumber)
+                } else {
+                    Toast.makeText(this, "Le password non corrispondono", Toast.LENGTH_SHORT).show()
+                }
             } else {
-                Toast.makeText(this, "Inserisci un numero di telefono valido", Toast.LENGTH_SHORT).show()
-                Log.d("MainActivity", "errore nella funzione: $phoneEditText ;;; $phoneNumber")
+                Toast.makeText(this, "Inserisci tutti i campi", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -137,9 +150,16 @@ class TelephoneActivity: AppCompatActivity()   {
                     val user = task.result?.user
                     Toast.makeText(this, "Autenticazione riuscita", Toast.LENGTH_SHORT).show()
 
+                    // Salva l'utente su Firebase con username e password hashata
+                    val username = findViewById<EditText>(R.id.usernamepercellulare).text.toString().trim()
+                    val password = findViewById<EditText>(R.id.passwordEditText).text.toString().trim()
 
-                    // Salva l'utente Su Firebase
-                    userRepo.savePhoneUserToFirebase()
+                    // Hash della password con BCrypt
+                    val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
+
+
+                    // Salva l'utente su Firebase Realtime Database
+                    userRepo.savePhoneUserToFirebase(username, hashedPassword)
 
                     startSecondActivity()
                 } else {
@@ -147,7 +167,6 @@ class TelephoneActivity: AppCompatActivity()   {
                 }
             }
     }
-
     private fun startSecondActivity() {
         val intent = Intent(this, MainPage::class.java)
         startActivity(intent)

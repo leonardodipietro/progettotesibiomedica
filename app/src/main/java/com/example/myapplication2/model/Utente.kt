@@ -4,5 +4,7 @@ data class Utente (
     val id: String = "",
     val email: String = "",
     val phoneNumber: String? = null,
-    val admin: Boolean=false
+    val admin: Boolean=false,
+    val username: String = "",
+    val password: String="",
 )
