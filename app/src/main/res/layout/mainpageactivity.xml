@@ -27,6 +27,14 @@
         android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
         />
+    <Spinner
+        android:id="@+id/spinnerDistanzaUltimoPasto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/inviadati"
+        android:layout_below="@+id/titolo"
+        android:layout_marginTop="30sp"
+        android:entries="@array/distanze_tempo_pasto" />
 
     <com.example.myapplication2.SwapRecyclerView
         android:layout_width="match_parent"

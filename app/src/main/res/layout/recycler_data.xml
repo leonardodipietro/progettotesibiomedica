@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Data della segnalazione -->
+    <TextView
+        android:id="@+id/textViewData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="01/10/2024"
+        android:textSize="14sp"
+        android:padding="4dp" />
+
+    <!-- Ora della segnalazione -->
+    <TextView
+        android:id="@+id/textViewOra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="14:00"
+        android:textSize="14sp"
+        android:paddingStart="16dp"
+        android:padding="4dp" />
+
+</LinearLayout>

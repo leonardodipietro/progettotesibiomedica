@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal">
+
+    <!-- Sintomo e sue gravità -->
+    <TextView
+        android:id="@+id/txtSintomoNome"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Sintomo X"/>
+
+    <!-- Opzioni per la gravità (es. No, Lieve, Medio, Grande) -->
+    <CheckBox
+        android:id="@+id/checkBoxNo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No"/>
+
+    <CheckBox
+        android:id="@+id/checkBoxLieve"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lieve"/>
+
+    <CheckBox
+        android:id="@+id/checkBoxMedio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Medio"/>
+
+    <CheckBox
+        android:id="@+id/checkBoxGrande"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Grande"/>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/recycler_data"/>
+</LinearLayout>

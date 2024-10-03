@@ -26,6 +26,7 @@ import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.DatabaseReference
 import java.util.concurrent.TimeUnit
+import com.example.myapplication2.model.Utente
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -40,6 +41,10 @@ class ProfileActivity : AppCompatActivity() {
 
         // Inizializza FirebaseAuth
         auth = FirebaseAuth.getInstance()
+
+        // Recupera l'oggetto Utente dalla ProfileActivity
+        val utente = intent.getParcelableExtra<Utente>("utente")
+
         Log.d("ProfileActivityAAAAAAA", "Utente corrente trovato: ${auth.currentUser}")
         userRepo= UserRepo()
 
@@ -124,7 +129,10 @@ class ProfileActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_home -> {
                     // Passa alla MainPage
-                    startActivity(Intent(this, MainPage::class.java))
+                    val intent = Intent(this, MainPage::class.java).apply {
+                        putExtra("utente", utente) // Passa l'oggetto Utente
+                    }
+                    startActivity(intent)
                     true
                 }
                 R.id.nav_profile -> {
@@ -139,7 +147,9 @@ class ProfileActivity : AppCompatActivity() {
         profileLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeRight() {
                 // Naviga alla MainPage
-                val intent = Intent(this@ProfileActivity, MainPage::class.java)
+                val intent = Intent(this@ProfileActivity, MainPage::class.java).apply {
+                    putExtra("utente", utente) // Passa l'oggetto Utente
+                }
                 startActivity(intent)
             }
         })

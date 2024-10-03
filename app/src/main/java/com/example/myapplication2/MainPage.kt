@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +19,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.myapplication2.adapter.SintomiAdapter
+import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.NotificaWorker
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
@@ -38,23 +40,33 @@ class MainPage : AppCompatActivity() {
         //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
         //todo verificare effetto della recycler sulla navbar
         //todo vedere in basso
+        val utente = intent.getParcelableExtra<Utente>("utente")
+        val userid= utente?.id
 
-        val currentUser = FirebaseAuth.getInstance().currentUser
+        Log.d("funziona","funziona $userid")
         // Inizializza il repository
         sintomoRepo = SintomoRepo()
         userRepo= UserRepo()
 
-
+        val spinnerDistanza: Spinner = findViewById(R.id.spinnerDistanzaUltimoPasto)
+        // Recupera la distanza selezionata dallo spinner
+        val distanzapasto = when (spinnerDistanza.selectedItem.toString()) {
+            "Meno di 1 ora" -> 0
+            "1 ora" -> 1
+            "2 ore" -> 2
+            "3 ore" -> 3
+            "Più di 3 ore" -> 4
+            else -> 0
+        }
         val inviaButton: Button = findViewById(R.id.inviadati)
         inviaButton.setOnClickListener {
             val selectedSintomi = sintadapter.getSelectedSintomi()
             Log.d("InviaButton", "Selected Sintomi e Gravità: $selectedSintomi")
 
-            if (currentUser != null) {
-                val userId = currentUser.uid
+            if (userid != null) {
 
                 // Invia i sintomi selezionati
-                userRepo.submitSintomi(userId, selectedSintomi)
+                userRepo.submitSintomi(userid, selectedSintomi,distanzapasto)
 
                 // Rimuovi i sintomi deselezionati (quelli che non sono più nella lista selectedSintomi)
                 val allSintomi = sintadapter.getAllSintomi()
@@ -63,7 +75,7 @@ class MainPage : AppCompatActivity() {
                 val sintomiDaRimuovere = allSintomiIds.minus(selectedSintomiIds)
 
                 sintomiDaRimuovere.forEach { sintomoId ->
-                    userRepo.removeSintomo(userId, sintomoId)
+                    userRepo.removeSintomo(userid, sintomoId)
                 }
             } else {
                 Log.d("InviaButton", "Nessun utente autenticato.")
@@ -143,9 +155,13 @@ class MainPage : AppCompatActivity() {
                 }
                 R.id.nav_profile -> {
                     // Passa alla ProfileActivity
-                    startActivity(Intent(this, ProfileActivity::class.java))
+                    val intent = Intent(this, ProfileActivity::class.java).apply {
+                        putExtra("utente", utente) // Passa l'oggetto Utente
+                    }
+                    startActivity(intent)
                     true
                 }
+
                 else -> false
             }
         }
@@ -154,20 +170,20 @@ class MainPage : AppCompatActivity() {
         // Rileva il movimento di swipe
         mainpageLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
             override fun onSwipeLeft() {
-                // Naviga alla ProfileActivity
-                val intent = Intent(this@MainPage, ProfileActivity::class.java)
-                startActivity(intent)
+                val intent = Intent(this@MainPage, ProfileActivity::class.java).apply {
+                    putExtra("utente", utente) // Passa l'oggetto Utente
+                }
             }
     })
 
         // Configurazione notifiche giornaliere se l'utente è loggato
-        if (currentUser != null) {
+        if (userid != null) {
             scheduleDailyNotification()
             // Crea il canale di notifica ùù
             createNotificationChannel()
         }
 
-        if (currentUser != null) {
+        if (userid != null) {
             scheduleTestNotification()  //Test ogni 15 sec sarà da rimuovere
             // Crea il canale di notifica ùù
             createNotificationChannel()
@@ -207,20 +223,4 @@ class MainPage : AppCompatActivity() {
     }
 }
 
-/*val inviaButton: Button = findViewById(R.id.inviadati)
-inviaButton.setOnClickListener {
-    val selectedSintomi = sintadapter.getSelectedSintomi()
-    Log.d("InviaButton", "Selected Sintomi:$selectedSintomi ")
 
-
-    Log.d("InviaButton", "CurrentUser: ${currentUser?.uid}")
-
-    if (currentUser != null) {
-        val userId = currentUser.uid
-        Log.d("InviaButton", "User ID: $userId")
-
-        userRepo.submitSintomi(userId, selectedSintomi)
-    } else {
-        Log.d("InviaButton", "Nessun utente autenticato.")
-    }
-}*/

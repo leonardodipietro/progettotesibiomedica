@@ -9,4 +9,11 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string-array name="distanze_tempo_pasto">
+        <item>Meno di 1 ora</item>
+        <item>1 ora</item>
+        <item>2 ore</item>
+        <item>3 ore</item>
+        <item>Più di 3 ore</item>
+    </string-array>
 </resources>

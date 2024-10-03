@@ -48,10 +48,13 @@ class UserRepo {
             }
         })
     }
-    fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?) -> Unit) {
+    fun verifyUserCredentials(
+        username: String,
+        password: String,
+        callback: (Boolean, String?, Boolean?, Utente?) -> Unit // Aggiungi Utente come parametro di ritorno
+    ) {
         Log.d("UserRepo", "Tentativo di login per utente: $username")
 
-        // Esegui la query per recuperare tutti gli utenti
         usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
@@ -62,76 +65,63 @@ class UserRepo {
 
                         if (user != null && user.username == username) {
                             userFound = true
-                            Log.d("UserRepo", "Username trovato nel database: ${user.username}")
+                            Log.d("UserRepo", "Username trovato nel database: ${user.username}, Admin: ${user.admin}")
 
-                            // Verifica se la password hashata è corretta usando BCrypt
                             val hashedPassword = user.password
+                            if (hashedPassword.isNullOrEmpty()) {
+                                // Login con Firebase Authentication se la password non è nel database
+                                signInWithFirebaseEmail(user.email ?: "", password) { isSuccess, errorMessage ->
+                                    callback(isSuccess, errorMessage, true, user)
+                                }
+                                return
+                            }
+
                             val isPasswordCorrect = BCrypt.verifyer().verify(password.toCharArray(), hashedPassword).verified
                             if (isPasswordCorrect) {
                                 Log.d("UserRepo", "Password corretta per $username")
-
-                                // Controlla se l'utente ha una email in Firebase Authentication
-                                if (!user.email.isNullOrEmpty()) {
-                                    Log.d("UserRepo", "Login tramite email: ${user.email}")
-                                    signInWithFirebaseEmail(user.email, password, callback)
-                                } else if (!user.phoneNumber.isNullOrEmpty()) {
-                                    Log.d("UserRepo", "Login tramite numero di telefono: ${user.phoneNumber}")
-                                    signInWithUsernameAndPassword(user.username, password, callback)
-                                } else {
-                                    callback(false, "Credenziali non valide")
-                                }
+                                val admin = user.admin ?: false
+                                callback(true, null, admin, user)
                             } else {
-                                callback(false, "Password errata")
+                                callback(false, "Password errata", null, null)
                             }
                             return
                         }
                     }
 
                     if (!userFound) {
-                        callback(false, "Username non trovato")
+                        callback(false, "Username non trovato", null, null)
                     }
                 } else {
-                    callback(false, "Nessun utente trovato nel database")
+                    callback(false, "Nessun utente trovato nel database", null, null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                callback(false, "Errore del database: ${error.message}")
+                callback(false, "Errore del database: ${error.message}", null, null)
             }
         })
     }
 
 
-    // Metodo per il login tramite email
-    private fun signInWithFirebaseEmail(email: String, password: String, callback: (Boolean, String?) -> Unit) {
-        Log.d("UserRepo", "Login con telefono chiamata")
+    // Metodo per il login tramite email in Firebase Authentication
+    private fun signInWithFirebaseEmail(
+        email: String,
+        password: String,
+        callback: (Boolean, String?) -> Unit
+    ) {
+        Log.d("UserRepo", "Login con Firebase Authentication chiamato")
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d("UserRepo", "Login con email riuscito")
                     callback(true, null)
                 } else {
-                    Log.e("UserRepo", "Errore nel login tramite email: ${task.exception?.message}")
-                    callback(false, "Errore nel login tramite email")
+                    Log.e("UserRepo", "Errore nel login tramite Firebase Authentication: ${task.exception?.message}")
+                    callback(false, "Errore nel login tramite Firebase Authentication")
                 }
             }
     }
 
-    private fun signInWithUsernameAndPassword(username: String, password: String, callback: (Boolean, String?) -> Unit) {
-        // Effettua una verifica del numero di telefono tramite il backend, senza richiedere la verifica SMS
-        FirebaseAuth.getInstance().signInAnonymously()
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // Autenticazione anonima per gestire la sessione senza la verifica SMS
-                    val user = FirebaseAuth.getInstance().currentUser
-                    Log.d("Login", "Utente autenticato anonimamente: ${user?.uid}")
-                    callback(true, null)
-                } else {
-                    callback(false, "Errore nel login anonimo: ${task.exception?.message}")
-                    Log.d("TentativoLogin", "Utente autenticato anonimamente: ${task.exception?.message}")
-                }
-            }
-    }
 
     fun saveUserToFirebase(username: String, hashedPassword: String) {
         Log.d("userrepo", "funzione chiamata")
@@ -251,31 +241,41 @@ class UserRepo {
         }
     }*/
 
-    fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
-        // Ottieni il riferimento alla posizione del database con il timestamp corrente
-        val userSintomiRef = database.reference.child("users").child(userId).child("storicoSintomi")
+    fun submitSintomi(userId: String, sintomiList: List<Sintomo>, distanzapasto: Int) {
+        // Riferimento al nodo dell'utente nel database
+        val userSintomiRef = database.reference.child("users").child(userId).child("sintomi")
 
-        // Ottieni il timestamp corrente nel formato desiderato (es. 2024-09-29T15:30:00Z)
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        val currentTime = dateFormat.format(Date())
+        // Ottieni la data corrente (es. "2024-03-01")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val currentDate = dateFormat.format(Date())
 
-        // Crea una mappa dei sintomi con il loro ID, gravità e timestamp
-        val sintomiMap = sintomiList.associate { sintomo ->
-            sintomo.id to mapOf(
-                "gravita" to sintomo.gravita,
-                "timestamp" to currentTime
+        // Ottieni l'ora corrente (es. "13:02")
+        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val currentTime = timeFormat.format(Date())
+
+        // Itera attraverso i sintomi selezionati e crea una mappa per ogni sintomo
+        for (sintomo in sintomiList) {
+            val sintomoMap = mapOf(
+                "gravità" to sintomo.gravita,
+                "tempoTrascorsoUltimoPasto" to distanzapasto
             )
-        }
 
-        // Salva i sintomi con l'ID del sintomo come chiave nel nodo "storicoSintomi"
-        userSintomiRef.child(currentTime).setValue(sintomiMap).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("SubmitSintomi", "Sintomi inviati al db per $userId nel timestamp $currentTime")
-            } else {
-                Log.e("SubmitSintomi", "Errore nell'invio al db per $userId", task.exception)
-            }
+            // Salva i dati del sintomo nella struttura desiderata
+            userSintomiRef.child(sintomo.id)
+                .child(currentDate)  // Nodo per la data
+                .child(currentTime)  // Nodo per l'ora
+                .setValue(sintomoMap)  // Dati associati al sintomo
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("SubmitSintomi", "Sintomo ${sintomo.id} inviato per $userId con data $currentDate e ora $currentTime")
+                    } else {
+                        Log.e("SubmitSintomi", "Errore nell'invio del sintomo ${sintomo.id}", task.exception)
+                    }
+                }
         }
     }
+
+
     // Modifica dell'email
     fun updateEmail(newEmail: String) {
         val user = auth.currentUser

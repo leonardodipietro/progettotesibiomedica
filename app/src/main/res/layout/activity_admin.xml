@@ -13,5 +13,17 @@
         android:text="logout"
         android:id="@+id/logoutadmin"/>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewUtenti"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/logoutadmin"
+        android:scrollbars="horizontal"/>
+    />
+
+
+
+
 
 </RelativeLayout>
