@@ -19,76 +19,150 @@ import java.util.Locale
 
 class ExportRepo {
 
-    // Funzione semplificata per generare il file Excel con i dati dei sintomi
     fun generateExcel(
         context: Context,
-        sintomiData: List<Sintomo>,
-        sintomiNomiGlobali: List<Sintomo>,  // Aggiungi la lista dei nomi globali qui
+        sintomiData: List<Pair<Sintomo, String>>,
+        sintomiNomiGlobali: List<Sintomo>,  // The global list of symptom names
         fileName: String
     ): Boolean {
         val path = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports")
 
         if (!path.exists()) {
-            path.mkdirs() // Crea la cartella se non esiste
+            path.mkdirs() // Create the directory if it does not exist
         }
 
         val file = File(path, fileName)
 
         return try {
-            // Crea un nuovo workbook e foglio Excel
+            // Create a new workbook and sheet for Excel
             val workbook = XSSFWorkbook()
             val sheet = workbook.createSheet("Sintomi Report")
 
-            // Aggiungi l'intestazione (header) al foglio Excel
+            // Create the header row in the Excel sheet
             val headerRow = sheet.createRow(0)
             headerRow.createCell(0).setCellValue("Data")
-            headerRow.createCell(1).setCellValue("Nome")
+            headerRow.createCell(1).setCellValue("Nome Utente") // You may add the user name if needed
             headerRow.createCell(2).setCellValue("Ora Rilevazione")
             headerRow.createCell(3).setCellValue("Ora Ultimo Pasto")
+            headerRow.createCell(4).setCellValue("Gravità")
 
-            // Aggiungi i nomi dei sintomi globali come intestazione
+            // Add the global symptom names as headers in Excel
             sintomiNomiGlobali.map { it.nomeSintomo }.distinct().forEachIndexed { index, nomeSintomo ->
-                headerRow.createCell(4 + index).setCellValue(nomeSintomo)  // Colonne per i sintomi
+                headerRow.createCell(5 + index).setCellValue(nomeSintomo)  // Start from column 4 for symptoms
             }
 
-            // Mantieni traccia del numero di righe per non sovrascrivere
+            // Keep track of the row number to avoid overwriting
             var rowCount = 1
 
-            // Aggiungi i dati dei sintomi per ogni segnalazione
-            for (sintomo in sintomiData) {
-                Log.d("Excel", "Scrittura sintomo: ${sintomo.nomeSintomo} con gravità ${sintomo.gravità}")
+            // Add symptom data for each report
+            for ((sintomo, username) in sintomiData) {
                 val row = sheet.createRow(rowCount++)
 
-                // Inserisci data e ora della segnalazione
-                row.createCell(0).setCellValue(sintomo.dataSegnalazione)  // Data del sintomo
-                row.createCell(1).setCellValue("Utente")  // Placeholder per nome utente (da aggiornare se hai i dati utente)
-                row.createCell(2).setCellValue(sintomo.oraSegnalazione)    // Ora di rilevazione
-                row.createCell(3).setCellValue(sintomo.tempoTrascorsoUltimoPasto.toDouble())  // Tempo trascorso dall'ultimo pasto
+                // Insert the date and time of the report
+                row.createCell(0).setCellValue(sintomo.dataSegnalazione)  // Symptom date
+                row.createCell(1).setCellValue(username)  // Placeholder for user name (replace if you have user data)
+                row.createCell(2).setCellValue(sintomo.oraSegnalazione)    // Reporting time
+                row.createCell(3).setCellValue(sintomo.tempoTrascorsoUltimoPasto.toDouble())  // Time since last meal
+                row.createCell(4).setCellValue(sintomo.gravità.toDouble())
 
-                // Inserisci la gravità del sintomo nella colonna corrispondente
-                val sintomoIndex = sintomiNomiGlobali.indexOfFirst { it.nomeSintomo == sintomo.nomeSintomo }
+                val sintomoIndex = sintomiNomiGlobali.indexOfFirst { it.id == sintomo.id }
+
+                Log.d("ExcelDebug", "Sintomo segnalato ID: ${sintomo.id}")
+                Log.d("ExcelDebug", "Sintomi globali: ${sintomiNomiGlobali.map { it.id }}")
+
                 if (sintomoIndex != -1) {
-                    row.createCell(4 + sintomoIndex).setCellValue(sintomo.gravità.toDouble()) // Gravità del sintomo
+                    Log.d("ExcelDebug", "Sintomo trovato in colonna index: $sintomoIndex con ID corrispondente: ${sintomiNomiGlobali[sintomoIndex].id}")
+                    // Inserisci una "X" nella colonna corretta che rappresenta il sintomo segnalato
+                    row.createCell(5 + sintomoIndex).setCellValue("X")
+                } else {
+                    Log.d("ExcelDebug", "Nessun sintomo trovato corrispondente a ID: ${sintomo.id}")
                 }
             }
-
-            // Scrivi il file Excel
+            // Write the Excel file to disk
             FileOutputStream(file).use { fileOut ->
                 workbook.write(fileOut)
                 workbook.close()
             }
 
-            Log.d("Excel", "File salvato in: ${file.absolutePath}")
-            true // Successo
+            Log.d("Excel", "File saved at: ${file.absolutePath}")
+            true // Success
         } catch (e: Exception) {
-            Log.e("Excel", "Errore durante la generazione del file Excel", e)
-            false // Errore
+            Log.e("Excel", "Error generating Excel file", e)
+            false // Error
         }
+    }
+    fun fetchDataAndGenerateExcel(context: Context) {
+        val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
+
+        // Recupero del nodo "users" con i relativi sintomi
+        database.reference.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val sintomiList = mutableListOf<Pair<Sintomo, String>>()  // Sintomi con nome utente associato
+
+                for (userSnapshot in dataSnapshot.children) {
+                    val user = userSnapshot.getValue(Utente::class.java)
+                    val username = user?.username ?: "Sconosciuto"  // Recupero del nome utente
+
+                    if (user != null) {
+                        // Recupera i sintomi per ogni utente
+                        val sintomiSnapshot = userSnapshot.child("sintomi")
+
+                        for (sintomoSnapshot in sintomiSnapshot.children) {
+                            val sintomoId = sintomoSnapshot.key ?: ""
+                            for (dataSnapshot in sintomoSnapshot.children) {
+                                val data = dataSnapshot.key ?: ""
+
+                                // Ciclo attraverso tutte le ore per quella data
+                                for (oraSnapshot in dataSnapshot.children) {
+                                    val ora = oraSnapshot.key ?: ""
+                                    var sintomoData = oraSnapshot.getValue(Sintomo::class.java)
+
+                                    if (sintomoData != null) {
+                                        Log.d("SintomoData", "Utente: $username, SintomoID: $sintomoId, Data: $data, Ora: $ora, Gravità: ${sintomoData.gravità}, Ultimo Pasto ${sintomoData.tempoTrascorsoUltimoPasto}")
+                                        sintomoData.id = sintomoId
+                                        // Aggiungi il sintomo e il nome utente alla lista
+                                        sintomiList.add(Pair(sintomoData, username))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Recupera i sintomi globali (nomi) separatamente
+                fetchGlobalSintomi { sintomiListaNomi ->
+                    // Ora che hai sia i dati dei sintomi utente che i nomi globali dei sintomi
+                    val fileName = "Report_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}.xlsx"
+                    val success = generateExcel(context, sintomiList, sintomiListaNomi, fileName)
+
+                    // Genera il file Excel e restituisce un booleano
+                    if (success) {
+                        Log.d("FirebaseStorage", "File generato correttamente.")
+
+                        // Chiama la funzione per caricare il file su Firebase Storage
+                        uploadFileToFirebaseStorage(context, fileName) { uploadSuccess, url ->
+                            if (uploadSuccess) {
+                                Log.d("FirebaseStorage", "File caricato correttamente su Firebase Storage. URL: $url")
+                            } else {
+                                Log.e("FirebaseStorage", "Errore durante il caricamento del file su Firebase Storage.")
+                            }
+                        }
+                    } else {
+                        Log.e("FirebaseStorage", "Errore durante la generazione del file.")
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
 
 
-    fun fetchDataAndGenerateExcel(context: Context) {
+
+    /*fun fetchDataAndGenerateExcel(context: Context) {
         val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
 
         // Recupero del nodo "users" con i relativi sintomi
@@ -118,7 +192,7 @@ class ExportRepo {
                                     val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
 
                                     if (sintomoData != null) {
-                                        Log.d("SintomoData", "Utente: ${user.id}, SintomoID: $sintomoId, Data: $data, Ora: $ora, Gravità: ${sintomoData.gravità}, Ultimo Pasto ${sintomoData.tempoTrascorsoUltimoPasto}")
+                                        Log.d("SintomoData", "Utente: ${user.username}, SintomoID: $sintomoId, Data: $data, Ora: $ora, Gravità: ${sintomoData.gravità}, Ultimo Pasto ${sintomoData.tempoTrascorsoUltimoPasto}")
                                         if (!sintomiMap.containsKey(data)) {
                                             sintomiMap[data] = mutableMapOf()
                                         }
@@ -161,7 +235,7 @@ class ExportRepo {
                 TODO("Not yet implemented")
             }
         })
-    }
+    }*/
     fun fetchGlobalSintomi(callback: (List<Sintomo>) -> Unit) {
         val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
         val sintomiList = mutableListOf<Sintomo>()
