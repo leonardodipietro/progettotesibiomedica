@@ -13,6 +13,12 @@
         android:text="logout"
         android:id="@+id/logoutadmin"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/logoutadmin"
+        android:id="@+id/exporttoexcel"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewUtenti"
         android:layout_width="match_parent"

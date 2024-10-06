@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myapplication2"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -44,10 +44,10 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.material)
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
+    //implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    //implementation(libs.androidx.lifecycle.viewmodel.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,6 +67,10 @@ dependencies {
 
 
     implementation(libs.bcrypt)
+    implementation(libs.apache.poi)
+
+    implementation(libs.firebase.storage)
+
 
 
 }

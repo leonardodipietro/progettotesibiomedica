@@ -11,8 +11,6 @@ import com.example.myapplication2.R
 import com.example.myapplication2.model.Sintomo
 
 
-//da cambiiare il tipo di data
-
 class DataAdapter (private val dates: List<String>) : RecyclerView.Adapter<DataAdapter.DateViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DateViewHolder {

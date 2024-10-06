@@ -45,7 +45,7 @@ class ProfileActivity : AppCompatActivity() {
         // Recupera l'oggetto Utente dalla ProfileActivity
         val utente = intent.getParcelableExtra<Utente>("utente")
 
-        Log.d("ProfileActivityAAAAAAA", "Utente corrente trovato: ${auth.currentUser}")
+        Log.d("ProfileActivityAAAAAAA", "Utente corrente trovato: ${utente}")
         userRepo= UserRepo()
 
         userRepo.usersRef

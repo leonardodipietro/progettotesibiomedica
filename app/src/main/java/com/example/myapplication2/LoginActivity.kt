@@ -57,6 +57,7 @@ class LoginActivity : AppCompatActivity() {
 
                             // Passa l'oggetto Utente all'AdminActivity
                             val intent = Intent(this, AdminActivity::class.java).apply {
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 putExtra("utente", user) // Passa l'oggetto Utente
                             }
                             startActivity(intent)

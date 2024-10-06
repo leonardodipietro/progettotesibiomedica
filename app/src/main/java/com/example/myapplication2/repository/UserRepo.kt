@@ -80,7 +80,15 @@ class UserRepo {
                             if (isPasswordCorrect) {
                                 Log.d("UserRepo", "Password corretta per $username")
                                 val admin = user.admin ?: false
-                                callback(true, null, admin, user)
+                                if (admin) {
+                                    // Reindirizza l'admin alla pagina admin
+                                    Log.d("UserRepo", "L'utente è admin, reindirizzamento alla AdminActivity")
+                                    callback(true, null, true, user) // admin = true
+                                } else {
+                                    // Reindirizza l'utente normale alla MainPage
+                                    Log.d("UserRepo", "L'utente è un utente normale, reindirizzamento alla MainPage")
+                                    callback(true, null, false, user) // admin = false
+                                }
                             } else {
                                 callback(false, "Password errata", null, null)
                             }
@@ -136,7 +144,8 @@ class UserRepo {
                     id = currentUser.uid,
                     email = currentUser.email.toString(),
                     username = username,
-                    password = hashedPassword
+                    password = hashedPassword,
+                    admin = false
                 )
                 Log.d("userrepo", "Creazione oggetto completata: $nuovoUser")
 
@@ -241,7 +250,7 @@ class UserRepo {
         }
     }*/
 
-    fun submitSintomi(userId: String, sintomiList: List<Sintomo>, distanzapasto: Int) {
+    fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
         // Riferimento al nodo dell'utente nel database
         val userSintomiRef = database.reference.child("users").child(userId).child("sintomi")
 
@@ -254,11 +263,25 @@ class UserRepo {
         val currentTime = timeFormat.format(Date())
 
         // Itera attraverso i sintomi selezionati e crea una mappa per ogni sintomo
-        for (sintomo in sintomiList) {
+       /* for (sintomo in sintomiList) {
             val sintomoMap = mapOf(
                 "gravità" to sintomo.gravita,
-                "tempoTrascorsoUltimoPasto" to distanzapasto
+                "tempoTrascorsoUltimoPasto" to sintomo.tempoTrascorsoUltimoPasto
             )
+            Log.d("SubmitSintomi", "Dati da inviare per sintomo ${sintomo.nomeSintomo}: $sintomoMap")*/
+        for (sintomo in sintomiList) {
+            sintomo.dataSegnalazione = currentDate
+            sintomo.oraSegnalazione = currentTime
+
+            val sintomoMap = mapOf(
+                "gravità" to sintomo.gravità,
+                "tempoTrascorsoUltimoPasto" to sintomo.tempoTrascorsoUltimoPasto,
+                "dataSegnalazione" to sintomo.dataSegnalazione,  // Aggiungi la data
+                "oraSegnalazione" to sintomo.oraSegnalazione    // Aggiungi l'ora
+            )
+
+            Log.d("SubmitSintomi", "Dati da inviare per sintomo ${sintomo.nomeSintomo}: $sintomoMap")
+
 
             // Salva i dati del sintomo nella struttura desiderata
             userSintomiRef.child(sintomo.id)

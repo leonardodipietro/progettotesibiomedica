@@ -38,7 +38,7 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
             var gravita4Selected = false
 
             // Seleziona la gravità corrente e imposta lo stato selezionato
-            when (sintomo.gravita) {
+            when (sintomo.gravità) {
                 1 -> {
                     gravita1.isChecked = true
                     gravita1Selected = true
@@ -147,12 +147,12 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
                 Log.d("SintomiAdapter", "Sintomo rimosso: ${item.nomeSintomo}")
             } else {
                 // Se la gravità è stata selezionata, aggiorna l'oggetto
-                item.gravita = gravita
+                item.gravità = gravita
                 if (!selectedSintomi.contains(item)) {
                     selectedSintomi.add(item)
                 } else {
                     // Se il sintomo è già presente nella lista, aggiorna solo la sua gravità
-                    selectedSintomi.find { it.id == item.id }?.gravita = gravita
+                    selectedSintomi.find { it.id == item.id }?.gravità = gravita
                 }
                 Log.d("SintomiAdapter", "Sintomo aggiornato: ${item.nomeSintomo}, Gravità: $gravita")
             }

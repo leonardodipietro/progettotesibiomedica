@@ -49,24 +49,38 @@ class MainPage : AppCompatActivity() {
         userRepo= UserRepo()
 
         val spinnerDistanza: Spinner = findViewById(R.id.spinnerDistanzaUltimoPasto)
-        // Recupera la distanza selezionata dallo spinner
-        val distanzapasto = when (spinnerDistanza.selectedItem.toString()) {
-            "Meno di 1 ora" -> 0
-            "1 ora" -> 1
-            "2 ore" -> 2
-            "3 ore" -> 3
-            "Più di 3 ore" -> 4
-            else -> 0
-        }
+
         val inviaButton: Button = findViewById(R.id.inviadati)
         inviaButton.setOnClickListener {
+
+            // Recupera la distanza selezionata dallo spinner
+            val distanzapasto = when (spinnerDistanza.selectedItem.toString()) {
+                "Meno di 1 ora" -> 0
+                "1 ora" -> 1
+                "2 ore" -> 2
+                "3 ore" -> 3
+                "Più di 3 ore" -> 4
+                else -> 0
+            }
+            Log.d("SpinnerDistanza", "Distanza selezionata dallo spinner: $distanzapasto")
+
+
             val selectedSintomi = sintadapter.getSelectedSintomi()
             Log.d("InviaButton", "Selected Sintomi e Gravità: $selectedSintomi")
+
+            // Aggiungi la distanza dall'ultimo pasto a ogni sintomo selezionato
+            selectedSintomi.forEach { sintomo ->
+                sintomo.tempoTrascorsoUltimoPasto = distanzapasto
+
+                Log.d("Sintomo", "Sintomo ${sintomo.nomeSintomo} ha tempoTrascorsoUltimoPasto: ${sintomo.tempoTrascorsoUltimoPasto}")
+            }
+
+
 
             if (userid != null) {
 
                 // Invia i sintomi selezionati
-                userRepo.submitSintomi(userid, selectedSintomi,distanzapasto)
+                userRepo.submitSintomi(userid, selectedSintomi)
 
                 // Rimuovi i sintomi deselezionati (quelli che non sono più nella lista selectedSintomi)
                 val allSintomi = sintadapter.getAllSintomi()
