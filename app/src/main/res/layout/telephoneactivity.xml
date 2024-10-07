@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <EditText
         android:id="@+id/phoneEditText"
@@ -15,15 +13,35 @@
         android:layout_marginTop="30sp"
         android:layout_alignParentTop="true" />
 
+    <!-- Campo per Nome e Cognome -->
+    <EditText
+        android:id="@+id/nomeecognomephone"
+        android:layout_width="match_parent"
+        android:background="@drawable/edittext"
+        android:layout_height="wrap_content"
+        android:hint="Nome e Cognome"
+        android:layout_below="@id/phoneEditText"
+        android:layout_marginTop="16sp" />
+
+    <!-- Campo per Indirizzo -->
+    <EditText
+        android:id="@+id/indirizzophone"
+        android:layout_width="match_parent"
+        android:background="@drawable/edittext"
+        android:layout_height="wrap_content"
+        android:hint="Indirizzo"
+        android:layout_below="@id/nomeecognomephone"
+        android:layout_marginTop="16sp" />
+
     <EditText
         android:id="@+id/usernamepercellulare"
         android:layout_width="match_parent"
         android:background="@drawable/edittext"
         android:layout_height="wrap_content"
-        android:hint=" Inserisci un username"
-        android:layout_marginTop="16sp"
-        android:layout_below="@id/phoneEditText"
-        />
+        android:hint="Inserisci un username"
+        android:layout_below="@id/indirizzophone"
+        android:layout_marginTop="16sp" />
+
     <!-- Campo per la password -->
     <EditText
         android:id="@+id/passwordEditText"
@@ -32,9 +50,8 @@
         android:layout_height="wrap_content"
         android:hint="Inserisci una password"
         android:inputType="textPassword"
-        android:layout_marginTop="16sp"
         android:layout_below="@id/usernamepercellulare"
-        />
+        android:layout_marginTop="16sp" />
 
     <!-- Campo per la conferma della password -->
     <EditText
@@ -44,10 +61,8 @@
         android:layout_height="wrap_content"
         android:hint="Conferma la password"
         android:inputType="textPassword"
-        android:layout_marginTop="16sp"
         android:layout_below="@id/passwordEditText"
-        />
-
+        android:layout_marginTop="16sp" />
 
     <EditText
         android:id="@+id/codeEditText"
@@ -59,7 +74,6 @@
         android:layout_below="@id/confirmPasswordEditText"
         android:layout_marginTop="16dp" />
 
-
     <Button
         android:id="@+id/sendCodeButton"
         android:layout_width="wrap_content"
@@ -70,7 +84,6 @@
         android:layout_marginTop="16dp"
         android:layout_alignParentStart="true" />
 
-
     <Button
         android:id="@+id/verifyCodeButton"
         android:layout_width="wrap_content"
@@ -80,8 +93,5 @@
         android:layout_below="@id/codeEditText"
         android:layout_marginTop="16dp"
         android:layout_alignParentEnd="true" />
-
-
-
 
 </RelativeLayout>

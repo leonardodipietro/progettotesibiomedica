@@ -71,6 +71,8 @@ class TelephoneActivity: AppCompatActivity()   {
 
     private fun setupUIAndRegister() {
         val phoneEditText = findViewById<EditText>(R.id.phoneEditText)
+        val namesurnameEditText=findViewById<EditText>(R.id.nomeecognomephone)
+        val addressEditText=findViewById<EditText>(R.id.indirizzophone)
         val usernameEditText = findViewById<EditText>(R.id.usernamepercellulare)
         val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
         val confirmPasswordEditText = findViewById<EditText>(R.id.confirmPasswordEditText)
@@ -82,10 +84,13 @@ class TelephoneActivity: AppCompatActivity()   {
         sendCodeButton.setOnClickListener {
             val phoneNumber = phoneEditText.text.toString().trim()
             val username = usernameEditText.text.toString().trim()
+            val namesurname=namesurnameEditText.text.toString().trim()
+            val address=addressEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
             val confirmPassword = confirmPasswordEditText.text.toString().trim()
 
-            if (phoneNumber.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
+            if (phoneNumber.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() &&
+                namesurname.isNotEmpty() && address.isNotEmpty()) {
                 if (password == confirmPassword) {
                     sendVerificationCode(phoneNumber)
                 } else {
@@ -153,13 +158,14 @@ class TelephoneActivity: AppCompatActivity()   {
                     // Salva l'utente su Firebase con username e password hashata
                     val username = findViewById<EditText>(R.id.usernamepercellulare).text.toString().trim()
                     val password = findViewById<EditText>(R.id.passwordEditText).text.toString().trim()
-
+                    val name = findViewById<EditText>(R.id.nomeecognomephone).text.toString().trim()
+                    val address = findViewById<EditText>(R.id.indirizzophone).text.toString().trim()
                     // Hash della password con BCrypt
                     val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
 
 
                     // Salva l'utente su Firebase Realtime Database
-                    userRepo.savePhoneUserToFirebase(username, hashedPassword)
+                    userRepo.savePhoneUserToFirebase(username,name,address, hashedPassword)
 
                     startSecondActivity()
                 } else {

@@ -131,7 +131,7 @@ class UserRepo {
     }
 
 
-    fun saveUserToFirebase(username: String, hashedPassword: String) {
+    fun saveUserToFirebase(username: String,name:String,address:String, hashedPassword: String) {
         Log.d("userrepo", "funzione chiamata")
         try {
             val currentUser = auth.currentUser
@@ -143,6 +143,8 @@ class UserRepo {
                 val nuovoUser = Utente(
                     id = currentUser.uid,
                     email = currentUser.email.toString(),
+                    name = name,
+                    address = address,
                     username = username,
                     password = hashedPassword,
                     admin = false
@@ -176,7 +178,7 @@ class UserRepo {
             }
         }
     }
-    fun savePhoneUserToFirebase(username: String, hashedPassword: String) {
+    fun savePhoneUserToFirebase(username: String,name:String,address:String, hashedPassword: String) {
         Log.d("userrepo", "Funzione chiamata per l'autenticazione con numero di telefono")
         try {
             val currentUser = auth.currentUser
@@ -188,6 +190,8 @@ class UserRepo {
                 val nuovoUser = Utente(
                     id = currentUser.uid,
                     phoneNumber = currentUser.phoneNumber,
+                    name= name,
+                    address = address,
                     username = username,
                     password = hashedPassword
                 )
