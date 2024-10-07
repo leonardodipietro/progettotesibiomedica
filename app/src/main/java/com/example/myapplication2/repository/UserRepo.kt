@@ -48,10 +48,38 @@ class UserRepo {
             }
         })
     }
+    // Funzione per recuperare l'email associata a uno username
+    fun getEmailByUsername(username: String, callback: (String?, String?) -> Unit) {
+        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var emailFound: String? = null
+
+                // Cerca l'email associata allo username
+                for (userSnapshot in snapshot.children) {
+                    val user = userSnapshot.getValue(Utente::class.java)
+                    if (user != null && user.username == username) {
+                        emailFound = user.email
+                        break
+                    }
+                }
+
+                // Passa l'email trovata al callback
+                if (emailFound != null) {
+                    callback(emailFound, null)
+                } else {
+                    callback(null, "Username non trovato")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(null, "Errore del database: ${error.message}")
+            }
+        })
+    }
     fun verifyUserCredentials(
         username: String,
         password: String,
-        callback: (Boolean, String?, Boolean?, Utente?) -> Unit // Aggiungi Utente come parametro di ritorno
+        callback: (Boolean, String?, Boolean?, Utente?) -> Unit
     ) {
         Log.d("UserRepo", "Tentativo di login per utente: $username")
 
@@ -67,50 +95,51 @@ class UserRepo {
                             userFound = true
                             Log.d("UserRepo", "Username trovato nel database: ${user.username}, Admin: ${user.admin}")
 
-                            val hashedPassword = user.password
-                            if (hashedPassword.isNullOrEmpty()) {
-                                // Login con Firebase Authentication se la password non è nel database
-                                signInWithFirebaseEmail(user.email ?: "", password) { isSuccess, errorMessage ->
-                                    callback(isSuccess, errorMessage, true, user)
-                                }
-                                return
-                            }
+                            // Effettua il login con Firebase Authentication
+                            signInWithFirebaseEmail(user.email ?: "", password) { isSuccess, errorMessage ->
+                                if (isSuccess) {
+                                    Log.d("UserRepo", "Login riuscito con Firebase Authentication.")
 
-                            val isPasswordCorrect = BCrypt.verifyer().verify(password.toCharArray(), hashedPassword).verified
-                            if (isPasswordCorrect) {
-                                Log.d("UserRepo", "Password corretta per $username")
-                                val admin = user.admin ?: false
-                                if (admin) {
-                                    // Reindirizza l'admin alla pagina admin
-                                    Log.d("UserRepo", "L'utente è admin, reindirizzamento alla AdminActivity")
-                                    callback(true, null, true, user) // admin = true
+                                    // Se il login ha successo, aggiorna la password hashata nel database Realtime
+                                    val newHashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
+                                    usersRef.child(userSnapshot.key ?: "")
+                                        .child("password")
+                                        .setValue(newHashedPassword)
+                                        .addOnCompleteListener { updateTask ->
+                                            if (updateTask.isSuccessful) {
+                                                Log.d("UserRepo", "Password aggiornata con successo nel database Realtime.")
+                                                val admin = user.admin ?: false
+                                                callback(true, null, admin, user)
+                                            } else {
+                                                Log.e("UserRepo", "Errore durante l'aggiornamento della password nel database: ${updateTask.exception?.message}")
+                                                callback(false, "Errore aggiornamento password nel database.", null, null)
+                                            }
+                                        }
                                 } else {
-                                    // Reindirizza l'utente normale alla MainPage
-                                    Log.d("UserRepo", "L'utente è un utente normale, reindirizzamento alla MainPage")
-                                    callback(true, null, false, user) // admin = false
+                                    Log.e("UserRepo", "Errore nel login con Firebase Authentication: ${errorMessage}")
+                                    callback(false, errorMessage, null, null)
                                 }
-                            } else {
-                                callback(false, "Password errata", null, null)
                             }
                             return
                         }
                     }
 
                     if (!userFound) {
+                        Log.e("UserRepo", "Username non trovato nel database.")
                         callback(false, "Username non trovato", null, null)
                     }
                 } else {
+                    Log.e("UserRepo", "Nessun utente trovato nel database.")
                     callback(false, "Nessun utente trovato nel database", null, null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
+                Log.e("UserRepo", "Errore del database: ${error.message}")
                 callback(false, "Errore del database: ${error.message}", null, null)
             }
         })
     }
-
-
     // Metodo per il login tramite email in Firebase Authentication
     private fun signInWithFirebaseEmail(
         email: String,

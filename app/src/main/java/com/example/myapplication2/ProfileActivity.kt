@@ -56,6 +56,7 @@ class ProfileActivity : AppCompatActivity() {
 
         val emailEditText = findViewById<EditText>(R.id.edit_email)
         val phoneEditText = findViewById<EditText>(R.id.edit_phone)
+
         val oldPasswordEditText = findViewById<EditText>(R.id.edit_password_old)
         val newPasswordEditText = findViewById<EditText>(R.id.edit_password_new)
         val confirmPasswordEditText = findViewById<EditText>(R.id.edit_password_confirm)

@@ -42,6 +42,33 @@ class LoginActivity : AppCompatActivity() {
         val showPassword = findViewById<ImageView>(R.id.mostraPassword)
         var isPasswordVisible = false //variabile che usiamo per gestire visibilita della password
         val resetPassword=findViewById<TextView>(R.id.iniziaresetpsw)
+        resetPassword.setOnClickListener {
+            val username = usernameEditText.text.toString()
+
+            if (username.isNotEmpty()) {
+                userRepo.getEmailByUsername(username) { email, error ->
+                    if (email != null) {
+
+                        // Invia l'email di reset
+                        auth.sendPasswordResetEmail(email)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Toast.makeText(this@LoginActivity, "Email di reset inviata. Controlla la tua posta.", Toast.LENGTH_SHORT).show()
+                                    Log.d("ResetPassword", "Email di reset inviata a: $email")
+                                } else {
+                                    Toast.makeText(this@LoginActivity, "Errore nell'invio dell'email di reset. Controlla l'email associata.", Toast.LENGTH_SHORT).show()
+                                    Log.d("ResetPassword", "Errore nell'invio dell'email di reset: ${task.exception?.message}")
+                                }
+                            }
+                    } else {
+                        Toast.makeText(this@LoginActivity, error ?: "Errore sconosciuto", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Inserisci il tuo username per procedere.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
         logmailbutton.setOnClickListener {
             val username = usernameEditText.text.toString()
@@ -97,11 +124,8 @@ class LoginActivity : AppCompatActivity() {
             pswEditText.setSelection(pswEditText.text.length)
             isPasswordVisible = !isPasswordVisible
         }
-
-
-
-
     }
+
 
 }
 /*
