@@ -17,29 +17,33 @@ class SintomoRepo {
 
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     private val sintomiRef = database.getReference("sintomi")
+    private val userRef=database.getReference("users")
     val sintomi: MutableLiveData<List<Sintomo>> = MutableLiveData()
 
-
     fun aggiungiSintomo(nomeSintomo: String, onComplete: (Boolean) -> Unit) {
-        // Controlla se il sintomo esiste già nel db confrontandone i nomi
+        // Controlla se il sintomo esiste già nel database confrontando i nomi
         sintomiRef.orderByChild("nomeSintomo").equalTo(nomeSintomo).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    // Sintomo già esistente quindi non viene aggiunto nulla
+                    // Sintomo già esistente, quindi non viene aggiunto nulla
                     Log.d("sintrepo", "Sintomo già esistente")
                     onComplete(false)
                 } else {
-                    // Aggiunta il nuovo sintomo
+                    // Crea una mappa dei dati da salvare
                     val idSintomo = UUID.randomUUID().toString()
-                    val nuovoSintomo = Sintomo(id = idSintomo, nomeSintomo = nomeSintomo)
+                    val sintomoData = mapOf(
+                        "id" to idSintomo,
+                        "nomeSintomo" to nomeSintomo
+                    )
 
-                    sintomiRef.child(idSintomo).setValue(nuovoSintomo)
+                    // Salva la mappa nel database
+                    sintomiRef.child(idSintomo).setValue(sintomoData)
                         .addOnSuccessListener {
                             Log.d("sintrepo", "Sintomo aggiunto")
                             onComplete(true)
                         }
                         .addOnFailureListener { e ->
-                            Log.d("sintrepo", "Errore aggiunta sintomob AAAAAA: $e")
+                            Log.d("sintrepo", "Errore aggiunta sintomo: $e")
                             onComplete(false)
                         }
                 }
@@ -51,6 +55,7 @@ class SintomoRepo {
             }
         })
     }
+
 
 
     fun fetchSintomi() {
@@ -71,10 +76,29 @@ class SintomoRepo {
         })
     }
 
-    fun saveSintomoInUsersNode () {
-        
+        fun caricaSintomi(sintomiList: MutableList<String>,sintomiIdList: MutableList<String>, onComplete: () -> Unit) {
+            sintomiRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    sintomiList.clear()
+                    sintomiIdList.clear()
+                    for (sintomoSnapshot in snapshot.children) {
+                        val nomeSintomo = sintomoSnapshot.child("nomeSintomo").getValue(String::class.java)
+                        val idSintomo = sintomoSnapshot.key
+                        if (nomeSintomo != null && idSintomo != null) {
+                            sintomiList.add(nomeSintomo)
+                            sintomiIdList.add(idSintomo)
+                        }
+                    }
+                    onComplete()
+                }
 
-    }
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d("sintrepo", "Errore: ${error.message}")
+                }
+            })
+        }
+
+
 
     fun retrieveNameSintomo(sintomiIds: List<String>, onComplete: (List<String>) -> Unit) {
         val names = mutableListOf<String>()
@@ -105,13 +129,39 @@ class SintomoRepo {
     }
 
     fun rimuoviSintomo(idSintomo: String, onComplete: (Boolean) -> Unit) {
+        //val usersRef = FirebaseDatabase.getInstance().getReference("users")
+
+        // Rimuovi il sintomo dal nodo dei sintomi
         sintomiRef.child(idSintomo).removeValue()
             .addOnSuccessListener {
-                Log.d("sintrepo", "Sintomo rimosso con successo")
-                onComplete(true)
+                Log.d("sintrepo", "Sintomo rimosso dal nodo sintomi")
+
+                // Ora rimuovi il sintomo anche dai nodi degli utenti
+                userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for (userSnapshot in snapshot.children) {
+                            val sintomiUserRef = userSnapshot.child("sintomi").child(idSintomo)
+                            if (sintomiUserRef.exists()) {
+                                userSnapshot.ref.child("sintomi").child(idSintomo).removeValue()
+                                    .addOnSuccessListener {
+                                        Log.d("sintrepo", "Sintomo $idSintomo rimosso per l'utente ${userSnapshot.key}")
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("sintrepo", "Errore nella rimozione del sintomo $idSintomo per l'utente ${userSnapshot.key}: $e")
+                                    }
+                            }
+                        }
+                        onComplete(true)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("sintrepo", "Errore durante la rimozione dai nodi utenti: ${error.message}")
+                        onComplete(false)
+                    }
+                })
             }
             .addOnFailureListener { e ->
-                Log.d("sintrepo", "Errore rimozione sintomo: $e")
+                Log.e("sintrepo", "Errore rimozione sintomo: $e")
                 onComplete(false)
             }
     }

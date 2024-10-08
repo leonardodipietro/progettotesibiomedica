@@ -8,26 +8,22 @@
         android:id="@+id/nomesintomo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="16dp"
         android:text="Nome Sintomo"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:textColor="#333333"
+        android:textStyle="bold" />
 
 
-    <!-- Layout orizzontale per le 4 TextView -->
     <LinearLayout
         android:id="@+id/textview_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/nomesintomo"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center">
 
-        <TextView
-            android:id="@+id/textview1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TV1"
-            android:padding="16dp" />
+
 
         <TextView
             android:id="@+id/textview2"

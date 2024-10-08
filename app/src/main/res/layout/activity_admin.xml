@@ -5,31 +5,157 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AdminActivity">
+    tools:context=".AdminActivity"
+    android:layout_centerVertical="true"
+    android:layout_centerHorizontal="true">
 
-    <Button
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="logout"
-        android:id="@+id/logoutadmin"/>
+        android:orientation="vertical"
+        android:layout_centerInParent="true">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/logoutadmin"
-        android:id="@+id/exporttoexcel"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="esporta i dati"
+            android:id="@+id/exporttoexcel"
+            android:gravity="center"
+            style="@style/GreenButton"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewUtenti"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_below="@+id/logoutadmin"
-        android:scrollbars="horizontal"/>
-    />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="aggiungi sintomo"
+            android:id="@+id/aggiungisintomo"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            style="@style/GreenButton"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <EditText
+                android:id="@+id/editaggiuntasintomo"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo sintomo"
+                android:padding="10dp"
+                android:visibility="gone"
+                android:background="@drawable/edittext"/>
+
+            <Button
+                android:id="@+id/buttonaggiuntanuovosintomo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Invia"
+                android:visibility="gone"
+                style="@style/GreenButton"/>
+        </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="rimuovi sintomo sintomo"
+            android:id="@+id/rimuovisintomo"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            style="@style/GreenButton"/>
+
+        <Spinner
+            android:id="@+id/spinnerrimuovisintomo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/rimuovisintomo"
+            android:layout_below="@+id/titolo"
+            android:layout_marginTop="30sp"
+            android:visibility="gone"
+            android:entries="@array/rimuovi_sintomo" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="Modifica il tuo username"/>
+
+        <EditText
+            android:id="@+id/editusernameadmin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci il nuovo username"
+            android:padding="10dp"
+            android:background="@drawable/edittext"/>
+        <!-- Modifica la tua password -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Modifica la tua password:"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
 
 
+        <EditText
+            android:id="@+id/editpswadminold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci la vecchia password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:background="@drawable/edittext"/>
+
+        <EditText
+            android:id="@+id/editpswadmindnew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci la nuova password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:background="@drawable/edittext"
+            android:layout_marginTop="8dp"/>
+
+        <EditText
+            android:id="@+id/editpswadminconferm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Conferma la nuova password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:background="@drawable/edittext"
+            android:layout_marginTop="8dp"/>
+        <Button
+            android:id="@+id/button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salva le modifiche"
+            style="@style/GreenButton"
+            android:layout_marginTop="16dp"/>
 
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="logout"
+            android:id="@+id/logoutadmin"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            style="@style/GreenButton"/>
 
+    </LinearLayout>
 </RelativeLayout>
+
+
+
+    <!-- <androidx.recyclerview.widget.RecyclerView
+         android:id="@+id/recyclerViewUtenti"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:orientation="horizontal"
+         android:layout_below="@+id/logoutadmin"
+         android:scrollbars="horizontal"/> -->
+
