@@ -158,6 +158,104 @@ class UserRepo {
                 }
             }
     }
+    fun initiateEmailUpdate(utente: Utente?, newEmail: String, onComplete: (Boolean) -> Unit) {
+        val userUid = utente?.id
+        Log.d("UserRepo", "ID utente passato: $userUid")
+        Log.d("UserRepo", "Nuova email richiesta: $newEmail")
+
+        if (userUid == null) {
+            Log.e("UserRepo", "ID utente è null. Interrompo l'aggiornamento.")
+            onComplete(false)
+            return
+        }
+
+        val currentUser = auth.currentUser
+        Log.d("UserRepo", "Utente autenticato corrente UID: ${currentUser?.uid}")
+
+        if (currentUser != null && currentUser.uid == userUid) {
+            if (!currentUser.isEmailVerified) {
+                Log.d("UserRepo", "Email corrente non verificata, invio email di verifica.")
+                currentUser.sendEmailVerification().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("UserRepo", "Email di verifica inviata all'email corrente. Verifica prima di continuare.")
+                        onComplete(false)
+                    } else {
+                        Log.e("UserRepo", "Errore durante l'invio della verifica per l'email corrente: ${task.exception?.message}")
+                        onComplete(false)
+                    }
+                }
+                return
+            }
+
+            // Invia email di verifica alla nuova email
+            currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener { verifyTask ->
+                if (verifyTask.isSuccessful) {
+                    Log.d("UserRepo", "Email di verifica inviata alla nuova email. Attendi la conferma.")
+
+                    currentUser.updateEmail(newEmail).addOnCompleteListener { emailTask ->
+                        if (emailTask.isSuccessful) {
+                            Log.d("UserRepo", "Aggiornamento email su Firebase Authentication riuscito.")
+
+                            // Ora aggiorna l'email nel Realtime Database
+                            usersRef.child(userUid).child("email").setValue(newEmail)
+                                .addOnCompleteListener { dbTask ->
+                                    if (dbTask.isSuccessful) {
+                                        Log.d("UserRepo", "Aggiornamento email nel Realtime Database riuscito.")
+                                        onComplete(true)
+                                    } else {
+                                        Log.e("UserRepo", "Errore durante l'aggiornamento dell'email nel Realtime Database: ${dbTask.exception?.message}")
+                                        onComplete(false)
+                                    }
+                                }
+                        } else {
+                            Log.e("UserRepo", "Errore durante l'aggiornamento dell'email su Firebase Authentication: ${emailTask.exception?.message}")
+                            onComplete(false)
+                        }
+                    }
+                } else {
+                    Log.e("UserRepo", "Errore durante l'invio dell'email di verifica: ${verifyTask.exception?.message}")
+                    onComplete(false)
+                }
+            }
+        } else {
+            Log.e("UserRepo", "Utente autenticato non coincide con l'utente passato o non è autenticato. Impossibile aggiornare l'email.")
+            onComplete(false)
+        }
+    }
+    fun changePassword(oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
+        val user = auth.currentUser
+        if (user != null) {
+            val email = user.email
+            if (email != null) {
+                val credential = EmailAuthProvider.getCredential(email, oldPassword)
+
+                user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
+                    if (reauthTask.isSuccessful) {
+                        user.updatePassword(newPassword).addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                // Aggiorna anche la password nel Realtime Database
+                                usersRef.child(user.uid).child("password").setValue(newPassword).addOnCompleteListener { dbTask ->
+                                    if (dbTask.isSuccessful) {
+                                        callback(true) // Aggiornamento completato con successo
+                                    } else {
+                                        callback(false) // Errore nell'aggiornamento del database
+                                    }
+                                }
+                            } else {
+                                callback(false) // Errore nel cambio password su Authentication
+                            }
+                        }
+                    } else {
+                        callback(false) // Errore nella re-autenticazione
+                    }
+                }
+            } else {
+                callback(false) // L'email non è disponibile
+            }
+        } else {
+            callback(false) // L'utente non è autenticato
+        }
+    }
 
 
     fun saveUserToFirebase(username: String,name:String,address:String, hashedPassword: String) {
@@ -199,13 +297,14 @@ class UserRepo {
 
     fun deleteAccount(uid: String, callback: (Boolean) -> Unit) {
         // Elimina i dati dell'utente dal Realtime Database
-        usersRef.child(uid).removeValue().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                callback(true) // Dati eliminati con successo dal database
-            } else {
-                callback(false) // Errore nell'eliminazione dal database
+        usersRef.child(uid).removeValue()
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful) // Restituisce true se l'eliminazione è riuscita, false altrimenti
             }
-        }
+            .addOnFailureListener { e ->
+                Log.e("UserRepo", "Errore nell'eliminazione dei dati dal database: ${e.message}", e)
+                callback(false)
+            }
     }
     fun savePhoneUserToFirebase(username: String,name:String,address:String, hashedPassword: String) {
         Log.d("userrepo", "Funzione chiamata per l'autenticazione con numero di telefono")
@@ -239,49 +338,6 @@ class UserRepo {
             Log.e("userrepo", "Eccezione: ${e.message}")
         }
     }
-
-
-    /*
-    fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
-
-        // Estrai solo gli ID dei sintomi
-        val sintomiIdList = sintomiList.map { it.id }
-
-        val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
-
-        userSintomiRef.setValue(sintomiIdList).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("SubmitSintomi", "Sintomi inviati al db per: $userId")
-            } else {
-                Log.e("SubmitSintomi", "Errore nell'invio al db per : $userId", task.exception)
-            }
-        }
-    }*/
-    /*fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
-        val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
-
-        // Ottieni il timestamp corrente nel formato desiderato
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-        val currentTime = dateFormat.format(Date())
-
-        // Crea una mappa dei sintomi con il loro ID, gravità e timestamp
-        val sintomiMap = sintomiList.associate { sintomo ->
-            sintomo.id to mapOf(
-                "gravita" to sintomo.gravita,
-                "timestamp" to currentTime
-            )
-        }
-
-        Log.d("SubmitSintomi", "Invio dei sintomi al DB: $sintomiMap")
-
-        userSintomiRef.setValue(sintomiMap).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("SubmitSintomi", "Sintomi, gravità e timestamp inviati al db per: $userId")
-            } else {
-                Log.e("SubmitSintomi", "Errore nell'invio al db per: $userId", task.exception)
-            }
-        }
-    }*/
 
     fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
         // Riferimento al nodo dell'utente nel database
@@ -331,22 +387,39 @@ class UserRepo {
         }
     }
 
-
-    // Modifica dell'email
-    fun updateEmail(newEmail: String) {
-        val user = auth.currentUser
-        user?.updateEmail(newEmail)
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("ProfileActivity", "Email aggiornata correttamente")
-                    // Puoi aggiornare anche l'email nel database Realtime Firebase se necessario
-                    val userRef = database.reference.child("users").child(user.uid)
-                    userRef.child("email").setValue(newEmail)
-                } else {
-                    Log.d("ProfileActivity", "Errore nell'aggiornamento dell'email: ${task.exception?.message}")
+    // Metodo per aggiornare l'username
+    fun updateUsername(newUsername: String, onComplete: (Boolean) -> Unit) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            usersRef.child(user.uid).child("username").setValue(newUsername)
+                .addOnCompleteListener { task ->
+                    onComplete(task.isSuccessful)
                 }
-            }
+        }
     }
+
+    // Metodo per aggiornare il nome
+    fun updateName(newName: String, onComplete: (Boolean) -> Unit) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            usersRef.child(user.uid).child("name").setValue(newName)
+                .addOnCompleteListener { task ->
+                    onComplete(task.isSuccessful)
+                }
+        }
+    }
+
+    // Metodo per aggiornare l'indirizzo
+    fun updateAddress(newAddress: String, onComplete: (Boolean) -> Unit) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            usersRef.child(user.uid).child("address").setValue(newAddress)
+                .addOnCompleteListener { task ->
+                    onComplete(task.isSuccessful)
+                }
+        }
+    }
+
 
     // Modifica della password
     fun updatePassword(newPassword: String) {
@@ -360,6 +433,11 @@ class UserRepo {
                 }
             }
     }
+
+
+
+
+
     // Inizia la verifica del numero di telefono
     fun updatePhoneNumber(newPhoneNumber: String, activity: Activity) {
         val options = PhoneAuthOptions.newBuilder(auth)

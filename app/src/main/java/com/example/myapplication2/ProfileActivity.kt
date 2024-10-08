@@ -2,6 +2,7 @@ package com.example.myapplication2
 
 import OnSwipeTouchListener
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -45,7 +46,8 @@ class ProfileActivity : AppCompatActivity() {
         // Recupera l'oggetto Utente dalla ProfileActivity
         val utente = intent.getParcelableExtra<Utente>("utente")
 
-        Log.d("ProfileActivityAAAAAAA", "Utente corrente trovato: ${utente}")
+        Log.d("ProfileActivityAAAAAAA", "Utente corrente trovato oggetto: ${utente?.id}")
+        Log.d("ProfileActivityAAAAAAA", "Utente corrente trovato firebase: ${auth.currentUser?.uid}")
         userRepo= UserRepo()
 
         userRepo.usersRef
@@ -62,6 +64,9 @@ class ProfileActivity : AppCompatActivity() {
         val confirmPasswordEditText = findViewById<EditText>(R.id.edit_password_confirm)
         val saveButton = findViewById<Button>(R.id.button_save)
 
+        val usernameEditText = findViewById<EditText>(R.id.edit_username)
+        val nameEditText = findViewById<EditText>(R.id.edit_name)
+        val addressEditText = findViewById<EditText>(R.id.edit_address)
 
         // Recupera l'UID dell'utente
         val currentUser = auth.currentUser
@@ -75,7 +80,10 @@ class ProfileActivity : AppCompatActivity() {
                 if (utente != null) {
                     emailEditText.setText(utente.email ?: "")
                     phoneEditText.setText(utente.phoneNumber ?: "")
-                    oldPasswordEditText.setText(utente.password?:"")
+                    usernameEditText.setText(utente.username ?: "")
+                    nameEditText.setText(utente.name ?: "")
+                    addressEditText.setText(utente.address ?: "")
+
                     // Popola altri campi se presenti
                 } else {
                     // Gestisci il caso in cui i dati non siano presenti nel database
@@ -90,23 +98,74 @@ class ProfileActivity : AppCompatActivity() {
         saveButton.setOnClickListener {
             val newEmail = emailEditText.text.toString()
             val newPhone = phoneEditText.text.toString()
+            val newUsername = usernameEditText.text.toString()
+            val newName = nameEditText.text.toString()
+            val newAddress = addressEditText.text.toString()
             val oldPassword = oldPasswordEditText.text.toString()
             val newPassword = newPasswordEditText.text.toString()
             val confirmPassword = confirmPasswordEditText.text.toString()
 
             if (newEmail.isNotEmpty()) {
-                updateEmail(newEmail)
+                Log.d("ProfileActivity", "Tentativo di aggiornamento dell'email a $newEmail")
+                userRepo.initiateEmailUpdate(utente, newEmail) { success ->
+                    if (success) {
+                        Log.d("ProfileActivity", "Email aggiornata con successo")
+                        Toast.makeText(this, "Email aggiornata con successo", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.d("ProfileActivity", "Errore nell'aggiornamento dell'email")
+                        Toast.makeText(this, "Errore nell'aggiornamento dell'email", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
 
             if (newPhone.isNotEmpty()) {
                 updatePhoneNumber(newPhone, this)
             }
-
-            if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-                updatePassword(oldPassword, newPassword)
-            } else {
-                Toast.makeText(this, "Le password non coincidono!", Toast.LENGTH_SHORT).show()
+            if (newUsername.isNotEmpty()) {
+                userRepo.updateUsername(newUsername) { success ->
+                    if (success) {
+                        Toast.makeText(this, "Username aggiornato con successo", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "Errore nell'aggiornamento dell'username", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
+
+            if (newName.isNotEmpty()) {
+                userRepo.updateName(newName) { success ->
+                    if (success) {
+                        Toast.makeText(this, "Nome aggiornato con successo", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "Errore nell'aggiornamento del nome", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            if (newAddress.isNotEmpty()) {
+                userRepo.updateAddress(newAddress) { success ->
+                    if (success) {
+                        Toast.makeText(this, "Indirizzo aggiornato con successo", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "Errore nell'aggiornamento dell'indirizzo", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            // Verifica e cambio password
+            if (newPassword.isNotEmpty()) {
+                if (newPassword == confirmPassword) {
+                    userRepo.changePassword(oldPassword, newPassword) { success ->
+                        if (success) {
+                            Toast.makeText(this, "Password aggiornata con successo", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "Errore nel cambio password. Controlla le credenziali.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Le password non coincidono!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
         }
 
 
@@ -156,31 +215,37 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
 
-
     private fun showLogoutDialog() {
         AlertDialog.Builder(this)
             .setTitle("Uscire dall'Account?")
-            .setMessage("Sei sicuro di voler uscire dall account?")
+            .setMessage("Sei sicuro di voler uscire dall'account?")
             .setPositiveButton("Sì") { dialog, which ->
-                // Effettua il logout
+                // Effettua il logout da Firebase
                 auth.signOut()
 
-                // Annullare la notifica
+                // Annulla la notifica
                 stopNotification()
+
+                // Elimina le Shared Preferences dell'utente
+                clearUserPreferences()
 
                 // Torna alla MainActivity
                 val intent = Intent(this, MainActivity::class.java)
-                //serve per rimuovere la main page dallo stack di memoria
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
-                finish()  // Chiude l'activity corrente
-
+                finish() // Chiude l'activity corrente
             }
             .setNegativeButton("No") { dialog, which ->
-                dialog.dismiss() // Chiudi la finestra di dialogo
+                dialog.dismiss() // Chiude la finestra di dialogo
             }
             .create()
             .show()
+    }
+    private fun clearUserPreferences() {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.clear() // Rimuove tutti i dati
+        editor.apply()
     }
     private fun showDeleteDialog() {
         AlertDialog.Builder(this)
@@ -198,31 +263,34 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun deleteAccount() {
         val user = auth.currentUser
+        Log.d("ProfileActivityyyyyy","valore ${auth.currentUser?.uid}")
 
-        user?.let {
-
-            it.delete()
+        user?.let { currentUser ->
+            // Cancella l'account utente da Firebase Authentication
+            currentUser.delete()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        userRepo.deleteAccount(it.uid) { success ->
+                        // Cancella i dati dal Realtime Database
+                        userRepo.deleteAccount(currentUser.uid) { success ->
                             if (success) {
-                                // Annullare la notiica
-                                stopNotification()
-                                // Torna alla MainActivity cancelandom la memoria
+                                stopNotification() // Annulla le notifiche
+                                // Torna alla MainActivity e cancella la memoria delle Activity precedenti
                                 val intent = Intent(this, MainActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 startActivity(intent)
                                 finish()
                             } else {
-                                Log.d("ProfileActivity","Eliminazione non riuscita 1")
-
+                                Log.d("ProfileActivity", "Errore nell'eliminazione dei dati dal database")
                             }
                         }
                     } else {
-                        Log.d("ProfileActivity","Eliminazione non riuscita 2")
+                        Log.d("ProfileActivity", "Errore nell'eliminazione dell'account da Firebase Authentication")
                     }
                 }
-        }
+                .addOnFailureListener { e ->
+                    Log.e("ProfileActivity", "Errore: ${e.message}", e)
+                }
+        } ?: Log.d("ProfileActivity", "L'utente non è autenticato")
     }
 
     private fun stopNotification() {

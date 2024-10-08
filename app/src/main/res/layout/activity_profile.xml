@@ -54,7 +54,6 @@
                 android:textSize="16sp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"/>
-
             <EditText
                 android:id="@+id/edit_phone"
                 android:layout_width="match_parent"
@@ -63,6 +62,41 @@
                 android:inputType="phone"
                 android:padding="10dp"
                 android:background="@drawable/edittext"/>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Modifica il tuo username"/>
+
+            <EditText
+                android:id="@+id/edit_username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo username"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Modifica il nome e cognome"/>
+
+            <EditText
+                android:id="@+id/edit_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo nome e cognome"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
+
 
             <!-- Modifica la tua password -->
             <TextView
@@ -101,6 +135,23 @@
                 android:padding="10dp"
                 android:background="@drawable/edittext"
                 android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Modifica il tuo indirizzo"/>
+
+            <EditText
+                android:id="@+id/edit_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo indirizzo"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
 
             <!-- Pulsante per salvare le modifiche -->
             <Button

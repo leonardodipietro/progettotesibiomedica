@@ -3,6 +3,7 @@ package com.example.myapplication2
 import OnSwipeTouchListener
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,11 +28,13 @@ import com.example.myapplication2.repository.UserRepo
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import java.util.concurrent.TimeUnit
+import com.google.gson.Gson
 
 class MainPage : AppCompatActivity() {
     private lateinit var sintomoRepo: SintomoRepo
     private lateinit var sintadapter: SintomiAdapter
     private lateinit var userRepo: UserRepo
+    private val gson = Gson()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mainpageactivity)
@@ -40,10 +44,28 @@ class MainPage : AppCompatActivity() {
         //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
         //todo verificare effetto della recycler sulla navbar
         //todo vedere in basso
-        val utente = intent.getParcelableExtra<Utente>("utente")
+        var utente = intent.getParcelableExtra<Utente>("utente")
         val userid= utente?.id
+        val benvenutoTextView: TextView = findViewById(R.id.titolo)
 
         Log.d("funziona","funziona $userid")
+        if (utente == null) {
+            utente = loadUserFromPreferences() // Prova a caricare dalle Shared Preferences
+        } else {
+            saveUserToPreferences(utente) // Salva l'utente nelle Shared Preferences se presente nell'intent
+        }
+
+        if (utente != null) {
+            val userId = utente.id
+            Log.d("funziona", "Utente trovato con ID: $userId")
+            benvenutoTextView.text = "Benvenuto ${utente.username}, come ti senti oggi?"
+        } else {
+            // Se l'utente è null, reindirizza al login
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+
+
         // Inizializza il repository
         sintomoRepo = SintomoRepo()
         userRepo= UserRepo()
@@ -233,6 +255,26 @@ class MainPage : AppCompatActivity() {
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
 
+        }
+    }
+
+    // Funzione per salvare l'utente nelle Shared Preferences
+    private fun saveUserToPreferences(user: Utente) {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val json = gson.toJson(user)
+        editor.putString("utente", json)
+        editor.apply()
+    }
+
+    // Funzione per caricare l'utente dalle Shared Preferences
+    private fun loadUserFromPreferences(): Utente? {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val json = sharedPreferences.getString("utente", null)
+        return if (json != null) {
+            gson.fromJson(json, Utente::class.java)
+        } else {
+            null
         }
     }
 }
