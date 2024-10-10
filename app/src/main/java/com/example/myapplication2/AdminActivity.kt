@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -18,17 +19,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication2.adapter.SpinnerSintomoAdapter
 import com.example.myapplication2.model.Sintomo
+import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.ExportRepo
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.auth.FirebaseAuth
+import com.google.gson.Gson
 
 class AdminActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var export:ExportRepo
     private lateinit var sintomorepo: SintomoRepo
     private lateinit var userrepo:UserRepo
-
+    private val gson = Gson()
     companion object {
         const val PERMISSION_REQUEST_CODE = 1001
     }
@@ -39,7 +42,14 @@ class AdminActivity : AppCompatActivity() {
 
 
         Log.d("MainActivity", "sono nell admin?.")
-        auth = FirebaseAuth.getInstance()
+        //auth = FirebaseAuth.getInstance()ù
+        var utente = intent.getParcelableExtra<Utente>("utente")
+        if (utente == null) {
+            utente = loadUserFromPreferences() // Prova a caricare dalle Shared Preferences
+        } else {
+            saveUserToPreferences(utente) // Salva l'utente nelle Shared Preferences se presente nell'intent
+        }
+
         export= ExportRepo()
         sintomorepo=SintomoRepo()
         userrepo=UserRepo()
@@ -56,16 +66,39 @@ class AdminActivity : AppCompatActivity() {
         val spinnerRimuoviSint= findViewById<Spinner>(R.id.spinnerrimuovisintomo)
         spinnerRimuoviSint.adapter = spinnerSintAdapter
 
+
+        val emailEditText = findViewById<EditText>(R.id.editemailadmin)
+        val phoneEditText = findViewById<EditText>(R.id.editphoneadmin)
         val usernameEditText=findViewById<EditText>(R.id.editusernameadmin)
         val oldPasswordEditText = findViewById<EditText>(R.id.editpswadminold)
         val newPasswordEditText = findViewById<EditText>(R.id.editpswadmindnew)
         val confirmPasswordEditText = findViewById<EditText>(R.id.editpswadminconferm)
 
-
         val modifyButton=findViewById<Button>(R.id.buttonmodifyadmin)
+
+        utente!!.id?.let {
+            userrepo.getUserData(it) { utente ->
+                Log.d("ProfileActivity", "Dati utente recuperati dal database: ${utente.toString()}")
+                if (utente != null) {
+                    emailEditText.setText(utente.email ?: "")
+                    phoneEditText.setText(utente.phoneNumber ?: "")
+                    usernameEditText.setText(utente.username ?: "")
+                    //nameEditText.setText(utente.name ?: "")
+                    //addressEditText.setText(utente.address ?: "")
+                } else {
+                    // Gestisci il caso in cui i dati non siano presenti nel database
+                    // Log.d("ProfileActivity", "Nessun dato utente trovato per UID=${user.uid}")
+                    Toast.makeText(this, "Nessun dato utente trovato", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+
 
         writeSintomo.visibility = View.GONE
         inviosintomo.visibility = View.GONE
+
+
 
         aggiungiSintButton.setOnClickListener {
             if (writeSintomo.visibility == View.GONE) {
@@ -146,57 +179,113 @@ class AdminActivity : AppCompatActivity() {
 
 
         modifyButton.setOnClickListener {
-           // val newEmail = emailEditText.text.toString()
-           // val newPhone = phoneEditText.text.toString()
-            val newUsername = usernameEditText.text.toString()
-           // val newName = nameEditText.text.toString()
-           // val newAddress = addressEditText.text.toString()
-            val oldPassword = oldPasswordEditText.text.toString()
-            val newPassword = newPasswordEditText.text.toString()
-            val confirmPassword = confirmPasswordEditText.text.toString()
+                val newEmail = emailEditText.text.toString()
+                val newPhone = phoneEditText.text.toString()
+                val newUsername = usernameEditText.text.toString()
+                //val newName = nameEditText.text.toString()
+                //val newAddress = addressEditText.text.toString()
+                val oldPassword = oldPasswordEditText.text.toString()
+                val newPassword = newPasswordEditText.text.toString()
+                val confirmPassword = confirmPasswordEditText.text.toString()
 
-           /* if (newUsername.isNotEmpty()) {
-                userrepo.updateUsername(newUsername) { success ->
-                    if (success) {
-                        Toast.makeText(this, "Username aggiornato con successo", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "Errore nell'aggiornamento dell'username", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-
-            // Verifica e cambio password
-            if (newPassword.isNotEmpty()) {
-                if (newPassword == confirmPassword) {
-                    userrepo.changePassword(oldPassword, newPassword) { success ->
-                        if (success) {
-                            Toast.makeText(this, "Password aggiornata con successo", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this, "Errore nel cambio password. Controlla le credenziali.", Toast.LENGTH_SHORT).show()
+                // Aggiorna Email
+                if (newEmail.isNotEmpty()) {
+                    utente.id?.let { it1 ->
+                        userrepo.updateUserEmail(it1, newEmail) { success ->
+                            if (success) {
+                                Toast.makeText(this, "Email aggiornata con successo", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Errore nell'aggiornamento dell'email", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
-                } else {
-                    Toast.makeText(this, "Le password non coincidono!", Toast.LENGTH_SHORT).show()
                 }
-            }
+
+                // Aggiorna Numero di Telefono
+                if (newPhone.isNotEmpty()) {
+                    utente.id?.let { it1 ->
+                        userrepo.updatePhoneNumber(it1, newPhone) { success ->
+                            if (success) {
+                                Toast.makeText(this, "Numero di telefono aggiornato con successo", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Errore nell'aggiornamento del numero di telefono", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                // Aggiorna Username
+                if (newUsername.isNotEmpty()) {
+                    utente.id?.let { it1 ->
+                        userrepo.updateUsername(it1, newUsername) { success ->
+                            if (success) {
+                                Toast.makeText(this, "Username aggiornato con successo", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Errore nell'aggiornamento dell'username", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                // Aggiorna Nome
+                /*if (newName.isNotEmpty()) {
+                    utente.id?.let { it1 ->
+                        userRepo.updateName(it1, newName) { success ->
+                            if (success) {
+                                Toast.makeText(this, "Nome aggiornato con successo", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Errore nell'aggiornamento del nome", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }*/
+
+                // Aggiorna Indirizzo
+                /*if (newAddress.isNotEmpty()) {
+                    utente.id?.let { it1 ->
+                        userRepo.updateAddress(it1, newAddress) { success ->
+                            if (success) {
+                                Toast.makeText(this, "Indirizzo aggiornato con successo", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Errore nell'aggiornamento dell'indirizzo", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }*/
+                if (newPassword.isNotEmpty()) {
+                    if (newPassword == confirmPassword) {
+                        // Aggiungi qui i parametri oldPassword e newPassword
+                        utente.id?.let { it1 ->
+                            userrepo.changePassword(userId = it1, oldPassword = oldPassword, newPassword = newPassword) { success ->
+                                if (success) {
+                                    Toast.makeText(this, "Password aggiornata con successo", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(this, "Errore nel cambio password. Controlla le credenziali.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this, "Le password non coincidono!", Toast.LENGTH_SHORT).show()
+                    }
+                }
 
 
 
 
-*/
 
 
         }
         logoutButton.setOnClickListener {
             // Effettua il logout
-            auth.signOut()
+            //auth.signOut()
 
             // Torna alla MainActivity
-            val intent = Intent(this, MainActivity::class.java)
+            /*val intent = Intent(this, MainActivity::class.java)
             //serve per rimuovere la main page dallo stack di memoria
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
-            finish()  // Chiude l'activity corrente
+            finish()  // Chiude l'activity corrente*/
+            showLogoutDialog()
         }
 
         generateExcelButton.setOnClickListener {
@@ -216,8 +305,25 @@ class AdminActivity : AppCompatActivity() {
     }
 
 
+    // Funzione per salvare l'utente nelle Shared Preferences
+    private fun saveUserToPreferences(user: Utente) {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val json = gson.toJson(user)
+        editor.putString("utente", json)
+        editor.apply()
+    }
 
-
+    // Funzione per caricare l'utente dalle Shared Preferences
+    private fun loadUserFromPreferences(): Utente? {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val json = sharedPreferences.getString("utente", null)
+        return if (json != null) {
+            gson.fromJson(json, Utente::class.java)
+        } else {
+            null
+        }
+    }
     // Gestisci il risultato della richiesta di permesso
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -234,10 +340,37 @@ class AdminActivity : AppCompatActivity() {
                 Log.e("Permission", "Permesso di scrittura negato")
             }
         }
+    }
+
+    private fun showLogoutDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Uscire dall'Account?")
+            .setMessage("Sei sicuro di voler uscire dall'account?")
+            .setPositiveButton("Sì") { dialog, which ->
 
 
+                // Annulla la notifica
+                //stopNotification()
 
+                // Elimina le Shared Preferences dell'utente
+                clearUserPreferences()
 
-
+                // Torna alla MainActivity
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish() // Chiude l'activity corrente
+            }
+            .setNegativeButton("No") { dialog, which ->
+                dialog.dismiss() // Chiude la finestra di dialogo
+            }
+            .create()
+            .show()
+    }
+    private fun clearUserPreferences() {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.clear() // Rimuove tutti i dati
+        editor.apply()
     }
 }

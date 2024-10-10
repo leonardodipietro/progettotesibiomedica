@@ -78,10 +78,46 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Modifica la tua mail:"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editemailadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci la tua nuova mail"
+            android:inputType="textEmailAddress"
+            android:padding="10dp"
+            android:background="@drawable/edittext"/>
+
+        <!-- Modifica il tuo numero di telefono -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Modifica il tuo telefono:"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+        <EditText
+            android:id="@+id/editphoneadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci il nuovo numero di telefono"
+            android:inputType="phone"
+            android:padding="10dp"
+            android:background="@drawable/edittext"/>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textSize="16sp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             android:text="Modifica il tuo username"/>
+
+
 
         <EditText
             android:id="@+id/editusernameadmin"
@@ -142,6 +178,15 @@
             android:layout_height="wrap_content"
             android:text="logout"
             android:id="@+id/logoutadmin"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            style="@style/GreenButton"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="logout"
+            android:id="@+id/deleteadmin"
             android:gravity="center"
             android:layout_marginTop="16dp"
             style="@style/GreenButton"/>
