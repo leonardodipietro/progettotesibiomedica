@@ -48,7 +48,7 @@ dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     //implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    testImplementation(libs.junit)
+    //testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation (libs.firebase.database)
     //implementation(libs.kotlin.coroutines.core)
-    implementation(libs.kotlin.coroutines.android)
+    //implementation(libs.kotlin.coroutines.android)
     //per l'autenticazione di firebase
     implementation (libs.firebase.auth)
 
@@ -66,7 +66,10 @@ dependencies {
     implementation(libs.work.runtime.ktx)
 
 
-    implementation(libs.bcrypt)
+    //implementation(libs.bcrypt)
+    implementation(libs.favre.bcrypt)
+    implementation(libs.mindrot.bcrypt)
+
     implementation(libs.apache.poi)
 
     implementation(libs.firebase.storage)

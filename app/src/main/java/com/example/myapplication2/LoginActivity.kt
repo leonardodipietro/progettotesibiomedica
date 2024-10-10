@@ -78,31 +78,21 @@ class LoginActivity : AppCompatActivity() {
                 userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, admin, user ->
                     if (isSuccess) {
                         if (admin == true) {
-                            // Login come admin, reindirizza all'AdminActivity
                             Toast.makeText(this, "Accesso Admin riuscito", Toast.LENGTH_SHORT).show()
-                            Log.d("Login", "Admin flag: $admin")
-
-                            // Passa l'oggetto Utente all'AdminActivity
                             val intent = Intent(this, AdminActivity::class.java).apply {
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                putExtra("utente", user) // Passa l'oggetto Utente
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                putExtra("utente", user)
                             }
                             startActivity(intent)
                         } else {
-                            // Login come utente normale
                             Toast.makeText(this, "Login utente normale riuscito", Toast.LENGTH_SHORT).show()
-                            Log.d("Login", "Admin flag: $admin")
-
-                            // Passa l'oggetto Utente alla MainPage
-
                             val intent = Intent(this, MainPage::class.java).apply {
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                putExtra("utente", user) // Passa l'oggetto Utente
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                putExtra("utente", user)
                             }
                             startActivity(intent)
                         }
                     } else {
-                        // Mostra un messaggio di errore
                         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }

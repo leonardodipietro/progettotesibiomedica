@@ -2,7 +2,7 @@ package com.example.myapplication2.repository
 
 import android.app.Activity
 import android.util.Log
-import at.favre.lib.crypto.bcrypt.BCrypt
+//import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 import com.google.firebase.FirebaseException
@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import org.mindrot.jbcrypt.BCrypt
 
 class UserRepo {
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
@@ -76,7 +77,7 @@ class UserRepo {
             }
         })
     }
-    fun verifyUserCredentials(
+ /*   fun verifyUserCredentials(
         username: String,
         password: String,
         callback: (Boolean, String?, Boolean?, Utente?) -> Unit
@@ -157,7 +158,73 @@ class UserRepo {
                     callback(false, "Errore nel login tramite Firebase Authentication")
                 }
             }
+    }*/
+
+    fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?, Boolean?, Utente?) -> Unit) {
+        //val usersRef = FirebaseDatabase.getInstance().getReference("users")
+
+        Log.d("verifyUserCredentials", "Inizio verifica credenziali per username: $username")
+
+        // Ricerca l'utente con il campo username specificato
+        usersRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val userSnapshot = snapshot.children.first()
+                    val user = userSnapshot.getValue(Utente::class.java)
+
+                    if (user != null) {
+                        Log.d("verifyUserCredentials", "Utente trovato per username. Verifica email o numero di telefono...")
+
+                        // Controlla se ha una email
+                        if (user.email.isNullOrEmpty()) {
+                            // Email non trovata, verifica numero di telefono
+                            if (!user.phoneNumber.isNullOrEmpty()) {
+                                Log.d("verifyUserCredentials", "Numero di telefono trovato per utente, verifica password...")
+
+                                // Verifica la password
+                                if (BCrypt.checkpw(password, user.password)) {
+                                    Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.admin}")
+                                    callback(true, null, user.admin, user)
+                                } else {
+                                    Log.d("verifyUserCredentials", "Password errata per numero di telefono.")
+                                    callback(false, "Password errata", null, null)
+                                }
+                            } else {
+                                Log.d("verifyUserCredentials", "Nessun numero di telefono trovato per questo utente.")
+                                callback(false, "Utente non trovato", null, null)
+                            }
+                        } else {
+                            // Email trovata, verifica la password
+                            Log.d("verifyUserCredentials", "Email trovata per utente, verifica password...")
+
+                            if (BCrypt.checkpw(password, user.password)) {
+                                Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.admin}")
+                                callback(true, null, user.admin, user)
+                            } else {
+                                Log.d("verifyUserCredentials", "Password errata per email trovata.")
+                                callback(false, "Password errata", null, null)
+                            }
+                        }
+                    } else {
+                        Log.d("verifyUserCredentials", "Utente non trovato per username.")
+                        callback(false, "Utente non trovato", null, null)
+                    }
+                } else {
+                    Log.d("verifyUserCredentials", "Nessun utente trovato per questo username.")
+                    callback(false, "Utente non trovato", null, null)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("verifyUserCredentials", "Errore durante la ricerca per username: ${error.message}")
+                callback(false, error.message, null, null)
+            }
+        })
     }
+
+
+
+
     fun initiateEmailUpdate(utente: Utente?, newEmail: String, onComplete: (Boolean) -> Unit) {
         val userUid = utente?.id
         Log.d("UserRepo", "ID utente passato: $userUid")
@@ -222,7 +289,7 @@ class UserRepo {
             onComplete(false)
         }
     }
-    fun changePassword(oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
+    fun takePassword(oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
         val user = auth.currentUser
         if (user != null) {
             val email = user.email
@@ -387,57 +454,130 @@ class UserRepo {
         }
     }
 
-    // Metodo per aggiornare l'username
-    fun updateUsername(newUsername: String, onComplete: (Boolean) -> Unit) {
-        val currentUser = auth.currentUser
-        currentUser?.let { user ->
-            usersRef.child(user.uid).child("username").setValue(newUsername)
-                .addOnCompleteListener { task ->
-                    onComplete(task.isSuccessful)
-                }
-        }
+    // Aggiornamento dell'email
+    fun updateUserEmail(userId: String, newEmail: String, callback: (Boolean) -> Unit) {
+        usersRef.child(userId).child("email").setValue(newEmail)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
     }
 
-    // Metodo per aggiornare il nome
-    fun updateName(newName: String, onComplete: (Boolean) -> Unit) {
-        val currentUser = auth.currentUser
-        currentUser?.let { user ->
-            usersRef.child(user.uid).child("name").setValue(newName)
-                .addOnCompleteListener { task ->
-                    onComplete(task.isSuccessful)
-                }
-        }
+    // Aggiornamento del numero di telefono
+    fun updatePhoneNumber(userId: String, newPhone: String, callback: (Boolean) -> Unit) {
+        usersRef.child(userId).child("phoneNumber").setValue(newPhone)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
     }
 
-    // Metodo per aggiornare l'indirizzo
-    fun updateAddress(newAddress: String, onComplete: (Boolean) -> Unit) {
-        val currentUser = auth.currentUser
-        currentUser?.let { user ->
-            usersRef.child(user.uid).child("address").setValue(newAddress)
-                .addOnCompleteListener { task ->
-                    onComplete(task.isSuccessful)
-                }
-        }
+    // Aggiornamento dello username
+    fun updateUsername(userId: String, newUsername: String, callback: (Boolean) -> Unit) {
+        usersRef.child(userId).child("username").setValue(newUsername)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
     }
 
+    // Aggiornamento del nome
+    fun updateName(userId: String, newName: String, callback: (Boolean) -> Unit) {
+        usersRef.child(userId).child("name").setValue(newName)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
+            }
+    }
 
-    // Modifica della password
-    fun updatePassword(newPassword: String) {
-        val user = auth.currentUser
-        user?.updatePassword(newPassword)
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("ProfileActivity", "Password aggiornata correttamente")
-                } else {
-                    Log.d("ProfileActivity", "Errore nell'aggiornamento della password: ${task.exception?.message}")
-                }
+    // Aggiornamento dell'indirizzo
+    fun updateAddress(userId: String, newAddress: String, callback: (Boolean) -> Unit) {
+        usersRef.child(userId).child("address").setValue(newAddress)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful)
             }
     }
 
 
+    fun changePassword(userId: String, oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
+        usersRef.child(userId).get().addOnSuccessListener { snapshot ->
+            val email = snapshot.child("email").getValue(String::class.java)
+
+            if (email.isNullOrEmpty()) {
+                // Se non c'è email, aggiorna solo nel Realtime Database con BCrypt
+                val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
+                usersRef.child(userId).child("password").setValue(hashedPassword)
+                    .addOnCompleteListener { task ->
+                        callback(task.isSuccessful)
+                    }
+            } else {
+                // Se c'è email, cambia la password su Firebase Authentication e nel Realtime Database
+                auth.signInWithEmailAndPassword(email, oldPassword).addOnCompleteListener { loginTask ->
+                    if (loginTask.isSuccessful) {
+                        auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                // Aggiorna anche nel Realtime Database
+                                val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
+                                usersRef.child(userId).child("password").setValue(hashedPassword)
+                                    .addOnCompleteListener { dbTask ->
+                                        if (dbTask.isSuccessful) {
+                                            // Logout da Firebase Authentication
+                                            auth.signOut()
+                                            callback(true)
+                                        } else {
+                                            callback(false)
+                                        }
+                                    }
+                            } else {
+                                callback(false)
+                            }
+                        }
+                    } else {
+                        callback(false)
+                    }
+                }
+            }
+        }.addOnFailureListener {
+            callback(false)
+        }
+    }
 
 
 
+  /*  fun syncUsers() {
+        val auth = FirebaseAuth.getInstance()
+
+        // Step 1: Recupera tutti gli ID utente dal Realtime Database
+        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val usersInDatabase = snapshot.children.mapNotNull { it.key }.toSet()
+
+                // Step 2: Recupera gli utenti da Firebase Authentication
+                auth.listUsers(null)
+                    .addOnSuccessListener { result ->
+                        val usersInAuth = result.users.map { it.uid }.toSet()
+
+                        // Step 3: Trova utenti in Authentication ma non nel Database
+                        val usersToDelete = usersInAuth - usersInDatabase
+
+                        // Step 4: Elimina utenti non presenti nel Database
+                        usersToDelete.forEach { uid ->
+                            auth.deleteUser(uid)
+                                .addOnSuccessListener {
+                                    println("Utente con UID: $uid eliminato da Firebase Authentication")
+                                }
+                                .addOnFailureListener { exception ->
+                                    println("Errore durante l'eliminazione dell'utente con UID: $uid. Errore: ${exception.message}")
+                                }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        println("Errore nel recupero degli utenti da Firebase Authentication. Errore: ${exception.message}")
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Errore nel recupero degli utenti dal Realtime Database. Errore: ${error.message}")
+            }
+        })
+    }
+*/
     // Inizia la verifica del numero di telefono
     fun updatePhoneNumber(newPhoneNumber: String, activity: Activity) {
         val options = PhoneAuthOptions.newBuilder(auth)

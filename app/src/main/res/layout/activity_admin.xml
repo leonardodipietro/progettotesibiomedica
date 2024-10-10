@@ -129,7 +129,7 @@
             android:background="@drawable/edittext"
             android:layout_marginTop="8dp"/>
         <Button
-            android:id="@+id/button_save"
+            android:id="@+id/buttonmodifyadmin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Salva le modifiche"

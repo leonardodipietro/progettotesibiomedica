@@ -27,6 +27,8 @@ class AdminActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var export:ExportRepo
     private lateinit var sintomorepo: SintomoRepo
+    private lateinit var userrepo:UserRepo
+
     companion object {
         const val PERMISSION_REQUEST_CODE = 1001
     }
@@ -40,6 +42,7 @@ class AdminActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         export= ExportRepo()
         sintomorepo=SintomoRepo()
+        userrepo=UserRepo()
         val sintomiList = mutableListOf<String>()
         val spinnerSintAdapter = SpinnerSintomoAdapter(this, sintomiList)
         val sintomiIdList = mutableListOf<String>()
@@ -53,6 +56,13 @@ class AdminActivity : AppCompatActivity() {
         val spinnerRimuoviSint= findViewById<Spinner>(R.id.spinnerrimuovisintomo)
         spinnerRimuoviSint.adapter = spinnerSintAdapter
 
+        val usernameEditText=findViewById<EditText>(R.id.editusernameadmin)
+        val oldPasswordEditText = findViewById<EditText>(R.id.editpswadminold)
+        val newPasswordEditText = findViewById<EditText>(R.id.editpswadmindnew)
+        val confirmPasswordEditText = findViewById<EditText>(R.id.editpswadminconferm)
+
+
+        val modifyButton=findViewById<Button>(R.id.buttonmodifyadmin)
 
         writeSintomo.visibility = View.GONE
         inviosintomo.visibility = View.GONE
@@ -134,6 +144,49 @@ class AdminActivity : AppCompatActivity() {
             }
         }
 
+
+        modifyButton.setOnClickListener {
+           // val newEmail = emailEditText.text.toString()
+           // val newPhone = phoneEditText.text.toString()
+            val newUsername = usernameEditText.text.toString()
+           // val newName = nameEditText.text.toString()
+           // val newAddress = addressEditText.text.toString()
+            val oldPassword = oldPasswordEditText.text.toString()
+            val newPassword = newPasswordEditText.text.toString()
+            val confirmPassword = confirmPasswordEditText.text.toString()
+
+           /* if (newUsername.isNotEmpty()) {
+                userrepo.updateUsername(newUsername) { success ->
+                    if (success) {
+                        Toast.makeText(this, "Username aggiornato con successo", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "Errore nell'aggiornamento dell'username", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // Verifica e cambio password
+            if (newPassword.isNotEmpty()) {
+                if (newPassword == confirmPassword) {
+                    userrepo.changePassword(oldPassword, newPassword) { success ->
+                        if (success) {
+                            Toast.makeText(this, "Password aggiornata con successo", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "Errore nel cambio password. Controlla le credenziali.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Le password non coincidono!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
+
+
+*/
+
+
+        }
         logoutButton.setOnClickListener {
             // Effettua il logout
             auth.signOut()

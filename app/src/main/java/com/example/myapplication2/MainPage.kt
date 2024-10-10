@@ -39,7 +39,6 @@ class MainPage : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mainpageactivity)
 
-
         //todo salvare l utente con il nodo su firebase
         //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
         //todo verificare effetto della recycler sulla navbar
