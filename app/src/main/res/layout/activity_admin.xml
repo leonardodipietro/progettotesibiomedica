@@ -136,34 +136,87 @@
             android:layout_marginBottom="8dp"/>
 
 
-        <EditText
-            android:id="@+id/editpswadminold"
+        <FrameLayout
+            android:id="@+id/oldPasswordFrame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Inserisci la vecchia password"
-            android:inputType="textPassword"
-            android:padding="10dp"
-            android:background="@drawable/edittext"/>
+            android:layout_marginTop="8dp">
 
-        <EditText
-            android:id="@+id/editpswadmindnew"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Inserisci la nuova password"
-            android:inputType="textPassword"
-            android:padding="10dp"
-            android:background="@drawable/edittext"
-            android:layout_marginTop="8dp"/>
+            <EditText
+                android:id="@+id/editpswadminold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci la vecchia password"
+                android:inputType="textPassword"
+                android:paddingEnd="48dp"
+                android:selectAllOnFocus="true"
+                android:background="@drawable/edittext"/>
 
-        <EditText
-            android:id="@+id/editpswadminconferm"
+            <ImageView
+                android:id="@+id/mostraVecchiaPassword"
+                android:layout_width="40sp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:padding="8dp"
+                android:src="@drawable/passwordicon"
+                android:contentDescription="Mostra Vecchia Password"
+                android:layout_marginEnd="12dp"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/newPasswordFrame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Conferma la nuova password"
-            android:inputType="textPassword"
-            android:padding="10dp"
-            android:background="@drawable/edittext"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/editpswadmindnew"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci la nuova password"
+                android:inputType="textPassword"
+                android:paddingEnd="48dp"
+                android:selectAllOnFocus="true"
+                android:background="@drawable/edittext"/>
+
+            <ImageView
+                android:id="@+id/mostraNuovaPassword"
+                android:layout_width="40sp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:padding="8dp"
+                android:src="@drawable/passwordicon"
+                android:contentDescription="Mostra Nuova Password"
+                android:layout_marginEnd="12dp"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/confirmPasswordFrame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/editpswadminconferm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Conferma la nuova password"
+                android:inputType="textPassword"
+                android:paddingEnd="48dp"
+                android:selectAllOnFocus="true"
+                android:background="@drawable/edittext"/>
+
+            <ImageView
+                android:id="@+id/mostraConfermaPassword"
+                android:layout_width="40sp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:padding="8dp"
+                android:src="@drawable/passwordicon"
+                android:contentDescription="Mostra Conferma Password"
+                android:layout_marginEnd="12dp"/>
+        </FrameLayout>
+
         <Button
             android:id="@+id/buttonmodifyadmin"
             android:layout_width="match_parent"

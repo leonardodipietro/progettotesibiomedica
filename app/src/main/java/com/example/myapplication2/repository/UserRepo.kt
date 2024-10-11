@@ -77,89 +77,6 @@ class UserRepo {
             }
         })
     }
- /*   fun verifyUserCredentials(
-        username: String,
-        password: String,
-        callback: (Boolean, String?, Boolean?, Utente?) -> Unit
-    ) {
-        Log.d("UserRepo", "Tentativo di login per utente: $username")
-
-        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    var userFound = false
-
-                    for (userSnapshot in snapshot.children) {
-                        val user = userSnapshot.getValue(Utente::class.java)
-
-                        if (user != null && user.username == username) {
-                            userFound = true
-                            Log.d("UserRepo", "Username trovato nel database: ${user.username}, Admin: ${user.admin}")
-
-                            // Effettua il login con Firebase Authentication
-                            signInWithFirebaseEmail(user.email ?: "", password) { isSuccess, errorMessage ->
-                                if (isSuccess) {
-                                    Log.d("UserRepo", "Login riuscito con Firebase Authentication.")
-
-                                    // Se il login ha successo, aggiorna la password hashata nel database Realtime
-                                    val newHashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
-                                    usersRef.child(userSnapshot.key ?: "")
-                                        .child("password")
-                                        .setValue(newHashedPassword)
-                                        .addOnCompleteListener { updateTask ->
-                                            if (updateTask.isSuccessful) {
-                                                Log.d("UserRepo", "Password aggiornata con successo nel database Realtime.")
-                                                val admin = user.admin ?: false
-                                                callback(true, null, admin, user)
-                                            } else {
-                                                Log.e("UserRepo", "Errore durante l'aggiornamento della password nel database: ${updateTask.exception?.message}")
-                                                callback(false, "Errore aggiornamento password nel database.", null, null)
-                                            }
-                                        }
-                                } else {
-                                    Log.e("UserRepo", "Errore nel login con Firebase Authentication: ${errorMessage}")
-                                    callback(false, errorMessage, null, null)
-                                }
-                            }
-                            return
-                        }
-                    }
-
-                    if (!userFound) {
-                        Log.e("UserRepo", "Username non trovato nel database.")
-                        callback(false, "Username non trovato", null, null)
-                    }
-                } else {
-                    Log.e("UserRepo", "Nessun utente trovato nel database.")
-                    callback(false, "Nessun utente trovato nel database", null, null)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("UserRepo", "Errore del database: ${error.message}")
-                callback(false, "Errore del database: ${error.message}", null, null)
-            }
-        })
-    }
-    // Metodo per il login tramite email in Firebase Authentication
-    private fun signInWithFirebaseEmail(
-        email: String,
-        password: String,
-        callback: (Boolean, String?) -> Unit
-    ) {
-        Log.d("UserRepo", "Login con Firebase Authentication chiamato")
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("UserRepo", "Login con email riuscito")
-                    callback(true, null)
-                } else {
-                    Log.e("UserRepo", "Errore nel login tramite Firebase Authentication: ${task.exception?.message}")
-                    callback(false, "Errore nel login tramite Firebase Authentication")
-                }
-            }
-    }*/
-
     fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?, Boolean?, Utente?) -> Unit) {
         //val usersRef = FirebaseDatabase.getInstance().getReference("users")
 
@@ -496,51 +413,76 @@ class UserRepo {
 
 
     fun changePassword(userId: String, oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
+        Log.d("ChangePassword", "Inizio procedura di cambio password per utente con ID: $userId")
+
         usersRef.child(userId).get().addOnSuccessListener { snapshot ->
             val email = snapshot.child("email").getValue(String::class.java)
+            Log.d("ChangePassword", "Email trovata: $email")
 
             if (email.isNullOrEmpty()) {
+                Log.d("ChangePassword", "Nessuna email trovata. Procedo con aggiornamento solo nel Realtime Database.")
                 // Se non c'è email, aggiorna solo nel Realtime Database con BCrypt
                 val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
                 usersRef.child(userId).child("password").setValue(hashedPassword)
                     .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("ChangePassword", "Password aggiornata con successo nel Realtime Database.")
+                        } else {
+                            Log.e("ChangePassword", "Errore nell'aggiornamento della password nel Realtime Database.")
+                        }
                         callback(task.isSuccessful)
                     }
             } else {
+                Log.d("ChangePassword", "Email trovata. Procedo con il cambio password su Firebase Authentication.")
                 // Se c'è email, cambia la password su Firebase Authentication e nel Realtime Database
                 auth.signInWithEmailAndPassword(email, oldPassword).addOnCompleteListener { loginTask ->
                     if (loginTask.isSuccessful) {
+                        Log.d("ChangePassword", "Login avvenuto con successo per l'utente con email: $email")
                         auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { updateTask ->
                             if (updateTask.isSuccessful) {
+                                Log.d("ChangePassword", "Password aggiornata con successo in Firebase Authentication.")
                                 // Aggiorna anche nel Realtime Database
                                 val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
                                 usersRef.child(userId).child("password").setValue(hashedPassword)
                                     .addOnCompleteListener { dbTask ->
                                         if (dbTask.isSuccessful) {
+                                            Log.d("ChangePassword", "Password aggiornata anche nel Realtime Database.")
                                             // Logout da Firebase Authentication
                                             auth.signOut()
-                                            callback(true)
+                                            Log.d("ChangePassword", "Logout eseguito con successo.")
                                         } else {
-                                            callback(false)
+                                            val dbException = dbTask.exception
+                                            Log.e("ChangePassword", "Dettagli errore: ${dbException?.message}")
+                                            Log.e("ChangePassword", "Tipo eccezione: ${dbException?.javaClass?.name}")
+                                            Log.e("ChangePassword", "Dettagli localizzati: ${dbException?.localizedMessage}")
+                                            Log.e("ChangePassword", "Errore durante l'aggiornamento della password nel Realtime Database.")
                                         }
+                                        callback(dbTask.isSuccessful)
                                     }
                             } else {
+                                val updateException = updateTask.exception
+                                Log.e("ChangePassword", "Errore durante l'aggiornamento della password in Firebase Authentication: ${updateException?.message}")
+                                Log.e("ChangePassword", "Dettagli eccezione: ${updateException?.localizedMessage}")
+                                Log.e("ChangePassword", "Tipo eccezione: ${updateException?.javaClass?.name}")
                                 callback(false)
+
                             }
                         }
                     } else {
+                        Log.e("ChangePassword", "Login fallito. Verifica la vecchia password.")
                         callback(false)
                     }
                 }
             }
-        }.addOnFailureListener {
+        }.addOnFailureListener { exception ->
+            Log.e("ChangePassword", "Errore nel recupero delle informazioni utente: ${exception.message}")
             callback(false)
         }
     }
 
 
 
-  /*  fun syncUsers() {
+    /*  fun syncUsers() {
         val auth = FirebaseAuth.getInstance()
 
         // Step 1: Recupera tutti gli ID utente dal Realtime Database

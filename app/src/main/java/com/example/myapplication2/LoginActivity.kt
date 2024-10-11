@@ -1,4 +1,5 @@
 package com.example.myapplication2
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -18,6 +19,7 @@ import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
 import java.util.concurrent.TimeUnit
 
 class LoginActivity : AppCompatActivity() {
@@ -27,6 +29,10 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private var verificationId: String? = null
     private lateinit var userRepo: UserRepo
+    private var loginfalliti = 0
+    private var bloccoutenteinizio: Long = 0
+    private var duratablocco: Long = 0
+
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +40,8 @@ class LoginActivity : AppCompatActivity() {
 
         userRepo= UserRepo()
         val user: Utente
-        auth = FirebaseAuth.getInstance()
+        //auth = FirebaseAuth.getInstance()
+
       //  val mailEditText=findViewById<EditText>(R.id.maillogin)
         val usernameEditText=findViewById<EditText>(R.id.usernamelogin)
         val pswEditText=findViewById<EditText>(R.id.pswlogin)
@@ -42,6 +49,9 @@ class LoginActivity : AppCompatActivity() {
         val showPassword = findViewById<ImageView>(R.id.mostraPassword)
         var isPasswordVisible = false //variabile che usiamo per gestire visibilita della password
         val resetPassword=findViewById<TextView>(R.id.iniziaresetpsw)
+
+
+
         resetPassword.setOnClickListener {
             val username = usernameEditText.text.toString()
 
@@ -71,17 +81,26 @@ class LoginActivity : AppCompatActivity() {
 
 
         logmailbutton.setOnClickListener {
+            if (isAccountLocked()) {
+                val remainingTime = (bloccoutenteinizio + duratablocco - System.currentTimeMillis()) / 1000
+                Toast.makeText(this, "Account bloccato. Riprova tra $remainingTime secondi.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
             val username = usernameEditText.text.toString()
             val password = pswEditText.text.toString()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
                 userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, admin, user ->
                     if (isSuccess) {
+                        loginfalliti = 0
+                        duratablocco = 0
+                        bloccoutenteinizio = 0
                         if (admin == true) {
                             Toast.makeText(this, "Accesso Admin riuscito", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this, AdminActivity::class.java).apply {
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 putExtra("utente", user)
+
                             }
                             startActivity(intent)
                         } else {
@@ -89,10 +108,14 @@ class LoginActivity : AppCompatActivity() {
                             val intent = Intent(this, MainPage::class.java).apply {
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 putExtra("utente", user)
+                                if (user != null) {
+                                    saveUserToPreferences(user)
+                                }
                             }
                             startActivity(intent)
                         }
                     } else {
+                        gestioneloginfalliti()
                         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -116,133 +139,46 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    // Metodo per verificare se l'account è bloccato
+    private fun isAccountLocked(): Boolean {
+        val currentTime = System.currentTimeMillis()
+        // Verifica se il tempo di blocco è scaduto
+        if (currentTime >= bloccoutenteinizio + duratablocco) {
+            // Reimposta il contatore dei tentativi se il tempo di blocco è scaduto
+            loginfalliti = 0
+            duratablocco = 0
+            bloccoutenteinizio = 0
+            return false
+        }
+        return true
+    }
+    fun saveUserToPreferences(user: Utente) {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val json = Gson().toJson(user)
+        editor.putString("utente", json)
+        editor.putBoolean("isLoggedIn", true)
+        editor.apply()
+    }
+
+    // Metodo per gestire il blocco in base ai tentativi
+    private fun gestioneloginfalliti() {
+        loginfalliti++
+        if (loginfalliti == 5) {
+            duratablocco = 10 * 60 * 1000 // Blocco di 10 minuti
+            bloccoutenteinizio= System.currentTimeMillis()
+        } else if (loginfalliti == 10) {
+            duratablocco= 60 * 60 * 1000 // Blocco di 1 ora
+            bloccoutenteinizio = System.currentTimeMillis()
+        } else if (loginfalliti == 15) {
+            duratablocco = 24 * 60 * 60 * 1000 // Blocco di 1 giorno
+            bloccoutenteinizio = System.currentTimeMillis()
+        }
+    }
 
 }
-/*
-pswEditText.setOnTouchListener { _, event ->
-    if (event.action == MotionEvent.ACTION_UP) {
-        // Verifica se l'utente ha toccato l'icona
-        if (event.rawX >= (pswEditText.right - pswEditText.compoundDrawables[2].bounds.width())) {
-            // Alterna la visibilità della password
-            if (isPasswordVisible) {
-                // Nascondi la password
-                pswEditText.transformationMethod = PasswordTransformationMethod.getInstance()
-                pswEditText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0)
-            } else {
-                // Mostra la password
-                pswEditText.transformationMethod = null
-                pswEditText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_closed, 0)
-            }
-            isPasswordVisible = !isPasswordVisible
-            // Sposta il cursore alla fine del testo
-            pswEditText.setSelection(pswEditText.text.length)
-            return@setOnTouchListener true
-        }
-    }
-    false
-}
-
-        /*DA VEDERE POI
-        resetPassword.setOnClickListener {
-            val email = mailEditText.text.toString()
-
-            if (email.isNotEmpty()) {
-                auth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val intent = Intent(this, ResetPassword::class.java)
-                            startActivity(intent)
-                        } else {
-                            Toast.makeText(this, "Errore nell'invio dell'email", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-            } else {
-                Toast.makeText(this, "Inserisci l'email", Toast.LENGTH_SHORT).show()
-            }
-        }*/
-
-      /*  val phoneEditText = findViewById<EditText>(R.id.edtextphonenumber)
-        val codeEditText = findViewById<EditText>(R.id.codeEditText)
-        val sendCodeButton = findViewById<Button>(R.id.sendCodeButton)
-        val verifyCodeButton = findViewById<Button>(R.id.verifyCodeButton)
-
-        // Invia il codice di verifica
-        sendCodeButton.setOnClickListener {
-            val phoneNumber = phoneEditText.text.toString().trim()
-            if (phoneNumber.isNotEmpty()) {
-                sendVerificationCode(phoneNumber)
-            } else {
-                Toast.makeText(this, "Inserisci un numero di telefono valido", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Verifica il codice ricevuto
-        verifyCodeButton.setOnClickListener {
-            val code = codeEditText.text.toString().trim()
-            if (code.isNotEmpty()) {
-                verifyVerificationCode(code)
-            } else {
-                Toast.makeText(this, "Inserisci il codice di verifica", Toast.LENGTH_SHORT).show()
-            }
-        }*/
-    }
-
-   /* private fun sendVerificationCode(phoneNumber: String) {
-        val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(phoneNumber)       // Numero di telefono
-            .setTimeout(60L, TimeUnit.SECONDS) // Timeout per il codice di verifica
-            .setActivity(this)                 // Activity corrente
-            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-
-                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                    // Autenticazione completata automaticamente
-                    signInWithPhoneAuthCredential(credential)
-                }
-
-                override fun onVerificationFailed(e: FirebaseException) {
-                    Toast.makeText(this@LoginActivity, "Verifica fallita: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-
-                override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-                    // Salva il verificationId per utilizzarlo durante la verifica
-                    this@LoginActivity.verificationId = verificationId
-                    Toast.makeText(this@LoginActivity, "Codice inviato", Toast.LENGTH_SHORT).show()
-
-                    // Rendi visibile la parte di UI per inserire il codice
-                    findViewById<EditText>(R.id.codeEditText).visibility = View.VISIBLE
-                    findViewById<Button>(R.id.verifyCodeButton).visibility = View.VISIBLE
-                }
-            }).build()
-
-        PhoneAuthProvider.verifyPhoneNumber(options)
-    }
-
-    private fun verifyVerificationCode(code: String) {
-        val verificationId = this.verificationId
-        if (verificationId != null) {
-            val credential = PhoneAuthProvider.getCredential(verificationId, code)
-            signInWithPhoneAuthCredential(credential)
-        } else {
-            Toast.makeText(this, "Codice non ancora inviato", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Autenticazione riuscita
-                    Toast.makeText(this, "Autenticazione riuscita", Toast.LENGTH_SHORT).show()
-                    // Esegui il redirect all'activity principale
-                    startMainPage()
-                } else {
-                    // Autenticazione fallita
-                    Toast.makeText(this, "Autenticazione fallita", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }*/
 
 
 
 
- */
+

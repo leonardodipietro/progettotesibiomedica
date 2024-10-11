@@ -48,19 +48,19 @@ class MainPage : AppCompatActivity() {
         val benvenutoTextView: TextView = findViewById(R.id.titolo)
 
         Log.d("funziona","funziona $userid")
-        if (utente == null) {
             utente = loadUserFromPreferences() // Prova a caricare dalle Shared Preferences
-        } else {
-            saveUserToPreferences(utente) // Salva l'utente nelle Shared Preferences se presente nell'intent
-        }
+
+            saveUserToPreferences(utente!!) // Salva l'utente nelle Shared Preferences se presente nell'intent
+
 
         if (utente != null) {
             val userId = utente.id
             Log.d("funziona", "Utente trovato con ID: $userId")
             benvenutoTextView.text = "Benvenuto ${utente.username}, come ti senti oggi?"
         } else {
-            // Se l'utente è null, reindirizza al login
-            startActivity(Intent(this, LoginActivity::class.java))
+            // Se l'utente non è presente, torna alla MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
             finish()
         }
 
@@ -98,22 +98,30 @@ class MainPage : AppCompatActivity() {
 
 
 
-            if (userid != null) {
+            if (utente != null) {
+                val userId = utente.id
 
-                // Invia i sintomi selezionati
-                userRepo.submitSintomi(userid, selectedSintomi)
+                // Aggiungi un controllo di nullità per userId
+                if (userId != null) {
+                    Log.d("submitSintomi", "Inviando sintomi per utente con ID: $userId")
 
-                // Rimuovi i sintomi deselezionati (quelli che non sono più nella lista selectedSintomi)
-                val allSintomi = sintadapter.getAllSintomi()
-                val allSintomiIds = allSintomi.map { it.id }
-                val selectedSintomiIds = selectedSintomi.map { it.id }
-                val sintomiDaRimuovere = allSintomiIds.minus(selectedSintomiIds)
+                    // Invia i sintomi selezionati
+                    userRepo.submitSintomi(userId, selectedSintomi)
 
-                sintomiDaRimuovere.forEach { sintomoId ->
-                    userRepo.removeSintomo(userid, sintomoId)
+                    // Rimuovi i sintomi deselezionati (quelli che non sono più nella lista selectedSintomi)
+                    val allSintomi = sintadapter.getAllSintomi()
+                    val allSintomiIds = allSintomi.map { it.id }
+                    val selectedSintomiIds = selectedSintomi.map { it.id }
+                    val sintomiDaRimuovere = allSintomiIds.minus(selectedSintomiIds)
+
+                    sintomiDaRimuovere.forEach { sintomoId ->
+                        userRepo.removeSintomo(userId, sintomoId)
+                    }
+                } else {
+                    Log.e("submitSintomi", "L'ID dell'utente è null. Impossibile inviare i sintomi.")
                 }
             } else {
-                Log.d("InviaButton", "Nessun utente autenticato.")
+                Log.e("InviaButton", "L'oggetto utente è null. Nessun utente autenticato.")
             }
         }
         val recyclerView: RecyclerView = findViewById(R.id.recyclerSintomi)
@@ -163,20 +171,6 @@ class MainPage : AppCompatActivity() {
         }*/
 
 
-        //Usare per ogni sintomo
-        sintomoRepo.aggiungiSintomo("paura") { success ->
-            if (success) {
-                Log.d("AGGIUNTASECONDACTIVIY","AGGIUNTA RIUSCITA")
-            }
-        }
-
-        //METODO PER RIMUOVERE UN SINTOMO DAL DATABSE
-        //copiare id da dashboard database
-        sintomoRepo.rimuoviSintomo("074df670-63fd-4ebd-81e1-f70113e7440c") { success ->
-            if (success) {
-                Log.d("Rimozione riuscita","rimozione riuscita")
-            }
-        }
 
 
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
@@ -240,7 +234,7 @@ class MainPage : AppCompatActivity() {
             .build()
 
         WorkManager.getInstance(this)
-            .enqueueUniqueWork("DailyNotificationWork", ExistingWorkPolicy.REPLACE, workRequest)
+            .enqueueUniqueWork("NotificaWorker", ExistingWorkPolicy.REPLACE, workRequest)
 
     }
 
@@ -256,26 +250,35 @@ class MainPage : AppCompatActivity() {
 
         }
     }
-
     // Funzione per salvare l'utente nelle Shared Preferences
     private fun saveUserToPreferences(user: Utente) {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val json = gson.toJson(user)
         editor.putString("utente", json)
+        editor.putBoolean("isLoggedIn", true)
         editor.apply()
+
+        // Log per verificare il salvataggio
+        Log.d("debuglogin", "Utente salvato nelle Shared Preferences: $json")
+        Log.d("debuglogin", "isLoggedIn salvato come true")
     }
 
     // Funzione per caricare l'utente dalle Shared Preferences
     private fun loadUserFromPreferences(): Utente? {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("utente", null)
-        return if (json != null) {
-            gson.fromJson(json, Utente::class.java)
+
+        // Log per verificare i dati caricati
+        if (json != null) {
+            Log.d("debuglogin", "Utente caricato dalle Shared Preferences: $json")
+            return gson.fromJson(json, Utente::class.java)
         } else {
-            null
+            Log.d("debuglogins", "Nessun utente trovato nelle Shared Preferences")
+            return null
         }
     }
+
 }
 
 

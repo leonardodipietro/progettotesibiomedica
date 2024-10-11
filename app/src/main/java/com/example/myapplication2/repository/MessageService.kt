@@ -25,7 +25,7 @@ class MessageService  : FirebaseMessagingService() {
             val notification = NotificationCompat.Builder(this, "daily_notification")
                 .setSmallIcon(R.drawable.notificaicona)
                 .setContentTitle(title ?: "Notifica giornaliera")
-                .setContentText(messageBody ?: "Ecco il tuo promemoria quotidiano!")
+                .setContentText(messageBody ?: "Come ti senti oggi!")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .build()
 

@@ -5,11 +5,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -63,6 +65,9 @@ class AdminActivity : AppCompatActivity() {
         val writeSintomo=findViewById<EditText>(R.id.editaggiuntasintomo)
         val removeSintButton=findViewById<Button>(R.id.rimuovisintomo)
         val inviosintomo=findViewById<Button>(R.id.buttonaggiuntanuovosintomo)
+        var isOldPasswordVisible = false
+        var isNewPasswordVisible = false
+        var isConfirmPasswordVisible = false
         val spinnerRimuoviSint= findViewById<Spinner>(R.id.spinnerrimuovisintomo)
         spinnerRimuoviSint.adapter = spinnerSintAdapter
 
@@ -73,9 +78,10 @@ class AdminActivity : AppCompatActivity() {
         val oldPasswordEditText = findViewById<EditText>(R.id.editpswadminold)
         val newPasswordEditText = findViewById<EditText>(R.id.editpswadmindnew)
         val confirmPasswordEditText = findViewById<EditText>(R.id.editpswadminconferm)
-
+        val showOldPassword = findViewById<ImageView>(R.id.mostraVecchiaPassword)
+        val showNewPassword = findViewById<ImageView>(R.id.mostraNuovaPassword)
+        val showConfirmPassword = findViewById<ImageView>(R.id.mostraConfermaPassword)
         val modifyButton=findViewById<Button>(R.id.buttonmodifyadmin)
-
         utente!!.id?.let {
             userrepo.getUserData(it) { utente ->
                 Log.d("ProfileActivity", "Dati utente recuperati dal database: ${utente.toString()}")
@@ -175,6 +181,40 @@ class AdminActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>) {
                 // Nessuna azione necessaria
             }
+        }
+        showOldPassword.setOnClickListener {
+            if (isOldPasswordVisible) {
+                oldPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showOldPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                oldPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showOldPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            oldPasswordEditText.setSelection(oldPasswordEditText.text.length)
+            isOldPasswordVisible = !isOldPasswordVisible
+        }
+
+        showNewPassword.setOnClickListener {
+            if (isNewPasswordVisible) {
+                newPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showNewPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                newPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showNewPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            newPasswordEditText.setSelection(newPasswordEditText.text.length)
+            isNewPasswordVisible = !isNewPasswordVisible
+        }
+        showConfirmPassword.setOnClickListener {
+            if (isConfirmPasswordVisible) {
+                confirmPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showConfirmPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                confirmPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showConfirmPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            confirmPasswordEditText.setSelection(confirmPasswordEditText.text.length)
+            isConfirmPasswordVisible = !isConfirmPasswordVisible
         }
 
 

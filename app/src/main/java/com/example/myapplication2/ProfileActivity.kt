@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -59,9 +60,17 @@ class ProfileActivity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.edit_email)
         val phoneEditText = findViewById<EditText>(R.id.edit_phone)
 
+        var isOldPasswordVisible = false
+        var isNewPasswordVisible = false
+        var isConfirmPasswordVisible = false
+
         val oldPasswordEditText = findViewById<EditText>(R.id.edit_password_old)
         val newPasswordEditText = findViewById<EditText>(R.id.edit_password_new)
         val confirmPasswordEditText = findViewById<EditText>(R.id.edit_password_confirm)
+        val showOldPassword = findViewById<ImageView>(R.id.mostraVecchiaPasswordUser)
+        val showNewPassword = findViewById<ImageView>(R.id.mostraNuovaPasswordUser)
+        val showConfirmPassword = findViewById<ImageView>(R.id.mostraConfermaPasswordUser)
+
         val saveButton = findViewById<Button>(R.id.button_save)
 
         val usernameEditText = findViewById<EditText>(R.id.edit_username)
@@ -87,6 +96,40 @@ class ProfileActivity : AppCompatActivity() {
                     Toast.makeText(this, "Nessun dato utente trovato", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+        showOldPassword.setOnClickListener {
+            if (isOldPasswordVisible) {
+                oldPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showOldPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                oldPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showOldPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            oldPasswordEditText.setSelection(oldPasswordEditText.text.length)
+            isOldPasswordVisible = !isOldPasswordVisible
+        }
+
+        showNewPassword.setOnClickListener {
+            if (isNewPasswordVisible) {
+                newPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showNewPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                newPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showNewPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            newPasswordEditText.setSelection(newPasswordEditText.text.length)
+            isNewPasswordVisible = !isNewPasswordVisible
+        }
+        showConfirmPassword.setOnClickListener {
+            if (isConfirmPasswordVisible) {
+                confirmPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                showConfirmPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio chiuso"
+            } else {
+                confirmPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                showConfirmPassword.setImageResource(R.drawable.passwordicon) // Cambia l'icona in "occhio aperto"
+            }
+            confirmPasswordEditText.setSelection(confirmPasswordEditText.text.length)
+            isConfirmPasswordVisible = !isConfirmPasswordVisible
         }
 
 
@@ -439,7 +482,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun stopNotification() {
         Log.d("MainPage", "fermata la notifica")
 
-        WorkManager.getInstance(this).cancelUniqueWork("DailyNotificationWork")
+        WorkManager.getInstance(this).cancelUniqueWork("NotificaWorker")
     }
 
     private fun updateEmail(newEmail: String) {

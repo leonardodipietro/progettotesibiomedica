@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -8,10 +9,12 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
 
 class MainActivity: AppCompatActivity()  {
 
@@ -22,21 +25,35 @@ class MainActivity: AppCompatActivity()  {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
+        //auth = FirebaseAuth.getInstance()
+       // val currentUser = auth.currentUser
 
-        if (currentUser != null) {
-            currentUser.reload().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val uid = currentUser.uid
-                    checkUserTypeAndRedirect(uid)  // Verifica il tipo di utente dal database
-                } else {
-                    auth.signOut()
-                    setContentView(R.layout.activitymain)
-                    interfacciagrafica()
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+        val isAdmin = sharedPreferences.getBoolean("isAdmin", false)
+
+        if (isLoggedIn) {
+            if (isAdmin) {
+                val utenteJson = sharedPreferences.getString("utente", null)
+                val utente = Gson().fromJson(utenteJson, Utente::class.java)
+                val intent = Intent(this, AdminActivity::class.java).apply {
+                    putExtra("utente", utente)
                 }
+                startActivity(intent)
+            } else {
+                val utenteJson = sharedPreferences.getString("utente", null)
+                val utente = Gson().fromJson(utenteJson, Utente::class.java)
+
+                // Se l'utente è loggato, vai direttamente alla MainPage
+                val intent = Intent(this, MainPage::class.java).apply {
+                    putExtra("utente", utente)
+                }
+                startActivity(intent)
+                finish()
             }
+            finish()
         } else {
+            // Se l'utente non è loggato, mostra la schermata di login
             setContentView(R.layout.activitymain)
             interfacciagrafica()
         }
