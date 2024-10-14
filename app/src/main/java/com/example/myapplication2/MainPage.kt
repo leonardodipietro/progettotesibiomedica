@@ -1,36 +1,163 @@
 package com.example.myapplication2
 
-import OnSwipeTouchListener
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.myapplication2.Presenter.MainPagePresenter
 import com.example.myapplication2.adapter.SintomiAdapter
+import com.example.myapplication2.interfacepackage.MainPageView
+import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.NotificaWorker
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.auth.FirebaseAuth
 import java.util.concurrent.TimeUnit
 import com.google.gson.Gson
 
-class MainPage : AppCompatActivity() {
+
+class MainPage : AppCompatActivity(), MainPageView {
+    private lateinit var presenter: MainPagePresenter
+    private lateinit var sintadapter: SintomiAdapter
+    private lateinit var userRepo: UserRepo
+    private lateinit var sintomoRepo: SintomoRepo
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.mainpageactivity)
+
+        // Inizializza il presenter
+        userRepo = UserRepo()
+        sintomoRepo = SintomoRepo()
+        presenter = MainPagePresenter(this, sintomoRepo, userRepo)
+
+        // Inizializza la UI e l'adapter
+        setupUI()
+        setupListeners()
+
+        val intentUser = intent.getParcelableExtra<Utente>("utente")
+        presenter.loadUserData(intentUser)
+        intentUser?.let {
+            //presenter.scheduleNotifications(it.id)
+        }
+
+        presenter.loadSintomiList()
+    }
+
+    private fun setupUI() {
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerSintomi)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        sintadapter = SintomiAdapter(emptyList())
+        recyclerView.adapter = sintadapter
+
+        // Setup della navigation bar
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_profile -> {
+                    val utente = loadUserFromPreferences()
+                    utente?.let { navigateToProfile(it) }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+    private fun setupListeners() {
+        val inviaButton: Button = findViewById(R.id.inviadati)
+        val spinnerDistanza: Spinner = findViewById(R.id.spinnerDistanzaUltimoPasto)
+
+        inviaButton.setOnClickListener {
+            val distanzapasto = getDistanzaPastoFromSpinner(spinnerDistanza)
+            val selectedSintomi = sintadapter.getSelectedSintomi()
+            val allSintomi = sintadapter.getAllSintomi()  // Ottieni la lista completa dei sintomi
+            val userId = loadUserFromPreferences()?.id
+
+            if (userId != null) {
+                presenter.submitSelectedSintomi(userId, selectedSintomi, allSintomi, distanzapasto)
+            } else {
+                showError("Errore: Utente non autenticato.")
+            }
+        }
+    }
+
+    private fun getDistanzaPastoFromSpinner(spinner: Spinner): Int {
+        return when (spinner.selectedItem.toString()) {
+            "Meno di 1 ora" -> 0
+            "1 ora" -> 1
+            "2 ore" -> 2
+            "3 ore" -> 3
+            "Più di 3 ore" -> 4
+            else -> 0
+        }
+    }
+
+    // Implementazione dell'interfaccia MainPageView
+    override fun showUserWelcomeMessage(username: String) {
+        findViewById<TextView>(R.id.titolo).text = "Benvenuto $username, come ti senti oggi?"
+    }
+
+    override fun updateSintomiList(sintomiList: List<Sintomo>) {
+        sintadapter.submitlist(sintomiList)
+    }
+
+    override fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun navigateToProfile(user: Utente) {
+        val intent = Intent(this, ProfileActivity::class.java).apply {
+            putExtra("utente", user)
+        }
+        startActivity(intent)
+    }
+
+    override fun scheduleDailyNotification() {
+        val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS).build()
+        WorkManager.getInstance(this).enqueue(workRequest)
+    }
+
+    override fun saveUserToPreferences(user: Utente) {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val json = Gson().toJson(user)
+        editor.putString("utente", json)
+        editor.putBoolean("isAdmin", false)
+        editor.putBoolean("isLoggedIn", true)
+        editor.apply()
+    }
+
+    override fun loadUserFromPreferences(): Utente? {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val json = sharedPreferences.getString("utente", null)
+        return if (json != null) Gson().fromJson(json, Utente::class.java) else null
+    }
+
+
+
+
+
+
+
+    override fun stopNotification() {
+        WorkManager.getInstance(this).cancelUniqueWork("NotificaWorker")
+    }
+
+
+
+}
+
+
+/*class MainPage : AppCompatActivity() {
     private lateinit var sintomoRepo: SintomoRepo
     private lateinit var sintadapter: SintomiAdapter
     private lateinit var userRepo: UserRepo
@@ -160,16 +287,6 @@ class MainPage : AppCompatActivity() {
         })
 
 
-       /* userRepo.fetchSelectedSintomiForUser(currentUser!!.uid) { sintomiList ->
-            Log.d("FetchSintomo", "Numero di sintomi recuperati: ${sintomiList.size}")
-
-            for (sintomo in sintomiList) {
-                Log.d("FetchSintomo", "Nome: ${sintomo.nomeSintomo}")
-            }
-
-            Log.d("FetchSintomo", "Fine gestione")
-        }*/
-
 
 
 
@@ -280,5 +397,5 @@ class MainPage : AppCompatActivity() {
     }
 
 }
-
+*/
 

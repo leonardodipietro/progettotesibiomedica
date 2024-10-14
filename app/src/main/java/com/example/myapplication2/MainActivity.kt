@@ -31,17 +31,21 @@ class MainActivity: AppCompatActivity()  {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
         val isAdmin = sharedPreferences.getBoolean("isAdmin", false)
-
+        Log.d("SharedPreferences", "Dati utente recuperati: $isLoggedIn")
         if (isLoggedIn) {
+            val utenteJson = sharedPreferences.getString("utente", null)
+            Log.d("SharedPreferences", "Dati utente recuperati: $utenteJson")
+            Log.d("SharedPreferences", "Dati utente recuperati: ")
             if (isAdmin) {
-                val utenteJson = sharedPreferences.getString("utente", null)
+                Log.d("AdminCheck", "Utente è admin, avvio AdminActivity")
+                //val utenteJson = sharedPreferences.getString("utente", null)
                 val utente = Gson().fromJson(utenteJson, Utente::class.java)
                 val intent = Intent(this, AdminActivity::class.java).apply {
                     putExtra("utente", utente)
                 }
                 startActivity(intent)
             } else {
-                val utenteJson = sharedPreferences.getString("utente", null)
+               // val utenteJson = sharedPreferences.getString("utente", null)
                 val utente = Gson().fromJson(utenteJson, Utente::class.java)
 
                 // Se l'utente è loggato, vai direttamente alla MainPage
@@ -58,7 +62,7 @@ class MainActivity: AppCompatActivity()  {
             interfacciagrafica()
         }
     }
-    private fun checkUserTypeAndRedirect(uid: String) {
+    /*private fun checkUserTypeAndRedirect(uid: String) {
         val userRef = database.getReference("users").child(uid)
 
         userRef.get().addOnSuccessListener { snapshot ->
@@ -82,7 +86,7 @@ class MainActivity: AppCompatActivity()  {
         }.addOnFailureListener { exception ->
             Log.e("MainActivity", "Errore nel recupero dei dati: ${exception.message}")
         }
-    }
+    }*/
     private fun interfacciagrafica() {
        val mailpswdbutton = findViewById<Button>(R.id.pulsantemail)
        val phonebutton=findViewById<Button>(R.id.pulsantetel)

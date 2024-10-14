@@ -433,7 +433,7 @@ class UserRepo {
                         callback(task.isSuccessful)
                     }
             } else {
-                Log.d("ChangePassword", "Email trovata. Procedo con il cambio password su Firebase Authentication.")
+                Log.d("ChangePassword", "Email trovata. Procedo con il cambio password su Firebase Authentication $oldPassword.")
                 // Se c'è email, cambia la password su Firebase Authentication e nel Realtime Database
                 auth.signInWithEmailAndPassword(email, oldPassword).addOnCompleteListener { loginTask ->
                     if (loginTask.isSuccessful) {

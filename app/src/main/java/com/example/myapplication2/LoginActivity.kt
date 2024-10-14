@@ -11,6 +11,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication2.Presenter.LoginPresenter
+import com.example.myapplication2.interfacepackage.LoginInterface
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.FirebaseException
@@ -22,11 +24,94 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import java.util.concurrent.TimeUnit
 
-class LoginActivity : AppCompatActivity() {
+
+    class LoginActivity : AppCompatActivity(), LoginInterface {
+
+        private lateinit var presenter: LoginPresenter
+        private lateinit var usernameEditText: EditText
+        private lateinit var passwordEditText: EditText
+        private lateinit var showPasswordImageView: ImageView
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_login)
+
+            val userRepo = UserRepo()
+            presenter = LoginPresenter(this, userRepo)
+
+            usernameEditText = findViewById(R.id.usernamelogin)
+            passwordEditText = findViewById(R.id.pswlogin)
+            showPasswordImageView = findViewById(R.id.mostraPassword)
+
+            findViewById<Button>(R.id.loginconmail).setOnClickListener {
+                onLoginClicked(usernameEditText.text.toString(), passwordEditText.text.toString())
+            }
+
+            findViewById<TextView>(R.id.iniziaresetpsw).setOnClickListener {
+                onResetPasswordClicked(usernameEditText.text.toString())
+            }
+
+            showPasswordImageView.setOnClickListener {
+                onShowPasswordClicked()
+            }
+
+        }
+
+        override fun showLoginSuccess(admin: Boolean, user: Utente?) {
+            val intent = Intent(this, if (admin) AdminActivity::class.java else MainPage::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("utente", user)
+            }
+            startActivity(intent)
+        }
+
+        override fun showLoginFailure(errorMessage: String) {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        }
+
+        override fun showAccountLocked(remainingTime: Long) {
+            Toast.makeText(this, "Account bloccato. Riprova tra $remainingTime secondi.", Toast.LENGTH_LONG).show()
+        }
+
+        override fun showResetPasswordEmailSent() {
+            Toast.makeText(this, "Email di reset inviata. Controlla la tua posta.", Toast.LENGTH_SHORT).show()
+        }
+
+        override fun showResetPasswordError(errorMessage: String) {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        }
+
+        override fun promptForUsername() {
+            Toast.makeText(this, "Inserisci il tuo username.", Toast.LENGTH_SHORT).show()
+        }
+
+        override fun togglePasswordVisibility(isVisible: Boolean) {
+            passwordEditText.inputType = if (isVisible) {
+                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            } else {
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+            passwordEditText.setSelection(passwordEditText.text.length)
+            showPasswordImageView.setImageResource(if (isVisible) R.drawable.passwordicon else R.drawable.passwordicon)
+        }
+
+        override fun onLoginClicked(username: String, password: String) {
+            presenter.handleLogin(username, password)
+        }
+
+        override fun onResetPasswordClicked(username: String) {
+            presenter.handleResetPassword(username)
+        }
+
+
+        override fun onShowPasswordClicked() {
+            presenter.handleShowPassword()
+        }
+    }
 
     //todo vedere occhio
     //TODO CREAREICONA
-    private lateinit var auth: FirebaseAuth
+    /*private lateinit var auth: FirebaseAuth
     private var verificationId: String? = null
     private lateinit var userRepo: UserRepo
     private var loginfalliti = 0
@@ -177,7 +262,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
 }
-
+*/
 
 
 

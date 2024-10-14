@@ -3,13 +3,11 @@ package com.example.myapplication2.repository
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.myapplication2.model.Sintomo
-import com.google.firebase.Firebase
 import java.util.UUID
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.database
 import java.util.concurrent.CountDownLatch
 
 
@@ -76,27 +74,32 @@ class SintomoRepo {
         })
     }
 
-        fun caricaSintomi(sintomiList: MutableList<String>,sintomiIdList: MutableList<String>, onComplete: () -> Unit) {
-            sintomiRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    sintomiList.clear()
-                    sintomiIdList.clear()
-                    for (sintomoSnapshot in snapshot.children) {
-                        val nomeSintomo = sintomoSnapshot.child("nomeSintomo").getValue(String::class.java)
-                        val idSintomo = sintomoSnapshot.key
-                        if (nomeSintomo != null && idSintomo != null) {
-                            sintomiList.add(nomeSintomo)
-                            sintomiIdList.add(idSintomo)
-                        }
+    fun caricaSintomi(
+        sintomiList: MutableList<String>,
+        sintomiIdList: MutableList<String>,
+        onComplete: () -> Unit  // Rimosso parametro Any?
+    ) {
+        sintomiRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                sintomiList.clear()
+                sintomiIdList.clear()
+                for (sintomoSnapshot in snapshot.children) {
+                    val nomeSintomo = sintomoSnapshot.child("nomeSintomo").getValue(String::class.java)
+                    val idSintomo = sintomoSnapshot.key
+                    if (nomeSintomo != null && idSintomo != null) {
+                        sintomiList.add(nomeSintomo)
+                        sintomiIdList.add(idSintomo)
                     }
-                    onComplete()
                 }
+                onComplete()  // Nessun argomento necessario qui
+            }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.d("sintrepo", "Errore: ${error.message}")
-                }
-            })
-        }
+            override fun onCancelled(error: DatabaseError) {
+                Log.d("sintrepo", "Errore: ${error.message}")
+            }
+        })
+    }
+
 
 
 

@@ -14,20 +14,398 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.content.ContextCompat
+import com.example.myapplication2.Presenter.AdminPresenter
 import com.example.myapplication2.adapter.SpinnerSintomoAdapter
-import com.example.myapplication2.model.Sintomo
+import com.example.myapplication2.interfacepackage.AdminView
+import com.example.myapplication2.interfacepackage.PasswordType
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.ExportRepo
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 
+class AdminActivity : AppCompatActivity(), AdminView {
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 1001 // Aggiungi qui il PERMISSION_REQUEST_CODE
+    }
+
+    private lateinit var presenter: AdminPresenter
+    private lateinit var auth: FirebaseAuth
+
+    // Viste UI
+    private lateinit var emailEditText: EditText
+    private lateinit var phoneEditText: EditText
+    private lateinit var usernameEditText: EditText
+    private lateinit var oldPasswordEditText: EditText
+    private lateinit var newPasswordEditText: EditText
+    private lateinit var confirmPasswordEditText: EditText
+    private lateinit var showOldPassword: ImageView
+    private lateinit var showNewPassword: ImageView
+    private lateinit var showConfirmPassword: ImageView
+    private lateinit var modifyButton: Button
+    private lateinit var logoutButton: Button
+    private lateinit var generateExcelButton: Button
+    private lateinit var aggiungiSintButton: Button
+    private lateinit var removeSintButton: Button
+    private lateinit var writeSintomo: EditText
+    private lateinit var inviosintomo: Button
+    private lateinit var spinnerRimuoviSint: Spinner
+
+    // Adapter per lo spinner
+    private lateinit var spinnerSintAdapter: SpinnerSintomoAdapter
+    private val sintomiList = mutableListOf<String>()
+    private val sintomiIdList = mutableListOf<String>()
+
+    // Stato visibilità password
+    private var isOldPasswordVisible = false
+    private var isNewPasswordVisible = false
+    private var isConfirmPasswordVisible = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_admin)
+        //clearUserPreferences()
+
+        presenter = AdminPresenter(this, UserRepo(), SintomoRepo(), ExportRepo(), this)
+
+        //var utente = intent.getParcelableExtra<Utente>("utente")
+       /* saveUserToPreferences(utente!!)
+        Log.d("Lifecycle", "onCreate avviato in AdminActivity $utente")
+        if (utente == null) {
+            utente = loadUserFromPreferences()
+        } else {
+            saveUserToPreferences(utente)
+        }*/
+
+        auth=FirebaseAuth.getInstance()
+        val user = intent.getParcelableExtra<Utente>("utente")
+        presenter.loadUserData(user) // Carica i dati utente dal presenter
+        user?.let {
+            saveUserToPreferences(user)
+
+        //presenter.scheduleNotifications(it.id)
+        }
+
+
+        /*utente?.id?.let {
+            presenter.loadUserData(it)
+        }*/
+        //presenter = AdminPresenter(this, UserRepo(), SintomoRepo(), ExportRepo())
+
+        // Inizializzazione viste
+        emailEditText = findViewById(R.id.editemailadmin)
+        phoneEditText = findViewById(R.id.editphoneadmin)
+        usernameEditText = findViewById(R.id.editusernameadmin)
+        oldPasswordEditText = findViewById(R.id.editpswadminold)
+        newPasswordEditText = findViewById(R.id.editpswadmindnew)
+        confirmPasswordEditText = findViewById(R.id.editpswadminconferm)
+        showOldPassword = findViewById(R.id.mostraVecchiaPassword)
+        showNewPassword = findViewById(R.id.mostraNuovaPassword)
+        showConfirmPassword = findViewById(R.id.mostraConfermaPassword)
+        modifyButton = findViewById(R.id.buttonmodifyadmin)
+        logoutButton = findViewById(R.id.logoutadmin)
+        generateExcelButton = findViewById(R.id.exporttoexcel)
+        aggiungiSintButton = findViewById(R.id.aggiungisintomo)
+        writeSintomo = findViewById(R.id.editaggiuntasintomo)
+        removeSintButton = findViewById(R.id.rimuovisintomo)
+        inviosintomo = findViewById(R.id.buttonaggiuntanuovosintomo)
+        spinnerRimuoviSint = findViewById(R.id.spinnerrimuovisintomo)
+
+        // Configura adapter e spinner
+        spinnerSintAdapter = SpinnerSintomoAdapter(this, sintomiList)
+        spinnerRimuoviSint.adapter = spinnerSintAdapter
+
+        // Event listeners
+        aggiungiSintButton.setOnClickListener {
+            if (writeSintomo.visibility == View.GONE) {
+                writeSintomo.visibility = View.VISIBLE
+                inviosintomo.visibility = View.VISIBLE
+            } else {
+                writeSintomo.visibility = View.GONE
+                inviosintomo.visibility = View.GONE
+            }
+        }
+
+        inviosintomo.setOnClickListener {
+            val nomeSintomo = writeSintomo.text.toString().trim()
+            presenter.addSintomo(nomeSintomo)
+        }
+
+        removeSintButton.setOnClickListener {
+            if (spinnerRimuoviSint.visibility == View.VISIBLE) {
+                spinnerRimuoviSint.visibility = View.GONE  // Nascondi lo spinner se è già visibile
+            } else {
+                spinnerRimuoviSint.visibility = View.VISIBLE  // Mostra lo spinner se è nascosto
+                presenter.loadSintomi()  // Carica i sintomi tramite il presenter solo quando diventa visibile
+            }
+        }
+
+// Gestisce la selezione di un elemento nello Spinner
+        // Gestisce la selezione di un elemento nello Spinner
+        spinnerRimuoviSint.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                if (position >= 0 && position < sintomiIdList.size) {
+                    val idSintomo = sintomiIdList[position]
+                    AlertDialog.Builder(this@AdminActivity)
+                        .setTitle("Conferma Rimozione")
+                        .setMessage("Vuoi rimuovere il sintomo selezionato?")
+                        .setPositiveButton("Sì") { _, _ ->
+                            presenter.removeSintomo(idSintomo)  // Rimuovi il sintomo tramite il presenter
+                        }
+                        .setNegativeButton("No", null)
+                        .show()
+                } else {
+                    Log.e("sintrepo", "Indice fuori dai limiti: $position per la lista degli ID con lunghezza ${sintomiIdList.size}")
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Nessuna azione necessaria
+            }
+        }
+
+
+
+
+        showOldPassword.setOnClickListener {
+            togglePasswordVisibility(PasswordType.OLD_PASSWORD, isOldPasswordVisible)
+        }
+
+        showNewPassword.setOnClickListener {
+            togglePasswordVisibility(PasswordType.NEW_PASSWORD, isNewPasswordVisible)
+        }
+
+        showConfirmPassword.setOnClickListener {
+            togglePasswordVisibility(PasswordType.CONFIRM_PASSWORD, isConfirmPasswordVisible)
+        }
+
+        modifyButton.setOnClickListener {
+            val email = emailEditText.text.toString()
+            val phone = phoneEditText.text.toString()
+            val username = usernameEditText.text.toString()
+            val oldPassword = oldPasswordEditText.text.toString()
+            val newPassword = newPasswordEditText.text.toString()
+            val confirmPassword = confirmPasswordEditText.text.toString()
+            user?.id?.let { it1 ->
+                presenter.saveUserData(
+                    it1,
+                    email,
+                    phone,
+                    username,
+                    oldPassword,
+                    newPassword,
+                    confirmPassword)
+            }
+
+                }
+
+        logoutButton.setOnClickListener {
+            presenter.logout()
+        }
+
+        generateExcelButton.setOnClickListener {
+            presenter.exportToExcel(this)
+        }
+    }
+
+    override fun showUserData(email: String?, phone: String?, username: String?) {
+        emailEditText.setText(email ?: "")
+        phoneEditText.setText(phone ?: "")
+        usernameEditText.setText(username ?: "")
+    }
+
+    override fun showUserNotFoundError() {
+        Toast.makeText(this, "Nessun dato utente trovato", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showAddSintomoSuccess() {
+        Toast.makeText(this, "Sintomo aggiunto con successo", Toast.LENGTH_SHORT).show()
+        writeSintomo.visibility = View.GONE
+        inviosintomo.visibility = View.GONE
+    }
+
+    override fun showAddSintomoError() {
+        Toast.makeText(this, "Sintomo già esistente o errore", Toast.LENGTH_SHORT).show()
+    }
+    override fun saveUserToPreferences(user: Utente) {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val json = Gson().toJson(user)
+        editor.putString("utente", json)
+        editor.putBoolean("isAdmin", true)
+        editor.putBoolean("isLoggedIn", true)
+        editor.apply()
+    }
+
+    override fun loadUserFromPreferences(): Utente? {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val json = sharedPreferences.getString("utente", null)
+        Log.d("Lifecycle", "onCreate avviato in AdminActivity chiamata load")
+        // Log per visualizzare il contenuto delle Shared Preferences
+        Log.d("SharedPreferences", "Dati trovati nelle Shared Preferences: $json")
+
+        return try {
+            if (json != null) {
+                // Controllo se il JSON è un oggetto valido per la deserializzazione
+                if (json.startsWith("{") && json.endsWith("}")) {
+                    val utente = Gson().fromJson(json, Utente::class.java)
+                    Log.d("Deserializzazione", "Deserializzazione completata con successo: $utente")
+                    utente
+                } else {
+                    Log.e("Deserializzazione", "Il JSON non è un oggetto valido: $json")
+                    null
+                }
+            } else {
+                Log.d("SharedPreferences", "Nessun dato utente salvato.")
+                null
+            }
+        } catch (e: JsonSyntaxException) {
+            // Log dell'errore di deserializzazione
+            Log.e("Deserializzazione", "Errore nella deserializzazione dei dati utente", e)
+
+            // Cancella i dati corrotti dalle Shared Preferences
+            //clearUserPreferences()
+            null
+        }
+    }
+
+    /*override fun saveUserToPreferences(user: Any?) {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val json = Gson().toJson(user)
+        editor.putString("utente", json)
+        editor.apply()
+    }*/
+
+    override fun clearUserPreferences() {
+        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
+        sharedPreferences.edit().clear().apply()
+    }
+
+    override fun showRemoveSintomoSuccess() {
+        Toast.makeText(this, "Sintomo rimosso con successo", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showRemoveSintomoError() {
+        Toast.makeText(this, "Errore nella rimozione del sintomo", Toast.LENGTH_SHORT).show()
+    }
+
+
+    override fun showSintomiList(nomiSintomi: List<String>, idSintomi: List<String>) {
+        sintomiList.clear()
+        sintomiList.addAll(nomiSintomi)
+
+        sintomiIdList.clear()
+        sintomiIdList.addAll(idSintomi)
+
+        spinnerSintAdapter.notifyDataSetChanged()
+    }
+
+
+    override fun showUpdateSuccess(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showUpdateError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun togglePasswordVisibility(passwordType: PasswordType, isVisible: Boolean) {
+        val editText = when (passwordType) {
+            PasswordType.OLD_PASSWORD -> oldPasswordEditText
+            PasswordType.NEW_PASSWORD -> newPasswordEditText
+            PasswordType.CONFIRM_PASSWORD -> confirmPasswordEditText
+        }
+        val imageView = when (passwordType) {
+            PasswordType.OLD_PASSWORD -> showOldPassword
+            PasswordType.NEW_PASSWORD -> showNewPassword
+            PasswordType.CONFIRM_PASSWORD -> showConfirmPassword
+        }
+        editText.inputType = if (isVisible) {
+            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        } else {
+            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        editText.setSelection(editText.text.length)
+        imageView.setImageResource(R.drawable.passwordicon)
+        when (passwordType) {
+            PasswordType.OLD_PASSWORD -> isOldPasswordVisible = !isVisible
+            PasswordType.NEW_PASSWORD -> isNewPasswordVisible = !isVisible
+            PasswordType.CONFIRM_PASSWORD -> isConfirmPasswordVisible = !isVisible
+        }
+    }
+
+    override fun showLogoutConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Uscire dall'Account?")
+            .setMessage("Sei sicuro di voler uscire dall'account?")
+            .setPositiveButton("Sì") { _, _ ->
+                presenter.confirmLogout()
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    override fun returnToMain() {
+        clearUserPreferences() // Cancella le Shared Preferences
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+
+    override fun requestWritePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
+        } else {
+            presenter.onRequestPermissionsResult(true,this)
+        }
+    }
+    override fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+
+    override fun showPermissionDeniedError() {
+        Log.e("Permission", "Permesso di scrittura negato")
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            presenter.onRequestPermissionsResult(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED,this)
+        }
+    }
+    override fun hasWritePermission(): Boolean {
+        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun showExportSuccessMessage() {
+        Toast.makeText(this, "Esportazione completata con successo", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showExportErrorMessage() {
+        Toast.makeText(this, "Errore durante l'esportazione", Toast.LENGTH_SHORT).show()
+    }
+   /* override fun showUserWelcomeMessage(username: String) {
+        findViewById<TextView>(R.id.titolo).text = "Benvenuto $username, come ti senti oggi?"
+    }*/
+
+
+
+
+
+
+}
+
+
+/*
 class AdminActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var export:ExportRepo
@@ -44,7 +422,7 @@ class AdminActivity : AppCompatActivity() {
 
 
         Log.d("MainActivity", "sono nell admin?.")
-        //auth = FirebaseAuth.getInstance()ù
+
         var utente = intent.getParcelableExtra<Utente>("utente")
         if (utente == null) {
             utente = loadUserFromPreferences() // Prova a caricare dalle Shared Preferences
@@ -414,3 +792,4 @@ class AdminActivity : AppCompatActivity() {
         editor.apply()
     }
 }
+*/
