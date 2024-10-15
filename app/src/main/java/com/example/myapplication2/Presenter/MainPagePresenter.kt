@@ -62,9 +62,9 @@ class MainPagePresenter(
     }
 
 
-    /*private fun scheduleNotifications(userId: String?) {
+    private fun scheduleNotifications(userId: String?) {
         userId?.let {
             view.scheduleDailyNotification()
         }
-    }*/
+    }
 }

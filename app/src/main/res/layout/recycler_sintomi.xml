@@ -23,6 +23,15 @@
         android:layout_marginTop="8dp"
         android:gravity="center">
 
+        <TextView
+            android:id="@+id/textview1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Lieve"
+            android:textStyle="bold"
+            android:padding="16dp" />
+
 
 
         <TextView
@@ -30,7 +39,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TV2"
+            android:textStyle="bold"
+            android:text="Moderato"
             android:padding="16dp" />
 
         <TextView
@@ -38,7 +48,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TV3"
+            android:text="Grave"
+            android:textStyle="bold"
             android:padding="16dp" />
 
         <TextView
@@ -46,7 +57,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TV4"
+            android:text="Molto grave"
+            android:textStyle="bold"
             android:padding="16dp" />
     </LinearLayout>
 
@@ -56,6 +68,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/textview_layout"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <CheckBox

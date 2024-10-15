@@ -1,7 +1,11 @@
 package com.example.myapplication2
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Spinner
@@ -10,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.myapplication2.Presenter.MainPagePresenter
@@ -17,15 +22,24 @@ import com.example.myapplication2.adapter.SintomiAdapter
 import com.example.myapplication2.interfacepackage.MainPageView
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
-import com.example.myapplication2.repository.NotificaWorker
+//import com.example.myapplication2.repository.NotificaWorker
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.util.concurrent.TimeUnit
 import com.google.gson.Gson
+import android.Manifest
+import android.util.Log
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkInfo
+import com.example.myapplication2.repository.NotificaWorker
 
 
 class MainPage : AppCompatActivity(), MainPageView {
+    companion object {
+        private const val REQUEST_CODE = 101
+    }
     private lateinit var presenter: MainPagePresenter
     private lateinit var sintadapter: SintomiAdapter
     private lateinit var userRepo: UserRepo
@@ -35,10 +49,14 @@ class MainPage : AppCompatActivity(), MainPageView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mainpageactivity)
 
+
         // Inizializza il presenter
         userRepo = UserRepo()
         sintomoRepo = SintomoRepo()
         presenter = MainPagePresenter(this, sintomoRepo, userRepo)
+
+
+        setupNotificationChannelAndPermissions()
 
         // Inizializza la UI e l'adapter
         setupUI()
@@ -51,6 +69,8 @@ class MainPage : AppCompatActivity(), MainPageView {
         }
 
         presenter.loadSintomiList()
+
+        scheduleDailyNotification()
     }
 
     private fun setupUI() {
@@ -120,10 +140,126 @@ class MainPage : AppCompatActivity(), MainPageView {
         }
         startActivity(intent)
     }
+    private fun setupNotificationChannelAndPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d("NotificationSetup", "Checking if notification channel needs to be created")
+            val name = "Daily Notification"
+            val descriptionText = "Channel for daily notifications"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("daily_notification", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+            scheduleDailyNotification()
+            Log.d("NotificationSetup", "Notification channel created")
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Log.d("NotificationSetup", "Checking notification permission for Android 13+")
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("NotificationSetup", "Permission not granted, requesting permission")
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE)
+            } else {
+                Log.d("NotificationSetup", "Permission already granted, scheduling notification")
+                scheduleDailyNotification()
+            }
+        } else {
+            Log.d("NotificationSetup", "Android version below 13, no permission required, scheduling notification")
+            scheduleDailyNotification()
+        }
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("NotificationPermission", "Notification permission granted: ${checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED}")
+
+                scheduleDailyNotification()
+
+            } else {
+                Log.d("NotificationPermission", "Permesso per le notifiche negato")
+            }
+        }
+    }
 
     override fun scheduleDailyNotification() {
-        val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS).build()
-        WorkManager.getInstance(this).enqueue(workRequest)
+        /*val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS).build()
+        WorkManager.getInstance(this).enqueue(workRequest)*/
+
+       /* val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(20, TimeUnit.MINUTES).build()
+        WorkManager.getInstance(this).enqueue(workRequest)*/
+        Log.d("WorkManager", "Scheduling daily notification")
+        val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificaWorker>(15, TimeUnit.MINUTES)
+            .addTag("daily_notification")
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "UniqueDailyNotificationWork", // Nome univoco per il lavoro
+            ExistingPeriodicWorkPolicy.REPLACE, // Politica per sostituire lavori esistenti con lo stesso nome
+            periodicWorkRequest
+        )
+
+        // Log per verificare lo stato del WorkRequest
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(periodicWorkRequest.id).observe(this) { workInfo ->
+            if (workInfo != null) {
+                Log.d("WorkManager", "Work ID: ${periodicWorkRequest.id}, State: ${workInfo.state}")
+
+                when (workInfo.state) {
+                    WorkInfo.State.ENQUEUED -> Log.d("WorkManager", "Periodic work is enqueued")
+                    WorkInfo.State.RUNNING -> Log.d("WorkManager", "Periodic work is running")
+                    WorkInfo.State.SUCCEEDED -> Log.d("WorkManager", "Periodic work succeeded")
+                    WorkInfo.State.FAILED -> Log.d("WorkManager", "Periodic work failed")
+                    WorkInfo.State.BLOCKED -> Log.d("WorkManager", "Periodic work is blocked")
+                    WorkInfo.State.CANCELLED -> Log.d("WorkManager", "Periodic work is cancelled")
+                    else -> Log.d("WorkManager", "Unknown work state")
+                }
+            } else {
+                Log.d("WorkManager", "WorkInfo is null")
+            }
+        }
+
+
+
+
+
+
+
+        /*val workRequest = OneTimeWorkRequestBuilder<NotificaWorker>()
+            //.addTag("daily_notification")
+            //.setInitialDelay(10, TimeUnit.SECONDS)
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            "UniqueNotificationWork",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+        //WorkManager.getInstance(this).enqueue(workRequest)
+
+        // Log per verificare lo stato del WorkRequest
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(workRequest.id).observe(this) { workInfo ->
+            if (workInfo != null) {
+                Log.d("WorkManager", "Work ID: ${workRequest.id}, State: ${workInfo.state}")
+
+                when (workInfo.state) {
+                    WorkInfo.State.ENQUEUED -> Log.d("WorkManager", "Work is enqueued")
+                    WorkInfo.State.RUNNING -> Log.d("WorkManager", "Work is running")
+                    WorkInfo.State.SUCCEEDED -> Log.d("WorkManager", "Work succeeded")
+                    WorkInfo.State.FAILED -> Log.d("WorkManager", "Work failed")
+                    WorkInfo.State.BLOCKED -> Log.d("WorkManager", "Work is blocked")
+                    WorkInfo.State.CANCELLED -> Log.d("WorkManager", "Work is cancelled")
+                    else -> Log.d("WorkManager", "Unknown work state")
+                }
+            } else {
+                Log.d("WorkManager", "WorkInfo is null")
+            }
+        }*/
     }
 
     override fun saveUserToPreferences(user: Utente) {
@@ -147,9 +283,8 @@ class MainPage : AppCompatActivity(), MainPageView {
 
 
 
-
     override fun stopNotification() {
-        WorkManager.getInstance(this).cancelUniqueWork("NotificaWorker")
+      //  WorkManager.getInstance(this).cancelUniqueWork("NotificaWorker")
     }
 
 
@@ -357,16 +492,7 @@ class MainPage : AppCompatActivity(), MainPageView {
 
 
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Daily Notification Channel"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("daily_notification", name, importance)
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
 
-        }
-    }
     // Funzione per salvare l'utente nelle Shared Preferences
     private fun saveUserToPreferences(user: Utente) {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)

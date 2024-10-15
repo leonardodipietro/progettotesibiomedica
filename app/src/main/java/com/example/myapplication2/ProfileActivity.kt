@@ -259,6 +259,8 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
 
     override fun stopNotification() {
         WorkManager.getInstance(this).cancelUniqueWork("NotificaWorker")
+        WorkManager.getInstance(this).cancelAllWorkByTag("daily_notification")
+
     }
 
 
