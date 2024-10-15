@@ -1,11 +1,21 @@
 package com.example.myapplication2.Presenter
 
-import com.example.myapplication2.interfacepackage.ProfilePresenterInterface
+import android.app.Activity
 import com.example.myapplication2.interfacepackage.ProfileView
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import org.mindrot.jbcrypt.BCrypt
+import java.util.concurrent.TimeUnit
 
 class ProfilePresenter(private val view: ProfileView, private val userRepo: UserRepo) {
+    private var verificationId: String? = null
+    private var phoneNumber: String? = null
+    private var auth = FirebaseAuth.getInstance()
     fun loadUserData(userId: String) {
         userRepo.getUserData(userId) { user ->
             if (user != null) {
@@ -76,9 +86,6 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         view.navigateToHome()
     }
 
-    fun deleteAccount(user: Utente) {
-        view.confirmDeletion()
-    }
 
     fun confirmDeletion(user: Utente) {
         user?.id?.let {
@@ -97,6 +104,92 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         // Logica di verifica
         view.showSuccess("Numero verificato")
     }
+    fun deleteAccount(user: Utente) {
+        user.id?.let { userId ->
+            userRepo.getUserData(userId) { userData ->
+                if (userData != null) {
+                    if (userData.email != null && userData.password != null) {
+                        view.showPasswordDialog(userData.email, userData.password) { password ->
+                            if (BCrypt.checkpw(password, userData.password)) {
+                                auth.signInWithEmailAndPassword(userData.email, password)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            deleteUserAccount(userId)
+                                        } else {
+                                            view.showError("Errore di autenticazione.")
+                                        }
+                                    }
+                            } else {
+                                view.showError("Password non valida")
+                            }
+                        }
+                    } else if (userData.phoneNumber != null) {
+                        startPhoneVerification(userData.phoneNumber)
+                    }
+                }
+            }
+        }
+    }
+
+    fun startPhoneVerification(phoneNumber: String) {
+        this.phoneNumber = phoneNumber
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(view as Activity)
+            .setCallbacks(verificationCallbacks)
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    private val verificationCallbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+        override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+            signInWithPhoneAuthCredential(credential)
+        }
+
+        override fun onVerificationFailed(e: FirebaseException) {
+            view.showError("Errore di verifica telefonica: ${e.message}")
+        }
+
+        override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+            this@ProfilePresenter.verificationId = verificationId
+            phoneNumber?.let {
+                view.showPhoneVerificationDialog(it) { verificationCode ->
+                    val cred = PhoneAuthProvider.getCredential(verificationId, verificationCode)
+                    signInWithPhoneAuthCredential(cred)
+                }
+            }
+        }
+    }
+
+    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
+        auth.signInWithCredential(credential).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                auth.uid?.let { deleteUserAccount(it) }
+            } else {
+                view.showError("Errore di autenticazione.")
+            }
+        }
+    }
+
+    private fun deleteUserAccount(userId: String) {
+        auth.currentUser?.delete()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                userRepo.deleteAccount(userId) { success ->
+                    if (success) {
+                        view.showSuccess("Account eliminato")
+                        view.navigateToHome()
+                    } else {
+                        view.showError("Errore nell'eliminazione.")
+                    }
+                }
+            } else {
+                view.showError("Errore nell'eliminazione dell'account.")
+            }
+        }
+    }
 }
+
+
 
 

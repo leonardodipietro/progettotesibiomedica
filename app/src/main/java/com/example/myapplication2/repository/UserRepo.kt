@@ -20,6 +20,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.mindrot.jbcrypt.BCrypt
+import java.util.Calendar
 
 class UserRepo {
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
@@ -101,7 +102,10 @@ class UserRepo {
                                 // Verifica la password
                                 if (BCrypt.checkpw(password, user.password)) {
                                     Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.admin}")
-                                    callback(true, null, user.admin, user)
+
+                                    val isAdmin = user.admin ?: false
+                                    callback(true, null, isAdmin, user)
+                                    Log.d("verifyUserCredentials", "Callback chiamato con successo per admin: ${user.admin} e utente: $user")
                                 } else {
                                     Log.d("verifyUserCredentials", "Password errata per numero di telefono.")
                                     callback(false, "Password errata", null, null)
@@ -290,7 +294,7 @@ class UserRepo {
                 callback(false)
             }
     }
-    fun savePhoneUserToFirebase(username: String,name:String,address:String, hashedPassword: String) {
+    fun savePhoneUserToFirebase(username: String,name:String,address:String, hashedPassword: String,email:String) {
         Log.d("userrepo", "Funzione chiamata per l'autenticazione con numero di telefono")
         try {
             val currentUser = auth.currentUser
@@ -305,7 +309,8 @@ class UserRepo {
                     name= name,
                     address = address,
                     username = username,
-                    password = hashedPassword
+                    password = hashedPassword,
+                    email = email
                 )
                 Log.d("userrepo", "Creazione oggetto completata $nuovoUser")
                 userRef.setValue(nuovoUser)
@@ -335,13 +340,14 @@ class UserRepo {
         val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
         val currentTime = timeFormat.format(Date())
 
-        // Itera attraverso i sintomi selezionati e crea una mappa per ogni sintomo
-       /* for (sintomo in sintomiList) {
-            val sintomoMap = mapOf(
-                "gravità" to sintomo.gravita,
-                "tempoTrascorsoUltimoPasto" to sintomo.tempoTrascorsoUltimoPasto
-            )
-            Log.d("SubmitSintomi", "Dati da inviare per sintomo ${sintomo.nomeSintomo}: $sintomoMap")*/
+        // prende l anno e la settimana corrente dell anno tipo 42 43
+        val calendar = Calendar.getInstance()
+        val currentYear = calendar.get(Calendar.YEAR)
+        val currentWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+
+        // Nodo settimanale basato su anno e settimana
+        val settimanaanno = "$currentYear/week-$currentWeek"
+
         for (sintomo in sintomiList) {
             sintomo.dataSegnalazione = currentDate
             sintomo.oraSegnalazione = currentTime
@@ -358,6 +364,7 @@ class UserRepo {
 
             // Salva i dati del sintomo nella struttura desiderata
             userSintomiRef.child(sintomo.id)
+                .child(settimanaanno)
                 .child(currentDate)  // Nodo per la data
                 .child(currentTime)  // Nodo per l'ora
                 .setValue(sintomoMap)  // Dati associati al sintomo

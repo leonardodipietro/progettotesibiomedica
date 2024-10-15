@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseException
@@ -33,33 +34,7 @@ class TelephoneActivity: AppCompatActivity()   {
 
         auth = FirebaseAuth.getInstance()
 
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            // Ricarica l'utente e controlla se è ancora autenticato
-            currentUser.reload().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    auth.currentUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
-                        if (tokenTask.isSuccessful) {
-                            // L'utente esiste, avvia `SecondActivity`
-                            Log.d("MainActivity", "User è autenticato: ${currentUser.email}")
-                            startSecondActivity()
-                        } else {
-                            // L'utente non esiste
-                            auth.signOut()
 
-                            setContentView(R.layout.telephoneactivity)
-                            setupUIAndRegister()
-                        }
-                    }
-                } else {
-                    // Ricaricamento fallito, esegui il logout e mostra il layout di `MainActivity`
-                    auth.signOut()
-                    setContentView(R.layout.telephoneactivity)
-                    setupUIAndRegister()
-                }
-            }
-        }
-        else {
             //TODO NON SO SE è DA CASTRARE
 
             // Nessun utente autenticato, mostra il layout di `MainActivity`
@@ -67,7 +42,7 @@ class TelephoneActivity: AppCompatActivity()   {
             setupUIAndRegister()
         }
 
-    }
+
 
     private fun setupUIAndRegister() {
         val phoneEditText = findViewById<EditText>(R.id.phoneEditText)
@@ -152,29 +127,39 @@ class TelephoneActivity: AppCompatActivity()   {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val user = task.result?.user
                     Toast.makeText(this, "Autenticazione riuscita", Toast.LENGTH_SHORT).show()
 
-                    // Salva l'utente su Firebase con username e password hashata
                     val username = findViewById<EditText>(R.id.usernamepercellulare).text.toString().trim()
                     val password = findViewById<EditText>(R.id.passwordEditText).text.toString().trim()
                     val name = findViewById<EditText>(R.id.nomeecognomephone).text.toString().trim()
                     val address = findViewById<EditText>(R.id.indirizzophone).text.toString().trim()
-                    // Hash della password con BCrypt
+                    val email= ""
                     val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
 
+                    // Crea l'oggetto Utente
+                    val user = Utente(
+                        id = auth.currentUser?.uid ?: "",
+                        email = email,
+                        name = name,
+                        address = address,
+                        username = username,
+                        password = hashedPassword,
+                        admin = false
+                    )
 
-                    // Salva l'utente su Firebase Realtime Database
-                    userRepo.savePhoneUserToFirebase(username,name,address, hashedPassword)
-
-                    startSecondActivity()
+                    // Salva l'utente nel database
+                    userRepo.savePhoneUserToFirebase(username, name, address, hashedPassword,email)
+                    startSecondActivity(user)
                 } else {
                     Toast.makeText(this, "Autenticazione fallita", Toast.LENGTH_SHORT).show()
                 }
             }
     }
-    private fun startSecondActivity() {
-        val intent = Intent(this, MainPage::class.java)
+    private fun startSecondActivity(user: Utente) {
+        val intent = Intent(this, MainPage::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("utente", user)
+        }
         startActivity(intent)
         finish()
     }

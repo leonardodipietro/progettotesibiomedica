@@ -35,7 +35,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var currentPhoneNumber: String
 
 
-    //TODO MANCA IL DELETE
+    //
     // Variabili UI
     private lateinit var logoutButton: Button
     private lateinit var deleteButton: Button
@@ -172,6 +172,39 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
             .create()
             .show()
+    }
+    override fun showPasswordDialog(email: String, hashedPassword: String, onPasswordConfirmed: (String) -> Unit) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Conferma Password")
+        builder.setMessage("Inserisci la tua password per confermare l'eliminazione dell'account")
+
+        val input = EditText(this)
+        input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        builder.setView(input)
+
+        builder.setPositiveButton("Conferma") { _, _ ->
+            val inputPassword = input.text.toString()
+            onPasswordConfirmed(inputPassword)
+        }
+        builder.setNegativeButton("Annulla") { dialog, _ -> dialog.dismiss() }
+        builder.show()
+    }
+
+    override fun showPhoneVerificationDialog(phoneNumber: String, onCodeEntered: (String) -> Unit) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Verifica Numero di Telefono")
+        builder.setMessage("Inserisci il codice di verifica inviato a $phoneNumber")
+
+        val input = EditText(this)
+        input.hint = "Codice di verifica"
+        builder.setView(input)
+
+        builder.setPositiveButton("Verifica") { _, _ ->
+            val verificationCode = input.text.toString()
+            onCodeEntered(verificationCode)
+        }
+        builder.setNegativeButton("Annulla") { dialog, _ -> dialog.dismiss() }
+        builder.show()
     }
 
     override fun populateUserData(user: Utente) {

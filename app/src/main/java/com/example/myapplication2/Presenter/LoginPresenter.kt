@@ -29,6 +29,7 @@ class LoginPresenter(
                 if (isSuccess) {
                     resetLock()
                     if (admin != null) {
+                        Log.d("LoginPresenter", "Accesso riuscito, utente admin: $admin,,,, $user")
                         view.showLoginSuccess(admin, user)
                     }
                 } else {

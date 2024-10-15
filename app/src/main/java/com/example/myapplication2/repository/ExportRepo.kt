@@ -99,7 +99,7 @@ class ExportRepo {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val sintomiList = mutableListOf<Pair<Sintomo, String>>()  // Sintomi con nome utente associato
 
-                for (userSnapshot in dataSnapshot.children) {
+  /*              for (userSnapshot in dataSnapshot.children) {
                     val user = userSnapshot.getValue(Utente::class.java)
                     val username = user?.username ?: "Sconosciuto"  // Recupero del nome utente
 
@@ -122,6 +122,41 @@ class ExportRepo {
                                         sintomoData.id = sintomoId
                                         // Aggiungi il sintomo e il nome utente alla lista
                                         sintomiList.add(Pair(sintomoData, username))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }*/
+                for (userSnapshot in dataSnapshot.children) {
+                    val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
+
+                    // Navigazione tra i nodi di sintomi -> anno -> settimana -> data -> ora
+                    val sintomiSnapshot = userSnapshot.child("sintomi")
+                    for (sintomoIdSnapshot in sintomiSnapshot.children) {
+                        val sintomoId = sintomoIdSnapshot.key ?: ""
+
+                        for (yearSnapshot in sintomoIdSnapshot.children) {
+                            val year = yearSnapshot.key ?: ""
+
+                            for (weekSnapshot in yearSnapshot.children) {
+                                val week = weekSnapshot.key ?: ""
+
+                                for (dataSnapshot in weekSnapshot.children) {
+                                    val dataSegnalazione = dataSnapshot.key ?: ""
+
+                                    for (oraSnapshot in dataSnapshot.children) {
+                                        val oraSegnalazione = oraSnapshot.key ?: ""
+                                        val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
+
+                                        if (sintomoData != null) {
+                                            sintomoData.id = sintomoId
+                                            sintomoData.dataSegnalazione = dataSegnalazione
+                                            sintomoData.oraSegnalazione = oraSegnalazione
+
+                                            Log.d("SintomoData", "Utente: $username, SintomoID: $sintomoId, Anno: $year, Settimana: $week, Data: $dataSegnalazione, Ora: $oraSegnalazione, Gravità: ${sintomoData.gravità}, Ultimo Pasto: ${sintomoData.tempoTrascorsoUltimoPasto}")
+                                            sintomiList.add(Pair(sintomoData, username))
+                                        }
                                     }
                                 }
                             }
