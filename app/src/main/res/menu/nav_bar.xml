@@ -9,5 +9,10 @@
             android:id="@+id/nav_profile"
             android:text="profilo"
             android:title="Profile"/>
+
+        <item
+          android:id="@+id/nav_info"
+          android:text="info"
+          android:title="Info"/>
            <!-- android:icon="@drawable/ic_profile" -->
     </menu>

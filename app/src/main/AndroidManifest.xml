@@ -58,6 +58,11 @@
             android:name=".ResetPassword"
             android:exported="false" />
 
+        <activity
+            android:name=".InfoActivity"
+            android:exported="false" />
+
+
         <!-- Required for WorkManager to persist across reboots -->
         <receiver
             android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"

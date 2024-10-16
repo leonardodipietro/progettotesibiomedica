@@ -69,6 +69,7 @@ class MainPage : AppCompatActivity(), MainPageView {
         // Inizializza la UI e l'adapter
         setupUI()
         setupListeners()
+        setupBottomNavigation()
 
         presenter.loadSintomiList()
 
@@ -81,18 +82,6 @@ class MainPage : AppCompatActivity(), MainPageView {
         sintadapter = SintomiAdapter(emptyList())
         recyclerView.adapter = sintadapter
 
-        // Setup della navigation bar
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_profile -> {
-                    val utente = loadUserFromPreferences()
-                    utente?.let { navigateToProfile(it) }
-                    true
-                }
-                else -> false
-            }
-        }
     }
     private fun setupListeners() {
         val inviaButton: Button = findViewById(R.id.inviadati)
@@ -108,6 +97,32 @@ class MainPage : AppCompatActivity(), MainPageView {
                 presenter.submitSelectedSintomi(userId, selectedSintomi, allSintomi, distanzapasto)
             } else {
                 showError("Errore: Utente non autenticato.")
+            }
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_profile -> {
+                    val utente = loadUserFromPreferences()
+                    utente?.let { navigateToProfile(it) }
+                    true
+                }
+                R.id.nav_home -> {
+                    // Rimanere sulla MainPage
+                    true
+                }
+                R.id.nav_info -> {
+                    val utente = loadUserFromPreferences()
+                    val intent = Intent(this, InfoActivity::class.java).apply {
+                        putExtra("utente", utente)
+                    }
+                    startActivity(intent)
+                    true
+                }
+                else -> false
             }
         }
     }

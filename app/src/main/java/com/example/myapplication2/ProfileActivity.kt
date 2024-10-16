@@ -130,19 +130,25 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    // Passa alla MainPage
                     val intent = Intent(this, MainPage::class.java).apply {
-                        putExtra("utente", currentUser) // Passa l'oggetto Utente
+                        putExtra("utente", currentUser)
                     }
                     startActivity(intent)
                     true
-                    true
                 }
                 R.id.nav_profile -> true
+                R.id.nav_info -> {
+                    val intent = Intent(this, InfoActivity::class.java).apply {
+                        putExtra("utente", currentUser)
+                    }
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }
     }
+
 
     private fun showLogoutDialog() {
         AlertDialog.Builder(this)

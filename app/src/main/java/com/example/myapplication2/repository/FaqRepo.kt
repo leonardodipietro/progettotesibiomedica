@@ -1,7 +1,11 @@
 package com.example.myapplication2.repository
 
+import android.util.Log
 import com.example.myapplication2.model.Faq
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class FaqRepo {
 
@@ -30,4 +34,24 @@ class FaqRepo {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
+
+    fun fetchFaqList(callback: (List<Faq>) -> Unit) {
+
+            faqsRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val faqList = mutableListOf<Faq>()
+                    for (faqSnapshot in snapshot.children) {
+                        val faq = faqSnapshot.getValue(Faq::class.java)
+                        faq?.let { faqList.add(it) }
+                    }
+                    callback(faqList)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FaqRepo", "Error fetching data", error.toException())
+                }
+            })
+    }
+
+
 }
