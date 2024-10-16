@@ -25,7 +25,12 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
     private lateinit var presenter: SuperAdminPresenter
 
 
-
+    private lateinit var emailEditText: EditText
+    private lateinit var usernameEditText: EditText
+    private lateinit var namesurnameEditText: EditText
+    private lateinit var addressEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var confermaPasswordEditText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,14 +38,13 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
         presenter = SuperAdminPresenter(this)
 
-        val emailEditText = findViewById<EditText>(R.id.emailsuperadmin)
-        val usernameEditText = findViewById<EditText>(R.id.usernamesuperadmin)
-        val namesurnameEditText = findViewById<EditText>(R.id.nomeecognomesuperadmin)
-        val addressEditText = findViewById<EditText>(R.id.indirizzosuperadmin)
-        val passwordEditText = findViewById<EditText>(R.id.passwordsuperadmin)
-        val confermaPasswordEditText = findViewById<EditText>(R.id.confermapasswordsuperadmin)
+        emailEditText = findViewById(R.id.emailsuperadmin)
+        usernameEditText = findViewById(R.id.usernamesuperadmin)
+        namesurnameEditText = findViewById(R.id.nomeecognomesuperadmin)
+        addressEditText = findViewById(R.id.indirizzosuperadmin)
+        passwordEditText = findViewById(R.id.passwordsuperadmin)
+        confermaPasswordEditText = findViewById(R.id.confermapasswordsuperadmin)
         val registerButton = findViewById<Button>(R.id.registerbuttonsuperadmin)
-
         val logoutButton=findViewById<Button>(R.id.logoutsuperadmin)
 
         // Elementi di input e pulsanti per le FAQ
@@ -161,6 +165,15 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
     override fun clearUserPreferences() {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
+    }
+
+    override fun clearInputFields() {
+        emailEditText.text.clear()
+        usernameEditText.text.clear()
+        namesurnameEditText.text.clear()
+        addressEditText.text.clear()
+        passwordEditText.text.clear()
+        confermaPasswordEditText.text.clear()
     }
 
 

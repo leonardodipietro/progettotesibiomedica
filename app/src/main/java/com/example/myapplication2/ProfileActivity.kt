@@ -214,13 +214,12 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     }
 
     override fun populateUserData(user: Utente) {
-        emailEditText.setText(user.email)
-        phoneEditText.setText(user.phoneNumber)
-        usernameEditText.setText(user.username)
-        nameEditText.setText(user.name)
-        addressEditText.setText(user.address)
+        emailEditText.hint = user.email
+        phoneEditText.hint = user.phoneNumber
+        usernameEditText.hint = user.username
+        nameEditText.hint = user.name
+        addressEditText.hint = user.address
     }
-
     override fun showSuccess(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }

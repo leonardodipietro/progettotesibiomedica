@@ -62,12 +62,12 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
                                                         }
                                                     }
                                                 } else {
-                                                    view.showError("Errore nell'invio della richiesta di verifica su Firebase Authentication")
+                                                    view.showError("Errore nell'invio della richiesta di verifica")
                                                     Log.e("verifyBeforeUpdateEmail", "Errore: ${updateTask.exception?.message ?: "Errore sconosciuto"}")
                                                 }
                                             }
                                     } else {
-                                        view.showError("Errore nell'autenticazione con le credenziali fornite")
+                                        //view.showError("Errore nell'autenticazione con le credenziali fornite")
                                         updateEmailDirectly(userId, email)
                                     }
                                 }
@@ -86,56 +86,64 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
                     view.showError("Inserisci la vecchia password nell'apposito spazio")
                 }
             } else {
-                view.showError("L'email non può essere vuota")
+                //view.showError("L'email non può essere vuota")
             }
 
 
 
 
 
-
-        if (phone.isNotEmpty()) {
-            userRepo.checkPhoneNumberExists(phone) { exists ->
-                if (exists) {
-                    view.showError("Numero di telefono già in uso, seleziona un altro")
-                } else {
-                    userRepo.updatePhoneNumber(userId, phone) { success ->
-                        if (success) view.showSuccess("Numero di telefono aggiornato")
-                        else view.showError("Errore nell'aggiornamento del numero di telefono")
+        // Phone update
+        userRepo.getUserPhoneNumber(userId) { currentPhone ->
+            if (phone.isNotEmpty() && currentPhone != phone) {
+                userRepo.checkPhoneNumberExists(phone) { exists ->
+                    if (!exists) {
+                        userRepo.updatePhoneNumber(userId, phone) { success ->
+                            if (success) {
+                                view.showSuccess("Numero di telefono aggiornato")
+                            }
+                        }
                     }
                 }
             }
         }
 
-
-          // Aggiorna lo username solo se non è già in uso
-        if (username.isNotEmpty()) {
-            userRepo.checkUsernameExists(username) { exists ->
-                if (exists) {
-                    view.showError("Username già in uso, selezionare un altro")
-                } else {
-                    userRepo.updateUsername(userId, username) { success ->
-                        if (success) view.showSuccess("Username aggiornato") else view.showError("Errore nell'aggiornamento dello username")
+        // Username update
+        userRepo.getUsername(userId) { currentUsername ->
+            if (username.isNotEmpty() && currentUsername != username) {
+                userRepo.checkUsernameExists(username) { exists ->
+                    if (!exists) {
+                        userRepo.updateUsername(userId, username) { success ->
+                            if (success) {
+                                view.showSuccess("Username aggiornato")
+                            }
+                        }
                     }
                 }
             }
         }
 
-
-        // Aggiorna il nome
-        if (name.isNotEmpty()) {
-            userRepo.updateName(userId, name) { success ->
-                if (success) view.showSuccess("Nome aggiornato") else view.showError("Errore nell'aggiornamento del nome")
+        // Name update
+        userRepo.getName(userId) { currentName ->
+            if (name.isNotEmpty() && currentName != name) {
+                userRepo.updateName(userId, name) { success ->
+                    if (success) {
+                        view.showSuccess("Nome aggiornato")
+                    }
+                }
             }
         }
 
-        // Aggiorna l'indirizzo
-        if (address.isNotEmpty()) {
-            userRepo.updateAddress(userId, address) { success ->
-                if (success) view.showSuccess("Indirizzo aggiornato") else view.showError("Errore nell'aggiornamento dell'indirizzo")
+        // Address update
+        userRepo.getAddress(userId) { currentAddress ->
+            if (address.isNotEmpty() && currentAddress != address) {
+                userRepo.updateAddress(userId, address) { success ->
+                    if (success) {
+                        view.showSuccess("Indirizzo aggiornato")
+                    }
+                }
             }
         }
-
         // Cambio password
         /*if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
             userRepo.changePassword(userId, oldPassword, newPassword) { success ->

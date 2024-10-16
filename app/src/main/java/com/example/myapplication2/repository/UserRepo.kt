@@ -34,7 +34,7 @@ class UserRepo {
         userRef.get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val email = task.result?.getValue(String::class.java)
-                Log.d("getUserEmail", "Email recuperata con successo: $email")
+                Log.d("getUserEmail", "Email  $email")
                 callback(email) // Restituisce l'email trovata
             } else {
                 callback(null) // In caso di errore, restituisce null
@@ -42,23 +42,23 @@ class UserRepo {
         }
     }
     fun getUserData(uid: String, callback: (Utente?) -> Unit) {
-        Log.d("UserRepo", "Inizio recupero dati per utente con UID: $uid")
+        Log.d("UserRepo", "daje ")
 
         usersRef.child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    Log.d("UserRepo", "Dati trovati per l'utente con UID: $uid")
+                    Log.d("UserRepo", "Dati trovati per  $uid")
                     val utente = snapshot.getValue(Utente::class.java)
                     Log.d("UserRepo", "Dati utente: ${utente?.toString()}")
                     callback(utente)
                 } else {
-                    Log.d("UserRepo", "Nessun dato trovato per l'utente con UID: $uid")
+                    Log.d("UserRepo", "Nessun dato uid: $uid")
                     callback(null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("UserRepo", "Errore nel recupero dei dati per l'utente con UID: $uid. Errore: ${error.message}")
+                Log.e("UserRepo", "Errore di $uid. Errore: ${error.message}")
                 callback(null)
             }
         })
@@ -91,6 +91,46 @@ class UserRepo {
             }
         })
     }
+    fun getUsername(userId: String, callback: (String?) -> Unit) {
+        usersRef.child("users").child(userId).child("username").get()
+            .addOnSuccessListener { snapshot ->
+                callback(snapshot.value as? String)
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
+
+    // Recupera il nome dell'utente
+    fun getName(userId: String, callback: (String?) -> Unit) {
+        usersRef.child("users").child(userId).child("name").get()
+            .addOnSuccessListener { snapshot ->
+                callback(snapshot.value as? String)
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
+    // Recupera il numero di telefono dell'utente
+    fun getAddress(userId: String, callback: (String?) -> Unit) {
+        usersRef.child("users").child(userId).child("address").get()
+            .addOnSuccessListener { snapshot ->
+                callback(snapshot.value as? String)
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
+    // Recupera il numero di telefono dell'utente
+    fun getUserPhoneNumber(userId: String, callback: (String?) -> Unit) {
+        usersRef.child("users").child(userId).child("phoneNumber").get()
+            .addOnSuccessListener { snapshot ->
+                callback(snapshot.value as? String)
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
     fun checkUsernameExists(username: String, callback: (Boolean) -> Unit) {
         val usernameRef = usersRef.orderByChild("username").equalTo(username)
         usernameRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -109,7 +149,7 @@ class UserRepo {
     fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
         //val usersRef = FirebaseDatabase.getInstance().getReference("users")
 
-        Log.d("verifyUserCredentials", "Inizio verifica credenziali per username: $username")
+
 
         // Ricerca l'utente con il campo username specificato
         usersRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(object : ValueEventListener {
@@ -119,7 +159,7 @@ class UserRepo {
                     val user = userSnapshot.getValue(Utente::class.java)
 
                     if (user != null) {
-                        Log.d("verifyUserCredentials", "Utente trovato per username. Verifica email o numero di telefono...")
+
 
                         // Controlla se ha una email
                         if (user.email.isNullOrEmpty()) {
@@ -182,110 +222,12 @@ class UserRepo {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("UserRepo", "Errore nella query del numero di telefono: ${error.message}")
+                Log.e("UserRepo", "Errore query tel ${error.message}")
                 callback(false)
             }
         })
     }
 
-    fun initiateEmailUpdate(utente: Utente?, newEmail: String, onComplete: (Boolean) -> Unit) {
-        val userUid = utente?.id
-        Log.d("UserRepo", "ID utente passato: $userUid")
-        Log.d("UserRepo", "Nuova email richiesta: $newEmail")
-
-        if (userUid == null) {
-            Log.e("UserRepo", "ID utente è null. Interrompo l'aggiornamento.")
-            onComplete(false)
-            return
-        }
-
-        val currentUser = auth.currentUser
-        Log.d("UserRepo", "Utente autenticato corrente UID: ${currentUser?.uid}")
-
-        if (currentUser != null && currentUser.uid == userUid) {
-            if (!currentUser.isEmailVerified) {
-                Log.d("UserRepo", "Email corrente non verificata, invio email di verifica.")
-                currentUser.sendEmailVerification().addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Log.d("UserRepo", "Email di verifica inviata all'email corrente. Verifica prima di continuare.")
-                        onComplete(false)
-                    } else {
-                        Log.e("UserRepo", "Errore durante l'invio della verifica per l'email corrente: ${task.exception?.message}")
-                        onComplete(false)
-                    }
-                }
-                return
-            }
-
-            // Invia email di verifica alla nuova email
-            currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener { verifyTask ->
-                if (verifyTask.isSuccessful) {
-                    Log.d("UserRepo", "Email di verifica inviata alla nuova email. Attendi la conferma.")
-
-                    currentUser.updateEmail(newEmail).addOnCompleteListener { emailTask ->
-                        if (emailTask.isSuccessful) {
-                            Log.d("UserRepo", "Aggiornamento email su Firebase Authentication riuscito.")
-
-                            // Ora aggiorna l'email nel Realtime Database
-                            usersRef.child(userUid).child("email").setValue(newEmail)
-                                .addOnCompleteListener { dbTask ->
-                                    if (dbTask.isSuccessful) {
-                                        Log.d("UserRepo", "Aggiornamento email nel Realtime Database riuscito.")
-                                        onComplete(true)
-                                    } else {
-                                        Log.e("UserRepo", "Errore durante l'aggiornamento dell'email nel Realtime Database: ${dbTask.exception?.message}")
-                                        onComplete(false)
-                                    }
-                                }
-                        } else {
-                            Log.e("UserRepo", "Errore durante l'aggiornamento dell'email su Firebase Authentication: ${emailTask.exception?.message}")
-                            onComplete(false)
-                        }
-                    }
-                } else {
-                    Log.e("UserRepo", "Errore durante l'invio dell'email di verifica: ${verifyTask.exception?.message}")
-                    onComplete(false)
-                }
-            }
-        } else {
-            Log.e("UserRepo", "Utente autenticato non coincide con l'utente passato o non è autenticato. Impossibile aggiornare l'email.")
-            onComplete(false)
-        }
-    }
-    fun takePassword(oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
-        val user = auth.currentUser
-        if (user != null) {
-            val email = user.email
-            if (email != null) {
-                val credential = EmailAuthProvider.getCredential(email, oldPassword)
-
-                user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
-                    if (reauthTask.isSuccessful) {
-                        user.updatePassword(newPassword).addOnCompleteListener { updateTask ->
-                            if (updateTask.isSuccessful) {
-                                // Aggiorna anche la password nel Realtime Database
-                                usersRef.child(user.uid).child("password").setValue(newPassword).addOnCompleteListener { dbTask ->
-                                    if (dbTask.isSuccessful) {
-                                        callback(true) // Aggiornamento completato con successo
-                                    } else {
-                                        callback(false) // Errore nell'aggiornamento del database
-                                    }
-                                }
-                            } else {
-                                callback(false) // Errore nel cambio password su Authentication
-                            }
-                        }
-                    } else {
-                        callback(false) // Errore nella re-autenticazione
-                    }
-                }
-            } else {
-                callback(false) // L'email non è disponibile
-            }
-        } else {
-            callback(false) // L'utente non è autenticato
-        }
-    }
 
 
     fun saveUserToFirebase(username: String,name:String,address:String, hashedPassword: String, ruolo:String) {
@@ -308,21 +250,21 @@ class UserRepo {
                     ruolo= "user",
                     phoneNumber=""
                 )
-                Log.d("userrepo", "Creazione oggetto completata: $nuovoUser")
+                Log.d("userrepo", "oggetto fatto $nuovoUser")
 
                 // Salva l'utente nel Realtime Database
                 userRef.setValue(nuovoUser)
                     .addOnSuccessListener {
-                        Log.d("userrepo", "Utente aggiunto con successo")
+                        Log.d("userrepo", "Utente aggiunto")
                     }
                     .addOnFailureListener { e ->
-                        Log.d("userrepo", "Errore durante l'aggiunta dell'utente: $e")
+                        Log.d("userrepo", "Errore 1 $e")
                     }
             } else {
-                Log.d("userrepo", "CurrentUser è null")
+                Log.d("userrepo", "CurrentUser  null")
             }
         } catch (e: Exception) {
-            Log.e("userrepo", "Eccezione: ${e.message}")
+            Log.e("userrepo", "Eccezi ${e.message}")
         }
     }
 
@@ -334,16 +276,16 @@ class UserRepo {
                 callback(task.isSuccessful) // Restituisce true se l'eliminazione è riuscita, false altrimenti
             }
             .addOnFailureListener { e ->
-                Log.e("UserRepo", "Errore nell'eliminazione dei dati dal database: ${e.message}", e)
+                Log.e("UserRepo", "Errore ${e.message}", e)
                 callback(false)
             }
     }
     fun savePhoneUserToFirebase(username: String,name:String,address:String, hashedPassword: String,email:String) {
-        Log.d("userrepo", "Funzione chiamata per l'autenticazione con numero di telefono")
+        Log.d("userrepo", "Funzione chiamata")
         try {
             val currentUser = auth.currentUser
             if (currentUser != null) {
-                Log.d("userrepo", "CurrentUser non è null (telefono)")
+                Log.d("userrepo", "CurrentUser C è")
                 val userRef = database.reference.child("users").child(currentUser.uid)
 
                 // Aggiungiamo username e password hashata all'oggetto utente
@@ -357,16 +299,16 @@ class UserRepo {
                     email = email,
                     ruolo = "user"
                 )
-                Log.d("userrepo", "Creazione oggetto completata $nuovoUser")
+                Log.d("userrepo", "Creazione $nuovoUser")
                 userRef.setValue(nuovoUser)
                     .addOnSuccessListener {
-                        Log.d("userrepo", "Utente con numero di telefono aggiunto")
+                        Log.d("userrepo", "Utente con TEL aggiunto")
                     }
                     .addOnFailureListener { e ->
                         Log.d("userrepo", "Utente non aggiunto: $e")
                     }
             } else {
-                Log.d("userrepo", "CurrentUser è null (telefono)")
+                Log.d("userrepo", "CurrentUsernull")
             }
         } catch (e: Exception) {
             Log.e("userrepo", "Eccezione: ${e.message}")
@@ -417,7 +359,7 @@ class UserRepo {
                     if (task.isSuccessful) {
                         Log.d("SubmitSintomi", "Sintomo ${sintomo.id} inviato per $userId con data $currentDate e ora $currentTime")
                     } else {
-                        Log.e("SubmitSintomi", "Errore nell'invio del sintomo ${sintomo.id}", task.exception)
+                        Log.e("SubmitSintomi", "Errore invio${sintomo.id}", task.exception)
                     }
                 }
         }
@@ -465,55 +407,55 @@ class UserRepo {
 
 
     fun changePassword(userId: String, oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
-        Log.d("ChangePassword", "Inizio procedura di cambio password per utente con ID: $userId")
+        Log.d("ChangePassword", "Inizio cambio password ID: $userId")
 
         usersRef.child(userId).get().addOnSuccessListener { snapshot ->
             val email = snapshot.child("email").getValue(String::class.java)
             Log.d("ChangePassword", "Email trovata: $email")
 
             if (email.isNullOrEmpty()) {
-                Log.d("ChangePassword", "Nessuna email trovata. Procedo con aggiornamento solo nel Realtime Database.")
+                Log.d("ChangePassword", "Nessuna email trovata. solo realtime")
                 // Se non c'è email, aggiorna solo nel Realtime Database con BCrypt
                 val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
                 usersRef.child(userId).child("password").setValue(hashedPassword)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            Log.d("ChangePassword", "Password aggiornata con successo nel Realtime Database.")
+                            Log.d("ChangePassword", "Password aggiornata.")
                         } else {
-                            Log.e("ChangePassword", "Errore nell'aggiornamento della password nel Realtime Database.")
+                            Log.e("ChangePassword", "Errore nell'aggiornamento.")
                         }
                         callback(task.isSuccessful)
                     }
             } else {
-                Log.d("ChangePassword", "Email trovata. Procedo con il cambio password su Firebase Authentication $oldPassword.")
+                Log.d("ChangePassword", "Email trovata.cambio password su Auth $oldPassword.")
                 // Se c'è email, cambia la password su Firebase Authentication e nel Realtime Database
                 auth.signInWithEmailAndPassword(email, oldPassword).addOnCompleteListener { loginTask ->
                     if (loginTask.isSuccessful) {
-                        Log.d("ChangePassword", "Login avvenuto con successo per l'utente con email: $email")
+                        Log.d("ChangePassword", "Login email: $email")
                         auth.currentUser?.updatePassword(newPassword)?.addOnCompleteListener { updateTask ->
                             if (updateTask.isSuccessful) {
-                                Log.d("ChangePassword", "Password aggiornata con successo in Firebase Authentication.")
+                                Log.d("ChangePassword", "Password aggiornata su auth fir.")
                                 // Aggiorna anche nel Realtime Database
                                 val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
                                 usersRef.child(userId).child("password").setValue(hashedPassword)
                                     .addOnCompleteListener { dbTask ->
                                         if (dbTask.isSuccessful) {
-                                            Log.d("ChangePassword", "Password aggiornata anche nel Realtime Database.")
+                                            Log.d("ChangePassword", "Password aggiornata sul db")
                                             // Logout da Firebase Authentication
                                             auth.signOut()
-                                            Log.d("ChangePassword", "Logout eseguito con successo.")
+                                            Log.d("ChangePassword", "Logout fatto.")
                                         } else {
                                             val dbException = dbTask.exception
                                             Log.e("ChangePassword", "Dettagli errore: ${dbException?.message}")
                                             Log.e("ChangePassword", "Tipo eccezione: ${dbException?.javaClass?.name}")
-                                            Log.e("ChangePassword", "Dettagli localizzati: ${dbException?.localizedMessage}")
-                                            Log.e("ChangePassword", "Errore durante l'aggiornamento della password nel Realtime Database.")
+                                            Log.e("ChangePassword", "Dettagli : ${dbException?.localizedMessage}")
+                                            Log.e("ChangePassword", "Errore durante l'aggiornamento")
                                         }
                                         callback(dbTask.isSuccessful)
                                     }
                             } else {
                                 val updateException = updateTask.exception
-                                Log.e("ChangePassword", "Errore durante l'aggiornamento della password in Firebase Authentication: ${updateException?.message}")
+                                Log.e("ChangePassword", "Errore durante l'aggiornamento : ${updateException?.message}")
                                 Log.e("ChangePassword", "Dettagli eccezione: ${updateException?.localizedMessage}")
                                 Log.e("ChangePassword", "Tipo eccezione: ${updateException?.javaClass?.name}")
                                 callback(false)
@@ -521,13 +463,13 @@ class UserRepo {
                             }
                         }
                     } else {
-                        Log.e("ChangePassword", "Login fallito. Verifica la vecchia password.")
+                        Log.e("ChangePassword", "Login fallito..")
                         callback(false)
                     }
                 }
             }
         }.addOnFailureListener { exception ->
-            Log.e("ChangePassword", "Errore nel recupero delle informazioni utente: ${exception.message}")
+            Log.e("ChangePassword", "Errore nel recupero utente ${exception.message}")
             callback(false)
         }
     }
@@ -573,7 +515,7 @@ class UserRepo {
     }
 */
     // Inizia la verifica del numero di telefono
-    fun updatePhoneNumber(newPhoneNumber: String, activity: Activity) {
+   /* fun updatePhoneNumber(newPhoneNumber: String, activity: Activity) {
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber(newPhoneNumber)
             .setTimeout(60L, TimeUnit.SECONDS)
@@ -627,7 +569,7 @@ class UserRepo {
                 }
             }
     }
-
+*/
 
 
     fun removeSintomo(userId: String, sintomoId: String) {
@@ -637,13 +579,13 @@ class UserRepo {
             if (task.isSuccessful) {
                 Log.d("RemoveSintomo", "Sintomo rimosso dal db per: $userId")
             } else {
-                Log.e("RemoveSintomo", "Errore nella rimozione del sintomo dal db per: $userId", task.exception)
+                Log.e("RemoveSintomo", "Errore rimozione sint $userId", task.exception)
             }
         }
     }
 
-    fun fetchSelectedSintomiForUser(userId: String, callback: (List<Sintomo>) -> Unit) {
-        Log.d("fetchSelectedSintomi", "Inizio recupero per  $userId")
+   /* fun fetchSelectedSintomiForUser(userId: String, callback: (List<Sintomo>) -> Unit) {
+        Log.d("fetchSelectedSintomi", "si inizia")
 
         val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
 
@@ -691,7 +633,7 @@ class UserRepo {
                 callback(emptyList())
             }
         }
-    }
+    }*/
 
 
 

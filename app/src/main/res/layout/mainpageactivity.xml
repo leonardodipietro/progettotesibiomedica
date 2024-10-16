@@ -14,32 +14,45 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginLeft="20sp"
-        android:layout_marginTop="20sp"
+        android:layout_marginTop="10sp"
         android:text="Benvenuto [User], come ti senti oggi?"
         />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/titolo"
-        android:id="@+id/inviadati"
-        style="@style/GreenButton"
-        android:text="invia dati"
-        android:layout_marginTop="20dp"
-        android:layout_centerHorizontal="true"
-        />
-    <Spinner
-        android:id="@+id/spinnerDistanzaUltimoPasto"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/inviadati"
-        android:layout_below="@+id/titolo"
-        android:layout_marginTop="30sp"
-        android:entries="@array/distanze_tempo_pasto" />
+        android:layout_below="@id/titolo"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="20sp"
+        android:id="@+id/linearbuttespinn"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:id="@+id/inviadati"
+            style="@style/GreenButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="invia dati"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            />
+
+        <Spinner
+            android:id="@+id/spinnerDistanzaUltimoPasto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/spinnerdrawable"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:entries="@array/distanze_tempo_pasto" />
+
+    </LinearLayout>
 
     <com.example.myapplication2.SwapRecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/inviadati"
+        android:layout_below="@+id/linearbuttespinn"
         android:layout_marginTop="20dp"
         android:id="@+id/recyclerSintomi"
         android:visibility="visible"

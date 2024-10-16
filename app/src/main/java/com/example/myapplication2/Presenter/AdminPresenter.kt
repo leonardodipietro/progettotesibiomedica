@@ -74,13 +74,13 @@ class AdminPresenter(
 
         // Cambio password
         if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-            Log.d("PasswordChange", "Vecchia password: $oldPassword, Nuova password: $newPassword")
+
             userRepo.changePassword(userId, oldPassword, newPassword) { success ->
                 Log.d("PasswordChange", "Cambio password riuscito")
                 //if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
             }
         } else if (newPassword != confirmPassword) {
-            Log.e("PasswordChange", "Le nuove password non coincidono")
+
             view.showError("Le nuove password non coincidono")
         }
     }

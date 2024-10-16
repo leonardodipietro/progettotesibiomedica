@@ -12,4 +12,6 @@ interface SuperAdminView {
     fun clearUserPreferences()
 
     fun loadUserFromPreferences(): Utente?
+
+    fun clearInputFields()
 }

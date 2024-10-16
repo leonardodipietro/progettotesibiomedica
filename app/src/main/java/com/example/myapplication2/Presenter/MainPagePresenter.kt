@@ -14,18 +14,18 @@ class MainPagePresenter(
 ) {
     fun loadUserData(intentUser: Utente?) {
         val user = intentUser ?: view.loadUserFromPreferences()
-        Log.d("loadUserData", "Utente caricato: ${user?.id ?: "Nessun utente"} - Ruolo: ${user?.ruolo ?: "Ruolo non disponibile"}")
+        Log.d("loadUserData", "Utente: ${user?.id ?: "Nessun utente"} - Ruolo: ${user?.ruolo ?: "Ruolo non disponibile"}")
 
         if (user != null) {
             view.saveUserToPreferences(user)
             Log.d("loadUserData", "Utente salvato nelle preferenze: ${user.username}")
 
             view.showUserWelcomeMessage(user.username ?: "")
-            Log.d("loadUserData", "Messaggio di benvenuto mostrato per: ${user.username}")
+            Log.d("loadUserData", "Messaggio mostr ${user.username}")
             //scheduleNotificationsIfNeeded(user.id)
         } else {
             view.showError("Utente non trovato, accesso negato.")
-            Log.e("loadUserData", "Errore: Utente non trovato, accesso negato.")
+
         }
     }
 

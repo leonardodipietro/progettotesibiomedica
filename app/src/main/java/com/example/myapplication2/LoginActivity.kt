@@ -65,20 +65,20 @@ import java.util.concurrent.TimeUnit
             startActivity(intent)
         }*/
         override fun showLoginSuccess(ruolo: String, user: Utente?) {
-            Log.d("showLoginSuccess", "Ruolo ricevuto: $ruolo")
+            Log.d("showLoginSuccess", "Utente ricevuto: $ruolo")
             Log.d("showLoginSuccess", "Utente ricevuto: ${user?.username ?: "Nessun utente"}")
             Log.d("showLoginSuccess", "Utente ricevuto: ${user?.id ?: "Nessun utente"}")
             val targetActivity = when (ruolo) {
                 "superadmin" -> {
-                    Log.d("showLoginSuccess", "Navigazione verso SuperAdminActivity con ${user?.username ?: "Nessun utente"}")
+                    Log.d("showLoginSuccess", "SuperAdmin va  con ${user?.username ?: "Nessun utente"}")
                     SuperAdminActivity::class.java
                 }
                 "admin" -> {
-                    Log.d("showLoginSuccess", "Navigazione verso AdminActivity con ${user?.username ?: "Nessun utente"}")
+                    Log.d("showLoginSuccess", "AdminActivity con ${user?.username ?: "Nessun utente"}")
                     AdminActivity::class.java
                 }
                 else -> {
-                    Log.d("showLoginSuccess", "Navigazione verso MainPage (utente normale)con ${user?.username ?: "Nessun utente"}")
+                    Log.d("showLoginSuccess", "mainpage va con ${user?.username ?: "Nessun utente"}")
                     MainPage::class.java
                 }
             }

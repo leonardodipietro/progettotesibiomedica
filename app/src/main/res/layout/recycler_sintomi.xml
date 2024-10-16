@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- Prima TextView e CheckBox -->
+    <!-- Nome del sintomo con padding sinistro -->
     <TextView
         android:id="@+id/nomesintomo"
         android:layout_width="wrap_content"
@@ -11,93 +10,134 @@
         android:text="Nome Sintomo"
         android:textSize="18sp"
         android:textColor="#333333"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:paddingLeft="16dp" />
 
-
+    <!-- Layout orizzontale per le TextView delle gravità -->
     <LinearLayout
         android:id="@+id/textview_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/nomesintomo"
         android:orientation="horizontal"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2sp"
         android:gravity="center">
 
         <TextView
             android:id="@+id/textview1"
-            android:layout_width="0dp"
+            android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Lieve"
             android:textStyle="bold"
-            android:padding="16dp" />
-
-
+            android:gravity="center"
+            android:padding="16sp" />
 
         <TextView
             android:id="@+id/textview2"
-            android:layout_width="0dp"
+            android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textStyle="bold"
             android:text="Moderato"
-            android:padding="16dp" />
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="16sp" />
 
         <TextView
             android:id="@+id/textview3"
-            android:layout_width="0dp"
+            android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Grave"
             android:textStyle="bold"
-            android:padding="16dp" />
+            android:gravity="center"
+            android:padding="16sp" />
 
         <TextView
             android:id="@+id/textview4"
-            android:layout_width="0dp"
+            android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Molto grave"
             android:textStyle="bold"
-            android:padding="16dp" />
+            android:gravity="center"
+            android:padding="16sp" />
     </LinearLayout>
 
-    <!-- Layout orizzontale per le 4 CheckBox -->
+    <!-- Layout orizzontale per le CheckBox centrate sotto le TextView -->
     <LinearLayout
         android:id="@+id/checkbox_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/textview_layout"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8sp">
 
-        <CheckBox
-            android:id="@+id/cbgravita1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="16dp" />
-
-        <CheckBox
-            android:id="@+id/cbgravita2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="16dp" />
-
-        <CheckBox
-            android:id="@+id/cbgravita3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="16dp" />
-
-        <CheckBox
-            android:id="@+id/cbgravita4"
+        <LinearLayout
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="16dp" />
+            android:gravity="center">
+
+            <CheckBox
+                android:id="@+id/cbgravita1"
+                android:buttonTint="#4CAF50"
+                android:background="@drawable/checkboxbackground"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <CheckBox
+                android:id="@+id/cbgravita2"
+                android:buttonTint="#4CAF50"
+                android:background="@drawable/checkboxbackground"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <CheckBox
+                android:id="@+id/cbgravita3"
+                android:layout_width="wrap_content"
+                android:buttonTint="#4CAF50"
+                android:background="@drawable/checkboxbackground"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <CheckBox
+                android:id="@+id/cbgravita4"
+                android:buttonTint="#4CAF50"
+                android:background="@drawable/checkboxbackground"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:id="@+id/divisoresintomi"
+        android:layout_width="match_parent"
+        android:layout_height="2sp"
+        android:layout_below="@id/checkbox_layout"
+        android:background="#4CAF50"
+        android:layout_marginTop="12dp" />
+
 </RelativeLayout>
+

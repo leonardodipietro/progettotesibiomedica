@@ -29,40 +29,15 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- Modifica la tua email -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Modifica la tua mail:"
-                android:textSize="16sp"
-                android:layout_marginBottom="8dp"/>
-
-            <EditText
-                android:id="@+id/edit_email"
+            <!-- Pulsante Logout -->
+            <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Inserisci la tua nuova mail"
-                android:inputType="textEmailAddress"
-                android:padding="10dp"
-                android:background="@drawable/edittext"/>
-
-            <!-- Modifica il tuo numero di telefono -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Modifica il tuo telefono:"
-                android:textSize="16sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"/>
-            <EditText
-                android:id="@+id/edit_phone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Inserisci il nuovo numero di telefono"
-                android:inputType="phone"
-                android:padding="10dp"
-                android:background="@drawable/edittext"/>
-
+                android:text="Logout"
+                android:id="@+id/logoutbutton"
+                android:gravity="center"
+                style="@style/GreenButton"
+                android:layout_marginTop="16dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -95,8 +70,56 @@
                 android:hint="Inserisci il nuovo nome e cognome"
                 android:padding="10dp"
                 android:background="@drawable/edittext"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Modifica il tuo indirizzo"/>
 
+            <EditText
+                android:id="@+id/edit_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo indirizzo"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
 
+            <!-- Modifica il tuo numero di telefono -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modifica il tuo telefono:"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+            <EditText
+                android:id="@+id/edit_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci il nuovo numero di telefono"
+                android:inputType="phone"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
+
+            <!-- Modifica la tua email -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modifica la tua mail:"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <EditText
+                android:id="@+id/edit_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Inserisci la tua nuova mail"
+                android:inputType="textEmailAddress"
+                android:padding="10dp"
+                android:background="@drawable/edittext"/>
 
             <!-- Modifica la tua password -->
             <TextView
@@ -184,21 +207,7 @@
                     android:contentDescription="Mostra Conferma Password"
                     android:layout_marginEnd="12dp"/>
             </FrameLayout>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:text="Modifica il tuo indirizzo"/>
 
-            <EditText
-                android:id="@+id/edit_address"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Inserisci il nuovo indirizzo"
-                android:padding="10dp"
-                android:background="@drawable/edittext"/>
 
 
             <!-- Pulsante per salvare le modifiche -->
@@ -221,15 +230,7 @@
                 android:padding="16dp"
                 android:background="#F0F0F0"
                 android:layout_gravity="center"/>
-            <!-- Pulsante Logout -->
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Logout"
-                android:id="@+id/logoutbutton"
-                android:gravity="center"
-                style="@style/GreenButton"
-                android:layout_marginTop="16dp"/>
+
 
             <!-- Pulsante Elimina Account -->
             <Button

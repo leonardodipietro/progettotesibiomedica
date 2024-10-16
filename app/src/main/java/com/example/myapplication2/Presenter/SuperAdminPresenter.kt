@@ -36,6 +36,7 @@ class SuperAdminPresenter (private val view: SuperAdminView){
                                         ruolo = "admin",
                                         phoneNumber=""
                                     )
+                                    view.clearInputFields()
                                     userRepo.saveUserToFirebase(username, name, address, hashedPassword,"admin")
                                     view.showSuccess("Admin registrato con successo")
                                 } else {
@@ -86,4 +87,6 @@ class SuperAdminPresenter (private val view: SuperAdminView){
     fun confirmLogout() {
         view.returnToMain()
     }
+
+
 }

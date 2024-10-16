@@ -160,12 +160,11 @@ class AdminActivity : AppCompatActivity(), AdminView {
                         .setNegativeButton("No", null)
                         .show()
                 } else {
-                    Log.e("sintrepo", "Indice fuori dai limiti: $position per la lista degli ID con lunghezza ${sintomiIdList.size}")
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
-                // Nessuna azione necessaria
+
             }
         }
 

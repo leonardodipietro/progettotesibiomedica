@@ -81,10 +81,10 @@ class LoginPresenter(
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 view.showResetPasswordEmailSent()
-                                Log.d("ResetPassword", "Email di reset inviata a: $email")
+                                Log.d("ResetPassword", "Email inviata a: $email")
                             } else {
                                 view.showResetPasswordError("Errore nell'invio dell'email di reset. Controlla l'email associata.")
-                                Log.d("ResetPassword", "Errore nell'invio dell'email di reset: ${task.exception?.message}")
+
                             }
                         }
                 } else {
