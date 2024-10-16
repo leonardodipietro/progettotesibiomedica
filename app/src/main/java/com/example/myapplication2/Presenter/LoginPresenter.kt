@@ -25,12 +25,13 @@ class LoginPresenter(
         }
 
         if (username.isNotEmpty() && password.isNotEmpty()) {
-            userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, admin, user ->
+            //ricambiare con admin se necessario
+            userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, ruolo, user ->
                 if (isSuccess) {
                     resetLock()
-                    if (admin != null) {
-                        Log.d("LoginPresenter", "Accesso riuscito, utente admin: $admin,,,, $user")
-                        view.showLoginSuccess(admin, user)
+                    if (ruolo != null) {
+                        Log.d("LoginPresenter", "Accesso riuscito, utente admin: $ruolo,,,, $user")
+                        view.showLoginSuccess(ruolo, user)
                     }
                 } else {
                     handleFailedLogin()

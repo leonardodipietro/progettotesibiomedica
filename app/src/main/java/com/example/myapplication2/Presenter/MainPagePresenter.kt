@@ -1,5 +1,6 @@
 package com.example.myapplication2.Presenter
 
+import android.util.Log
 import com.example.myapplication2.interfacepackage.MainPageView
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
@@ -13,15 +14,21 @@ class MainPagePresenter(
 ) {
     fun loadUserData(intentUser: Utente?) {
         val user = intentUser ?: view.loadUserFromPreferences()
+        Log.d("loadUserData", "Utente caricato: ${user?.id ?: "Nessun utente"} - Ruolo: ${user?.ruolo ?: "Ruolo non disponibile"}")
+
         if (user != null) {
             view.saveUserToPreferences(user)
+            Log.d("loadUserData", "Utente salvato nelle preferenze: ${user.username}")
+
             view.showUserWelcomeMessage(user.username ?: "")
+            Log.d("loadUserData", "Messaggio di benvenuto mostrato per: ${user.username}")
             //scheduleNotificationsIfNeeded(user.id)
         } else {
             view.showError("Utente non trovato, accesso negato.")
-
+            Log.e("loadUserData", "Errore: Utente non trovato, accesso negato.")
         }
     }
+
     fun loadSintomiList() {
         sintomoRepo.fetchSintomi()
         sintomoRepo.sintomi.observeForever { sintomiList ->

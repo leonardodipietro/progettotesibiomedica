@@ -28,6 +28,19 @@ class UserRepo {
     val usersRef = database.getReference("users")
 
 
+    fun getUserEmail(userId: String, callback: (String?) -> Unit) {
+        val userRef = usersRef.child(userId).child("email")
+
+        userRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val email = task.result?.getValue(String::class.java)
+                Log.d("getUserEmail", "Email recuperata con successo: $email")
+                callback(email) // Restituisce l'email trovata
+            } else {
+                callback(null) // In caso di errore, restituisce null
+            }
+        }
+    }
     fun getUserData(uid: String, callback: (Utente?) -> Unit) {
         Log.d("UserRepo", "Inizio recupero dati per utente con UID: $uid")
 
@@ -78,7 +91,22 @@ class UserRepo {
             }
         })
     }
-    fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?, Boolean?, Utente?) -> Unit) {
+    fun checkUsernameExists(username: String, callback: (Boolean) -> Unit) {
+        val usernameRef = usersRef.orderByChild("username").equalTo(username)
+        usernameRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("UserRepo", "Numero di utenti trovati con lo username $username: ${snapshot.childrenCount}")
+                callback(snapshot.exists())
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("UserRepo", "Errore nella query dello username: ${error.message}")
+                callback(false)
+            }
+        })
+    }
+//al posto del terzo callback c era un booleano con ?
+    fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
         //val usersRef = FirebaseDatabase.getInstance().getReference("users")
 
         Log.d("verifyUserCredentials", "Inizio verifica credenziali per username: $username")
@@ -101,11 +129,12 @@ class UserRepo {
 
                                 // Verifica la password
                                 if (BCrypt.checkpw(password, user.password)) {
-                                    Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.admin}")
-
-                                    val isAdmin = user.admin ?: false
-                                    callback(true, null, isAdmin, user)
-                                    Log.d("verifyUserCredentials", "Callback chiamato con successo per admin: ${user.admin} e utente: $user")
+                                    Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.ruolo}")
+                                    val ruolo = user.ruolo
+                                    callback(true, null, ruolo, user)
+                                    /*val isAdmin = user.admin ?: false
+                                    callback(true, null, isAdmin, user)*/
+                                    Log.d("verifyUserCredentials", "Callback chiamato con successo per admin: ${user.ruolo} e utente: $user")
                                 } else {
                                     Log.d("verifyUserCredentials", "Password errata per numero di telefono.")
                                     callback(false, "Password errata", null, null)
@@ -119,8 +148,9 @@ class UserRepo {
                             Log.d("verifyUserCredentials", "Email trovata per utente, verifica password...")
 
                             if (BCrypt.checkpw(password, user.password)) {
-                                Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.admin}")
-                                callback(true, null, user.admin, user)
+                                Log.d("verifyUserCredentials", "Password corretta. Accesso come UTENTE: ${user.ruolo}")
+
+                                callback(true, null, user.ruolo, user)
                             } else {
                                 Log.d("verifyUserCredentials", "Password errata per email trovata.")
                                 callback(false, "Password errata", null, null)
@@ -144,7 +174,19 @@ class UserRepo {
     }
 
 
+    fun checkPhoneNumberExists(phone: String, callback: (Boolean) -> Unit) {
+        val phoneRef = usersRef.orderByChild("phoneNumber").equalTo(phone)
+        phoneRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                callback(snapshot.exists())
+            }
 
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("UserRepo", "Errore nella query del numero di telefono: ${error.message}")
+                callback(false)
+            }
+        })
+    }
 
     fun initiateEmailUpdate(utente: Utente?, newEmail: String, onComplete: (Boolean) -> Unit) {
         val userUid = utente?.id
@@ -246,7 +288,7 @@ class UserRepo {
     }
 
 
-    fun saveUserToFirebase(username: String,name:String,address:String, hashedPassword: String) {
+    fun saveUserToFirebase(username: String,name:String,address:String, hashedPassword: String, ruolo:String) {
         Log.d("userrepo", "funzione chiamata")
         try {
             val currentUser = auth.currentUser
@@ -262,7 +304,9 @@ class UserRepo {
                     address = address,
                     username = username,
                     password = hashedPassword,
-                    admin = false
+                    //admin = false
+                    ruolo= "user",
+                    phoneNumber=""
                 )
                 Log.d("userrepo", "Creazione oggetto completata: $nuovoUser")
 
@@ -310,7 +354,8 @@ class UserRepo {
                     address = address,
                     username = username,
                     password = hashedPassword,
-                    email = email
+                    email = email,
+                    ruolo = "user"
                 )
                 Log.d("userrepo", "Creazione oggetto completata $nuovoUser")
                 userRef.setValue(nuovoUser)

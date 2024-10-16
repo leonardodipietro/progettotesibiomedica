@@ -33,7 +33,7 @@ class TelephoneActivity: AppCompatActivity()   {
         FirebaseApp.initializeApp(this)
 
         auth = FirebaseAuth.getInstance()
-
+        userRepo=UserRepo()
 
             //TODO NON SO SE è DA CASTRARE
 
@@ -55,19 +55,26 @@ class TelephoneActivity: AppCompatActivity()   {
         val sendCodeButton = findViewById<Button>(R.id.sendCodeButton)
         val verifyCodeButton = findViewById<Button>(R.id.verifyCodeButton)
 
-
         sendCodeButton.setOnClickListener {
             val phoneNumber = phoneEditText.text.toString().trim()
             val username = usernameEditText.text.toString().trim()
-            val namesurname=namesurnameEditText.text.toString().trim()
-            val address=addressEditText.text.toString().trim()
+            val namesurname = namesurnameEditText.text.toString().trim()
+            val address = addressEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
             val confirmPassword = confirmPasswordEditText.text.toString().trim()
 
             if (phoneNumber.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() &&
                 namesurname.isNotEmpty() && address.isNotEmpty()) {
+
                 if (password == confirmPassword) {
-                    sendVerificationCode(phoneNumber)
+                    userRepo.checkUsernameExists(username) { exists ->
+                        if (exists) {
+                            Toast.makeText(this, "Username già in uso, selezionare un altro", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Invia il codice di verifica solo se lo username è disponibile
+                            sendVerificationCode(phoneNumber)
+                        }
+                    }
                 } else {
                     Toast.makeText(this, "Le password non corrispondono", Toast.LENGTH_SHORT).show()
                 }
@@ -75,7 +82,6 @@ class TelephoneActivity: AppCompatActivity()   {
                 Toast.makeText(this, "Inserisci tutti i campi", Toast.LENGTH_SHORT).show()
             }
         }
-
         verifyCodeButton.setOnClickListener {
             val code = codeEditText.text.toString().trim()
             if (code.isNotEmpty()) {
@@ -144,7 +150,9 @@ class TelephoneActivity: AppCompatActivity()   {
                         address = address,
                         username = username,
                         password = hashedPassword,
-                        admin = false
+                        ruolo = "user",
+                        phoneNumber = credential.toString()
+
                     )
 
                     // Salva l'utente nel database

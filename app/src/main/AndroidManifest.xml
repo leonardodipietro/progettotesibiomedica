@@ -34,6 +34,9 @@
             android:name=".EmailPasswordActivity"
             android:exported="false" />
         <activity
+            android:name=".SuperAdminActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -54,13 +57,7 @@
         <activity
             android:name=".ResetPassword"
             android:exported="false" />
-        <service
-            android:name=".repository.MessageService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+
         <!-- Required for WorkManager to persist across reboots -->
         <receiver
             android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"

@@ -4,7 +4,8 @@ import com.example.myapplication2.model.Utente
 
     interface LoginInterface {
         // Metodi che la View implementa per gestire i feedback
-        fun showLoginSuccess(admin: Boolean, user: Utente?)
+        //fun showLoginSuccess(admin: Boolean, user: Utente?)
+        fun showLoginSuccess(ruolo: String, user: Utente?)
         fun showLoginFailure(errorMessage: String)
         fun showAccountLocked(remainingTime: Long)
         fun showResetPasswordEmailSent()

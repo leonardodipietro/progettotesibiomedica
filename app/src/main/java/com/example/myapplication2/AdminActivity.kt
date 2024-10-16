@@ -237,7 +237,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
         val editor = sharedPreferences.edit()
         val json = Gson().toJson(user)
         editor.putString("utente", json)
-        editor.putBoolean("isAdmin", true)
+        editor.putString("ruolo", "admin")
         editor.putBoolean("isLoggedIn", true)
         editor.apply()
     }

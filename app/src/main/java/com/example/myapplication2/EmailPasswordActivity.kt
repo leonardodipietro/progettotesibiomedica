@@ -78,83 +78,72 @@ class EmailPasswordActivity : AppCompatActivity() {
 
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString()
-            val name=namesurnameEditText.text.toString()
-            val address=addressEditText.text.toString()
+            val name = namesurnameEditText.text.toString()
+            val address = addressEditText.text.toString()
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
             val confermaPassword = confermaPasswordEditText.text.toString()
+            val phoneNumber=""
 
-            // Controllo se i campi non sono vuoti
             if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty() &&
-                name.isNotEmpty() && address.isNotEmpty() ) {
-                // Verifica se la password e la conferma della password corrispondono
+                name.isNotEmpty() && address.isNotEmpty()) {
+
                 if (password == confermaPassword) {
-                    // Procedi con la registrazione su Firebase Authentication
-                    auth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(this) { task ->
-                            if (task.isSuccessful) {
-                                Log.d("MainActivity", "Registrazione avvenuta con successo")
-                                val userId = auth.currentUser?.uid ?: ""
-
-
-                                try {
-                                    // Hash della password con BCrypt prima di salvarla nel database
-                                    val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
-                                    Log.d("MainActivity", "Password hashata con successo")
-
-                                    // Crea l'oggetto Utente
-                                    val user = Utente(
-                                        id = userId,
-                                        email = email,
-                                        name = name,
-                                        address = address,
-                                        username = username,
-                                        password = hashedPassword,
-                                        admin = false
-                                    )
-                                    Log.d("MainActivity", "Oggetto Utente creato: $user")
-
-                                    // Salva l'utente nel database
-                                    userRepo.saveUserToFirebase(username, name, address, hashedPassword)
-                                    Log.d("MainActivity", "Chiamata a saveUserToFirebase completata")
-
-                                    val intent = Intent(this, MainPage::class.java).apply {
-                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                        putExtra("utente", user)
+                    userRepo.checkUsernameExists(username) { exists ->
+                        if (exists) {
+                            Toast.makeText(this, "Username già in uso, selezionare un altro", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Procedi con la registrazione su Firebase Authentication
+                            auth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(this) { task ->
+                                    if (task.isSuccessful) {
+                                        val userId = auth.currentUser?.uid ?: ""
+                                        try {
+                                            val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
+                                            val user = Utente(
+                                                id = userId,
+                                                email = email,
+                                                name = name,
+                                                address = address,
+                                                username = username,
+                                                password = hashedPassword,
+                                                //admin = false,
+                                                ruolo = "user",
+                                                phoneNumber=phoneNumber
+                                            )
+                                            userRepo.saveUserToFirebase(username, name, address, hashedPassword,ruolo="user")
+                                            val intent = Intent(this, MainPage::class.java).apply {
+                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                putExtra("utente", user)
+                                            }
+                                            startActivity(intent)
+                                            finish()
+                                        } catch (e: Exception) {
+                                            Log.e("MainActivity", "Errore durante il salvataggio dell'utente: ${e.message}")
+                                        }
+                                    } else {
+                                        Toast.makeText(this, "Registrazione fallita: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                                     }
-                                    Log.d("MainActivity", "Intent creato con Utente: $user")
-
-                                    startActivity(intent)
-                                    finish()
-
-                                } catch (e: Exception) {
-                                    Log.e("MainActivity", "Errore durante il salvataggio dell'utente o la creazione dell'Intent: ${e.message}")
                                 }
-                            } else {
-                                Toast.makeText(this, "Registrazione fallita: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                                Log.d("MainActivity", "Errore registrazione: ${task.exception?.message}")
-                            }
                         }
-
+                    }
                 } else {
-                    // Mostra un messaggio di errore se le password non corrispondono
                     Toast.makeText(this, "Le password non corrispondono", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                // Mostra un messaggio di errore se uno dei campi è vuoto
                 Toast.makeText(this, "Email, password e conferma password non possono essere vuoti", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
-    /*private fun startSecondActivity(user) {
-        val intent = Intent(this, MainPage::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("utente", user)
-        }
-        startActivity(intent)
-        finish()
-        }*/
+    }
+        /*private fun startSecondActivity(user) {
+            val intent = Intent(this, MainPage::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("utente", user)
+            }
+            startActivity(intent)
+            finish()
+            }*/
     }
 
 

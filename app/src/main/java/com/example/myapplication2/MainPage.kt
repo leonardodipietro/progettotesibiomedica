@@ -58,15 +58,17 @@ class MainPage : AppCompatActivity(), MainPageView {
 
         setupNotificationChannelAndPermissions()
 
-        // Inizializza la UI e l'adapter
-        setupUI()
-        setupListeners()
 
         val intentUser = intent.getParcelableExtra<Utente>("utente")
+        Log.d("IntentData", "Utente ripreso dall'Intent:${intentUser?.id?: "Nessun utent.id"} ${intentUser?.username ?: "Nessun utente"} - Ruolo: ${intentUser?.ruolo ?: "Ruolo non disponibile"}")
         presenter.loadUserData(intentUser)
         intentUser?.let {
             //presenter.scheduleNotifications(it.id)
         }
+
+        // Inizializza la UI e l'adapter
+        setupUI()
+        setupListeners()
 
         presenter.loadSintomiList()
 
@@ -188,45 +190,50 @@ class MainPage : AppCompatActivity(), MainPageView {
             }
         }
     }
-
     override fun scheduleDailyNotification() {
-        /*val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS).build()
-        WorkManager.getInstance(this).enqueue(workRequest)*/
+        Log.d("WorkManager", "Checking if periodic work is already scheduled")
 
-       /* val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(20, TimeUnit.MINUTES).build()
-        WorkManager.getInstance(this).enqueue(workRequest)*/
-        Log.d("WorkManager", "Scheduling daily notification")
-        val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificaWorker>(15, TimeUnit.MINUTES)
-            .addTag("daily_notification")
-            .build()
+        // Verifica sincrona sullo stato del lavoro
+        val workInfos = WorkManager.getInstance(this)
+            .getWorkInfosForUniqueWork("UniqueDailyNotificationWork")
+            .get() // Ottiene i risultati in modo sincrono
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "UniqueDailyNotificationWork", // Nome univoco per il lavoro
-            ExistingPeriodicWorkPolicy.REPLACE, // Politica per sostituire lavori esistenti con lo stesso nome
-            periodicWorkRequest
-        )
+        if (workInfos.isNullOrEmpty() || workInfos.none { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }) {
+            Log.d("WorkManager", "No existing work found, scheduling new periodic work")
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificaWorker>(15, TimeUnit.MINUTES)
+                .addTag("daily_notification")
+                .build()
 
-        // Log per verificare lo stato del WorkRequest
-        WorkManager.getInstance(this).getWorkInfoByIdLiveData(periodicWorkRequest.id).observe(this) { workInfo ->
-            if (workInfo != null) {
-                Log.d("WorkManager", "Work ID: ${periodicWorkRequest.id}, State: ${workInfo.state}")
-
-                when (workInfo.state) {
-                    WorkInfo.State.ENQUEUED -> Log.d("WorkManager", "Periodic work is enqueued")
-                    WorkInfo.State.RUNNING -> Log.d("WorkManager", "Periodic work is running")
-                    WorkInfo.State.SUCCEEDED -> Log.d("WorkManager", "Periodic work succeeded")
-                    WorkInfo.State.FAILED -> Log.d("WorkManager", "Periodic work failed")
-                    WorkInfo.State.BLOCKED -> Log.d("WorkManager", "Periodic work is blocked")
-                    WorkInfo.State.CANCELLED -> Log.d("WorkManager", "Periodic work is cancelled")
-                    else -> Log.d("WorkManager", "Unknown work state")
-                }
-            } else {
-                Log.d("WorkManager", "WorkInfo is null")
-            }
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "UniqueDailyNotificationWork",
+                ExistingPeriodicWorkPolicy.KEEP, // Mantiene il lavoro esistente se già attivo
+                periodicWorkRequest
+            )
+        } else {
+            Log.d("WorkManager", "Periodic work already scheduled, skipping")
         }
+    }
 
 
 
+
+    // Log per verificare lo stato del WorkRequest
+    /* WorkManager.getInstance(this).getWorkInfoByIdLiveData(periodicWorkRequest.id).observe(this) { workInfo ->
+         if (workInfo != null) {
+             Log.d("WorkManager", "Work ID: ${periodicWorkRequest.id}, State: ${workInfo.state}")
+
+             when (workInfo.state) {
+                 WorkInfo.State.ENQUEUED -> Log.d("WorkManager", "Periodic work is enqueued")
+                 WorkInfo.State.RUNNING -> Log.d("WorkManager", "Periodic work is running")
+                 WorkInfo.State.SUCCEEDED -> Log.d("WorkManager", "Periodic work succeeded")
+                 WorkInfo.State.FAILED -> Log.d("WorkManager", "Periodic work failed")
+                 WorkInfo.State.BLOCKED -> Log.d("WorkManager", "Periodic work is blocked")
+                 WorkInfo.State.CANCELLED -> Log.d("WorkManager", "Periodic work is cancelled")
+                 else -> Log.d("WorkManager", "Unknown work state")
+             }
+         } else {
+             Log.d("WorkManager", "WorkInfo is null")
+         }*/
 
 
 
@@ -260,14 +267,17 @@ class MainPage : AppCompatActivity(), MainPageView {
                 Log.d("WorkManager", "WorkInfo is null")
             }
         }*/
-    }
 
     override fun saveUserToPreferences(user: Utente) {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val json = Gson().toJson(user)
+
+        Log.d("saveUserToPreferences", "Salvataggio utente nelle preferenze. JSON: $json")
+        Log.d("saveUserToPreferences", "Ruolo: ${user.ruolo} - Stato login: true")
+
         editor.putString("utente", json)
-        editor.putBoolean("isAdmin", false)
+        editor.putString("ruolo", user.ruolo)
         editor.putBoolean("isLoggedIn", true)
         editor.apply()
     }
@@ -275,7 +285,15 @@ class MainPage : AppCompatActivity(), MainPageView {
     override fun loadUserFromPreferences(): Utente? {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("utente", null)
-        return if (json != null) Gson().fromJson(json, Utente::class.java) else null
+
+        Log.d("loadUserFromPreferences", "Dati utente caricati dalle preferenze: $json")
+
+        return if (json != null) {
+            Gson().fromJson(json, Utente::class.java)
+        } else {
+            Log.d("loadUserFromPreferences", "Nessun utente salvato nelle preferenze.")
+            null
+        }
     }
 
 

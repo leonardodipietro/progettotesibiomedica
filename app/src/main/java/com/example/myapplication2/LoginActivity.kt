@@ -57,13 +57,44 @@ import java.util.concurrent.TimeUnit
 
         }
 
-        override fun showLoginSuccess(admin: Boolean, user: Utente?) {
+        /*override fun showLoginSuccess(admin: Boolean, user: Utente?) {
             val intent = Intent(this, if (admin) AdminActivity::class.java else MainPage::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 putExtra("utente", user)
             }
             startActivity(intent)
+        }*/
+        override fun showLoginSuccess(ruolo: String, user: Utente?) {
+            Log.d("showLoginSuccess", "Ruolo ricevuto: $ruolo")
+            Log.d("showLoginSuccess", "Utente ricevuto: ${user?.username ?: "Nessun utente"}")
+            Log.d("showLoginSuccess", "Utente ricevuto: ${user?.id ?: "Nessun utente"}")
+            val targetActivity = when (ruolo) {
+                "superadmin" -> {
+                    Log.d("showLoginSuccess", "Navigazione verso SuperAdminActivity con ${user?.username ?: "Nessun utente"}")
+                    SuperAdminActivity::class.java
+                }
+                "admin" -> {
+                    Log.d("showLoginSuccess", "Navigazione verso AdminActivity con ${user?.username ?: "Nessun utente"}")
+                    AdminActivity::class.java
+                }
+                else -> {
+                    Log.d("showLoginSuccess", "Navigazione verso MainPage (utente normale)con ${user?.username ?: "Nessun utente"}")
+                    MainPage::class.java
+                }
+            }
+
+            val intent = Intent(this, targetActivity).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("utente", user)
+                Log.d("IntentCreation", "Aggiungo all'Intent - Utente: ${user?.username ?: "Nessun utente"} - Ruolo: ${user?.ruolo ?: "Ruolo non disponibile"}")
+
+            }
+
+            Log.d("showLoginSuccess", "Inizio l'activity con intent per ${targetActivity.simpleName}")
+            startActivity(intent)
         }
+
+
 
         override fun showLoginFailure(errorMessage: String) {
             Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()

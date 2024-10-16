@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/emailsuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"/>
+
+        <EditText
+            android:id="@+id/usernamesuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:inputType="text"/>
+
+        <EditText
+            android:id="@+id/nomeecognomesuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nome e Cognome"
+            android:inputType="textPersonName"/>
+
+        <EditText
+            android:id="@+id/indirizzosuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Indirizzo"
+            android:inputType="textPostalAddress"/>
+
+        <EditText
+            android:id="@+id/passwordsuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"/>
+
+        <EditText
+            android:id="@+id/confermapasswordsuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Conferma Password"
+            android:inputType="textPassword"/>
+
+        <Button
+            android:id="@+id/registerbuttonsuperadmin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Crea Admin"/>
+        <Button
+             android:id="@+id/logoutsuperadmin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+               android:text="Logout"/>
+    <EditText
+        android:id="@+id/questionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci la domanda" />
+
+    <EditText
+        android:id="@+id/answerEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci la risposta" />
+
+    <Button
+        android:id="@+id/addFaqButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Aggiungi FAQ" />
+
+    <Button
+        android:id="@+id/updateFaqButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Aggiorna FAQ" />
+
+    <Button
+        android:id="@+id/deleteFaqButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Elimina FAQ" />
+
+
+    </LinearLayout>
+
+
+
