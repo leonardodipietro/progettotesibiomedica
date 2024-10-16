@@ -42,7 +42,14 @@ class InfoActivity:AppCompatActivity(), InfoView {
         presenter.loadFaqData()
 
 
-
+/*
+                    userRepo.updateUserEmail(userId,email) { success ->
+                        if (success) {
+                            view.showError("email aggiunta con successo ")
+                        } else {
+                           view.showError("Errore nell'aggiunta della mail")
+                            }
+                        }*/
 
         setupBottomNavigation()
 

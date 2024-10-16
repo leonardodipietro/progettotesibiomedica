@@ -40,96 +40,58 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         confirmPassword: String
     ) {
 
-        if(oldPassword.isNotEmpty()) {
             if (email.isNotEmpty()) {
-                // Step 1: Recupera l'email corrente
-                userRepo.getUserEmail(userId) { currentEmail ->
-                    if (currentEmail != null && currentEmail != email) {
-                        // Step 2: Autentica temporaneamente l'utente con l'email corrente e oldPassword
-                        val credential = EmailAuthProvider.getCredential(currentEmail, oldPassword)
-                        FirebaseAuth.getInstance().signInWithCredential(credential)
-                            .addOnCompleteListener { authTask ->
-                                if (authTask.isSuccessful) {
-                                    // Step 3: Invia richiesta di verifica per l'aggiornamento dell'email su Firebase Authentication
-                                    val firebaseUser = auth.currentUser
-                                    Log.d("AUTH USER","AUTH USER $firebaseUser")
-                                    firebaseUser?.verifyBeforeUpdateEmail(email)
-                                        ?.addOnCompleteListener { updateTask ->
-                                            if (updateTask.isSuccessful) {
-                                                // Step 4: Aggiorna l'email nel database
-                                                userRepo.updateUserEmail(userId, email) { success ->
-                                                    if (success) {
-                                                        view.showSuccess("Email di verifica inviata. Controlla la nuova email per confermare il cambiamento.")
-                                                    } else {
-                                                        view.showError("Errore nell'aggiornamento dell'email nel database")
+                if (oldPassword.isNotEmpty()) {
+                    // Step 1: Recupera l'email corrente
+                    userRepo.getUserEmail(userId) { currentEmail ->
+                        if (!currentEmail.isNullOrEmpty() && currentEmail != email) {
+                            // Step 2: Autentica temporaneamente l'utente con l'email corrente e oldPassword
+                            val credential = EmailAuthProvider.getCredential(currentEmail, oldPassword)
+                            FirebaseAuth.getInstance().signInWithCredential(credential)
+                                .addOnCompleteListener { authTask ->
+                                    if (authTask.isSuccessful) {
+                                        val firebaseUser = FirebaseAuth.getInstance().currentUser
+                                        firebaseUser?.verifyBeforeUpdateEmail(email)
+                                            ?.addOnCompleteListener { updateTask ->
+                                                if (updateTask.isSuccessful) {
+                                                    userRepo.updateUserEmail(userId, email) { success ->
+                                                        if (success) {
+                                                            view.showSuccess("Email di verifica inviata. Controlla la nuova email per confermare il cambiamento.")
+                                                        } else {
+                                                            view.showError("Errore nell'aggiornamento dell'email nel database")
+                                                        }
                                                     }
+                                                } else {
+                                                    view.showError("Errore nell'invio della richiesta di verifica su Firebase Authentication")
+                                                    Log.e("verifyBeforeUpdateEmail", "Errore: ${updateTask.exception?.message ?: "Errore sconosciuto"}")
                                                 }
-                                            } else {
-                                                view.showError("Errore nell'invio della richiesta di verifica su Firebase Authentication")
-                                                val error = updateTask.exception?.message ?: "Errore sconosciuto"
-                                                Log.e("verifyBeforeUpdateEmail", "Errore: $error")
                                             }
-                                        }
-                                } else {
-                                    userRepo.updateUserEmail(userId, email) { success ->
-                                        if (success) {
-                                            view.showSuccess("Email aggiornata correttamente")
-                                            // Cambio password
-                                            if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-                                                userRepo.changePassword(userId, oldPassword, newPassword) { success ->
-                                                    if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
-                                                }
-                                            } else if (newPassword != confirmPassword) {
-                                                view.showError("Le nuove password non coincidono")
-                                            }
-                                        } else {
-                                            view.showError("Errore nell'aggiornamento dell'email nel database")
-                                            // Cambio password
-                                            if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-                                                userRepo.changePassword(userId, oldPassword, newPassword) { success ->
-                                                    if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
-                                                }
-                                            } else if (newPassword != confirmPassword) {
-                                                view.showError("Le nuove password non coincidono")
-                                            }
-                                        }
+                                    } else {
+                                        view.showError("Errore nell'autenticazione con le credenziali fornite")
+                                        updateEmailDirectly(userId, email)
                                     }
                                 }
-                            }
-                    } else if (currentEmail == email) {
-                        view.showError("La nuova email coincide con quella attuale")
-                        // Cambio password
-                        if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-                            userRepo.changePassword(userId, oldPassword, newPassword) { success ->
-                                if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
-                            }
-                        } else if (newPassword != confirmPassword) {
-                            view.showError("Le nuove password non coincidono")
-                        }
-                    } else {
-                        view.showError("Impossibile recuperare l'email corrente")
-                        // Cambio password
-                        if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-                            userRepo.changePassword(userId, oldPassword, newPassword) { success ->
-                                if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
-                            }
-                        } else if (newPassword != confirmPassword) {
-                            view.showError("Le nuove password non coincidono")
+                        } else if (currentEmail.isNullOrEmpty()) {
+                            // Se l'email è vuota, chiama direttamente updateEmailDirectly
+                            updateEmailDirectly(userId, email)
+                        } else if (currentEmail == email) {
+                            view.showError("La nuova email coincide con quella attuale")
+                            updatePassword(userId, oldPassword, newPassword, confirmPassword)
+                        } else {
+                            view.showError("Impossibile recuperare l'email corrente")
+                            updatePassword(userId, oldPassword, newPassword, confirmPassword)
                         }
                     }
+                } else {
+                    view.showError("Inserisci la vecchia password nell'apposito spazio")
                 }
             } else {
                 view.showError("L'email non può essere vuota")
-                // Cambio password
-                if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
-                    userRepo.changePassword(userId, oldPassword, newPassword) { success ->
-                        if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
-                    }
-                } else if (newPassword != confirmPassword) {
-                    view.showError("Le nuove password non coincidono")
-                }
             }
-        }
+
+
+
+
 
 
         if (phone.isNotEmpty()) {
@@ -201,6 +163,27 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
             }
         }
     }
+// Funzione per aggiornare direttamente l'email nel database se l'autenticazione fallisce
+private fun updateEmailDirectly(userId: String, email: String) {
+    userRepo.updateUserEmail(userId, email) { success ->
+        if (success) {
+            view.showSuccess("Email aggiornata correttamente")
+        } else {
+            view.showError("Errore nell'aggiornamento dell'email nel database")
+        }
+    }
+}
+
+// Funzione per aggiornare la password
+private fun updatePassword(userId: String, oldPassword: String, newPassword: String, confirmPassword: String) {
+    if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
+        userRepo.changePassword(userId, oldPassword, newPassword) { success ->
+            if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
+        }
+    } else if (newPassword != confirmPassword) {
+        view.showError("Le nuove password non coincidono")
+    }
+}
 
     fun verifyPhone(code: String) {
         // Logica di verifica
