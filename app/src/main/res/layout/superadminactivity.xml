@@ -20,19 +20,7 @@
             android:hint="Username"
             android:inputType="text"/>
 
-        <EditText
-            android:id="@+id/nomeecognomesuperadmin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Nome e Cognome"
-            android:inputType="textPersonName"/>
 
-        <EditText
-            android:id="@+id/indirizzosuperadmin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Indirizzo"
-            android:inputType="textPostalAddress"/>
 
         <EditText
             android:id="@+id/passwordsuperadmin"
@@ -76,17 +64,11 @@
         android:layout_height="wrap_content"
         android:text="Aggiungi FAQ" />
 
-    <Button
-        android:id="@+id/updateFaqButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Aggiorna FAQ" />
 
-    <Button
-        android:id="@+id/deleteFaqButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Elimina FAQ" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/faqRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 
     </LinearLayout>

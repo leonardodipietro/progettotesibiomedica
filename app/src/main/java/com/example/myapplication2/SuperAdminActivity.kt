@@ -9,9 +9,13 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication2.Presenter.AdminPresenter
 import com.example.myapplication2.Presenter.SuperAdminPresenter
+import com.example.myapplication2.adapter.FaqAdapter
 import com.example.myapplication2.interfacepackage.SuperAdminView
+import com.example.myapplication2.model.Faq
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.ExportRepo
 import com.example.myapplication2.repository.FaqRepo
@@ -27,10 +31,12 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
     private lateinit var emailEditText: EditText
     private lateinit var usernameEditText: EditText
-    private lateinit var namesurnameEditText: EditText
-    private lateinit var addressEditText: EditText
+
     private lateinit var passwordEditText: EditText
     private lateinit var confermaPasswordEditText: EditText
+
+    private lateinit var faqRecyclerView: RecyclerView
+    private lateinit var faqAdapter: FaqAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +44,12 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
         presenter = SuperAdminPresenter(this)
 
+
+
         emailEditText = findViewById(R.id.emailsuperadmin)
         usernameEditText = findViewById(R.id.usernamesuperadmin)
-        namesurnameEditText = findViewById(R.id.nomeecognomesuperadmin)
-        addressEditText = findViewById(R.id.indirizzosuperadmin)
+        //namesurnameEditText = findViewById(R.id.nomeecognomesuperadmin)
+        //addressEditText = findViewById(R.id.indirizzosuperadmin)
         passwordEditText = findViewById(R.id.passwordsuperadmin)
         confermaPasswordEditText = findViewById(R.id.confermapasswordsuperadmin)
         val registerButton = findViewById<Button>(R.id.registerbuttonsuperadmin)
@@ -51,19 +59,20 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
         val questionEditText = findViewById<EditText>(R.id.questionEditText)
         val answerEditText = findViewById<EditText>(R.id.answerEditText)
         val addFaqButton = findViewById<Button>(R.id.addFaqButton)
-        val updateFaqButton = findViewById<Button>(R.id.updateFaqButton)
-        val deleteFaqButton = findViewById<Button>(R.id.deleteFaqButton)
+        //val updateFaqButton = findViewById<Button>(R.id.updateFaqButton)
+        //val deleteFaqButton = findViewById<Button>(R.id.deleteFaqButton)
 
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString()
-            val name = namesurnameEditText.text.toString()
-            val address = addressEditText.text.toString()
+            val name = ""
+            val address = ""
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
             val confermaPassword = confermaPasswordEditText.text.toString()
 
             presenter.registerAdmin(email, username, name, address, password, confermaPassword)
         }
+
 
         logoutButton.setOnClickListener {
             presenter.logout()
@@ -73,10 +82,14 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
         addFaqButton.setOnClickListener {
             val question = questionEditText.text.toString()
             val answer = answerEditText.text.toString()
+
             presenter.addFaq(question, answer)
+
+            questionEditText.text.clear()
+            answerEditText.text.clear()
         }
 
-        updateFaqButton.setOnClickListener {
+        /*updateFaqButton.setOnClickListener {
             val faqId = "ID_FAQ"
             val question = questionEditText.text.toString()
             val answer = answerEditText.text.toString()
@@ -86,7 +99,15 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
         deleteFaqButton.setOnClickListener {
             val faqId = "ID_FAQ" // Ottieni l'ID della FAQ da eliminare
             presenter.deleteFaq(faqId)
-        }
+        }*/
+
+
+        faqRecyclerView = findViewById(R.id.faqRecyclerView)
+        faqRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        presenter.loadFaqData()
+
+
 
     }
 
@@ -118,6 +139,59 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
+    }
+
+    override fun showFaqList(faqList: List<Faq>) {
+        faqAdapter = FaqAdapter(faqList, true) { faq ->
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("Opzioni FAQ")
+                .setMessage("Vuoi modificare o eliminare questa FAQ?")
+                .setPositiveButton("Modifica") { _, _ ->
+                    val question = faq.question
+                    val answer = faq.answer
+                    showUpdateFaqDialog(faq.id, question, answer)
+                }
+                .setNegativeButton("Elimina") { _, _ ->
+                    // Mostra l'alert di conferma finale prima dell'eliminazione
+                    showDeleteConfirmationDialog(faq.id)
+                }
+                .setNeutralButton("Annulla", null)
+                .create()
+            dialog.show()
+        }
+        faqRecyclerView.adapter = faqAdapter
+    }
+
+    private fun showDeleteConfirmationDialog(faqId: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Conferma eliminazione")
+            .setMessage("Sei sicuro di voler eliminare questa FAQ? Questa operazione è irreversibile.")
+            .setPositiveButton("Conferma") { _, _ ->
+                presenter.deleteFaq(faqId)
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
+    }
+
+
+    private fun showUpdateFaqDialog(faqId: String, currentQuestion: String, currentAnswer: String) {
+        val dialogView = layoutInflater.inflate(R.layout.dialogupdatefaq, null)
+        val questionEditText = dialogView.findViewById<EditText>(R.id.updateQuestion)
+        val answerEditText = dialogView.findViewById<EditText>(R.id.updateAnswer)
+
+        questionEditText.setText(currentQuestion)
+        answerEditText.setText(currentAnswer)
+
+        AlertDialog.Builder(this)
+            .setTitle("Modifica FAQ")
+            .setView(dialogView)
+            .setPositiveButton("Salva") { _, _ ->
+                val newQuestion = questionEditText.text.toString()
+                val newAnswer = answerEditText.text.toString()
+                presenter.updateFaq(faqId, newQuestion, newAnswer)
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
     override fun saveUserToPreferences(user: Utente) {
@@ -170,8 +244,8 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
     override fun clearInputFields() {
         emailEditText.text.clear()
         usernameEditText.text.clear()
-        namesurnameEditText.text.clear()
-        addressEditText.text.clear()
+
+
         passwordEditText.text.clear()
         confermaPasswordEditText.text.clear()
     }

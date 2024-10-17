@@ -12,9 +12,11 @@ class SuperAdminPresenter (private val view: SuperAdminView){
     private val auth = FirebaseAuth.getInstance()
     private val userRepo = UserRepo()
     private val faqRepo= FaqRepo()
+
+
     fun registerAdmin(email: String, username: String, name: String, address: String, password: String, confermaPassword: String) {
-        if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty() &&
-            name.isNotEmpty() && address.isNotEmpty()) {
+        if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty()
+           ) {
 
             if (password == confermaPassword) {
                 userRepo.checkUsernameExists(username) { exists ->
@@ -53,6 +55,7 @@ class SuperAdminPresenter (private val view: SuperAdminView){
         }
     }
 
+
     fun logout() {
         view.showLogoutConfirmation()
     }
@@ -75,6 +78,13 @@ class SuperAdminPresenter (private val view: SuperAdminView){
         }, { error ->
             view.showError("Errore durante l'aggiornamento della FAQ: ${error.message}")
         })
+    }
+
+
+    fun loadFaqData() {
+        faqRepo.fetchFaqList { faqList ->
+            view.showFaqList(faqList)
+        }
     }
 
     fun deleteFaq(faqId: String) {

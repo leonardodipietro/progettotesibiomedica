@@ -247,7 +247,7 @@ class UserRepo {
                     username = username,
                     password = hashedPassword,
                     //admin = false
-                    ruolo= "user",
+                    ruolo= ruolo,
                     phoneNumber=""
                 )
                 Log.d("userrepo", "oggetto fatto $nuovoUser")

@@ -8,7 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication2.R
 import com.example.myapplication2.model.Faq
 
-class FaqAdapter(private val faqList: List<Faq>) : RecyclerView.Adapter<FaqAdapter.FaqViewHolder>() {
+class FaqAdapter(private val faqList: List<Faq>,
+                 private val isClickable: Boolean,
+                 private val itemClickListener: ((Faq) -> Unit)? = null
+) : RecyclerView.Adapter<FaqAdapter.FaqViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FaqViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_faq, parent, false)
@@ -17,7 +20,7 @@ class FaqAdapter(private val faqList: List<Faq>) : RecyclerView.Adapter<FaqAdapt
 
     override fun onBindViewHolder(holder: FaqViewHolder, position: Int) {
         val faq = faqList[position]
-        holder.bind(faq)
+        holder.bind(faq, isClickable, itemClickListener)
     }
 
     override fun getItemCount(): Int = faqList.size
@@ -26,9 +29,17 @@ class FaqAdapter(private val faqList: List<Faq>) : RecyclerView.Adapter<FaqAdapt
         private val questionTextView: TextView = itemView.findViewById(R.id.questionTextView)
         private val answerTextView: TextView = itemView.findViewById(R.id.answerTextView)
 
-        fun bind(faq: Faq) {
+        fun bind(faq: Faq, isClickable: Boolean, itemClickListener: ((Faq) -> Unit)?) {
             questionTextView.text = faq.question
             answerTextView.text = faq.answer
+
+            if (isClickable) {
+                itemView.setOnClickListener {
+                    itemClickListener?.invoke(faq)
+                }
+            } else {
+                itemView.setOnClickListener(null)  // Disabilita il click
+            }
         }
     }
 }

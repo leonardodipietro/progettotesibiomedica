@@ -23,47 +23,44 @@ class ExportRepo {
     fun generateExcel(
         context: Context,
         sintomiData: List<Pair<Sintomo, String>>,
-        sintomiNomiGlobali: List<Sintomo>,  // The global list of symptom names
+        sintomiNomiGlobali: List<Sintomo>,
         fileName: String
     ): Boolean {
         val path = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports")
 
         if (!path.exists()) {
-            path.mkdirs() // Create the directory if it does not exist
+            path.mkdirs()
         }
 
         val file = File(path, fileName)
 
         return try {
-            // Create a new workbook and sheet for Excel
+
             val workbook = XSSFWorkbook()
             val sheet = workbook.createSheet("Sintomi Report")
 
             // Create the header row in the Excel sheet
             val headerRow = sheet.createRow(0)
             headerRow.createCell(0).setCellValue("Data")
-            headerRow.createCell(1).setCellValue("Nome Utente") // You may add the user name if needed
+            headerRow.createCell(1).setCellValue("Nome Utente")
             headerRow.createCell(2).setCellValue("Ora Rilevazione")
             headerRow.createCell(3).setCellValue("Ora Ultimo Pasto")
             headerRow.createCell(4).setCellValue("Gravità")
 
-            // Add the global symptom names as headers in Excel
             sintomiNomiGlobali.map { it.nomeSintomo }.distinct().forEachIndexed { index, nomeSintomo ->
-                headerRow.createCell(5 + index).setCellValue(nomeSintomo)  // Start from column 4 for symptoms
+                headerRow.createCell(5 + index).setCellValue(nomeSintomo)
             }
 
-            // Keep track of the row number to avoid overwriting
             var rowCount = 1
 
-            // Add symptom data for each report
             for ((sintomo, username) in sintomiData) {
                 val row = sheet.createRow(rowCount++)
 
                 // Insert the date and time of the report
-                row.createCell(0).setCellValue(sintomo.dataSegnalazione)  // Symptom date
-                row.createCell(1).setCellValue(username)  // Placeholder for user name (replace if you have user data)
-                row.createCell(2).setCellValue(sintomo.oraSegnalazione)    // Reporting time
-                row.createCell(3).setCellValue(sintomo.tempoTrascorsoUltimoPasto.toDouble())  // Time since last meal
+                row.createCell(0).setCellValue(sintomo.dataSegnalazione)
+                row.createCell(1).setCellValue(username)
+                row.createCell(2).setCellValue(sintomo.oraSegnalazione)
+                row.createCell(3).setCellValue(sintomo.tempoTrascorsoUltimoPasto.toDouble())
                 row.createCell(4).setCellValue(sintomo.gravità.toDouble())
 
                 val sintomoIndex = sintomiNomiGlobali.indexOfFirst { it.id == sintomo.id }
@@ -72,11 +69,11 @@ class ExportRepo {
                 Log.d("ExcelDebug", "Sintomi globali: ${sintomiNomiGlobali.map { it.id }}")
 
                 if (sintomoIndex != -1) {
-                    Log.d("ExcelDebug", "Sintomo trovato in colonna index: $sintomoIndex con ID corrispondente: ${sintomiNomiGlobali[sintomoIndex].id}")
-                    // Inserisci una "X" nella colonna corretta che rappresenta il sintomo segnalato
+                    Log.d("ExcelDebug", "Sintomoin colonna index: $sintomoIndex con ID corrispondente: ${sintomiNomiGlobali[sintomoIndex].id}")
+                    // Inserics x
                     row.createCell(5 + sintomoIndex).setCellValue("X")
                 } else {
-                    Log.d("ExcelDebug", "Nessun sintomo trovato corrispondente a ID: ${sintomo.id}")
+                    Log.d("ExcelDebug", "Nessun sintomo per a ID: ${sintomo.id}")
                 }
             }
             // Write the Excel file to disk
@@ -177,14 +174,14 @@ class ExportRepo {
                             if (uploadSuccess) {
                                 // Copia il file nella directory Home
                                 if (saveFileToUserHome(context, fileName)) {
-                                    Log.d("FileSave", "File salvato anche nella directory Home dell'utente.")
+                                    Log.d("FileSave", "File salvato su tel")
                                 } else {
-                                    Log.e("FileSave", "Errore nel salvataggio del file nella directory Home dell'utente.")
+                                    Log.e("FileSave", "Errore nel salvataggio sul telef.")
                                 }
                             }
                         }
                     } else {
-                        Log.e("FirebaseStorage", "Errore durante la generazione del file.")
+                        Log.e("FirebaseStorage", "Errore di creazione file")
                     }//QUI C è ELSE
                 }
             }
@@ -200,10 +197,10 @@ class ExportRepo {
 
         return try {
             srcFile.copyTo(destFile, overwrite = true)
-            Log.d("FileSave", "File copiato correttamente nella directory Home: ${destFile.absolutePath}")
+            Log.d("FileSave", "File copiatoin home ${destFile.absolutePath}")
             true
         } catch (e: Exception) {
-            Log.e("FileSave", "Errore nel copiare il file nella directory Home", e)
+
             false
         }
     }
@@ -226,7 +223,7 @@ class ExportRepo {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("Firebase", "Errore nel recupero dei sintomi globali: ${databaseError.message}")
+                Log.e("Firebase", "Errore nel recupero: ${databaseError.message}")
                 callback(emptyList())  // Restituisce una lista vuota in caso di errore
             }
         })
@@ -246,17 +243,17 @@ class ExportRepo {
                 .addOnSuccessListener {
                     // Ottieni l'URL di download
                     storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                        Log.d("FirebaseStorage", "File caricato con successo: $fileName")
+                        Log.d("FirebaseStorage", "File caricato  $fileName")
                         callback(true, downloadUri.toString()) // Successo, ritorna l'URL
                     }
                 }
                 .addOnFailureListener { e ->
-                    Log.e("FirebaseStorage", "Errore durante il caricamento del file", e)
+                    Log.e("FirebaseStorage", "Errore nel carvare", e)
                     callback(false, null) // Fallimento
                 }
         } else {
             Log.e("FirebaseStorage", "File non trovato: $fileName")
-            callback(false, null) // File non esistente
+            callback(false, null)
         }
     }
 

@@ -59,7 +59,7 @@ class InfoActivity:AppCompatActivity(), InfoView {
     }
 
     override fun showFaqList(faqList: List<Faq>) {
-        faqAdapter = FaqAdapter(faqList)
+        faqAdapter = FaqAdapter(faqList, false)
         faqRecyclerView.adapter = faqAdapter
     }
 

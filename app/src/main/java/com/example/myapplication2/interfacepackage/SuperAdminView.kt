@@ -1,5 +1,6 @@
 package com.example.myapplication2.interfacepackage
 
+import com.example.myapplication2.model.Faq
 import com.example.myapplication2.model.Utente
 
 interface SuperAdminView {
@@ -14,4 +15,6 @@ interface SuperAdminView {
     fun loadUserFromPreferences(): Utente?
 
     fun clearInputFields()
+
+    fun showFaqList(faqList: List<Faq>)
 }
