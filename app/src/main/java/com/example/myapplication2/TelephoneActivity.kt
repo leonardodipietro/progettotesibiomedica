@@ -2,9 +2,11 @@ package com.example.myapplication2
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import at.favre.lib.crypto.bcrypt.BCrypt
@@ -22,38 +24,51 @@ import java.util.concurrent.TimeUnit
 
 class TelephoneActivity: AppCompatActivity()   {
 
-    private lateinit var database: DatabaseReference
+
     private lateinit var auth: FirebaseAuth
     //codice che viene inviato all'utente
     private var code: String? = null
     private lateinit var userRepo: UserRepo
+    private lateinit var showPasswordIcon: ImageView
+    private lateinit var showConfirmPasswordIcon: ImageView
+    private var isPasswordVisible = false
+    private var isConfirmPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+        // Nessun utente autenticato, mostra il layout di `MainActivity`
+        setContentView(R.layout.telephoneactivity)
+
 
         auth = FirebaseAuth.getInstance()
         userRepo=UserRepo()
 
             //TODO NON SO SE è DA CASTRARE
 
-            // Nessun utente autenticato, mostra il layout di `MainActivity`
-            setContentView(R.layout.telephoneactivity)
-            setupUIAndRegister()
-        }
 
-
-
-    private fun setupUIAndRegister() {
         val phoneEditText = findViewById<EditText>(R.id.phoneEditText)
         val namesurnameEditText=findViewById<EditText>(R.id.nomeecognomephone)
         val addressEditText=findViewById<EditText>(R.id.indirizzophone)
         val usernameEditText = findViewById<EditText>(R.id.usernamepercellulare)
-        val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
-        val confirmPasswordEditText = findViewById<EditText>(R.id.confirmPasswordEditText)
+        val passwordEditText = findViewById<EditText>(R.id.passwordTel)
+        val confirmPasswordEditText = findViewById<EditText>(R.id.confermapasswordtel)
         val codeEditText = findViewById<EditText>(R.id.codeEditText)
         val sendCodeButton = findViewById<Button>(R.id.sendCodeButton)
         val verifyCodeButton = findViewById<Button>(R.id.verifyCodeButton)
+
+        showPasswordIcon = findViewById(R.id.showPasswordTel)
+        showConfirmPasswordIcon = findViewById(R.id.showConfirmPasswordTel)
+
+        showPasswordIcon.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            togglePasswordVisibility(passwordEditText, showPasswordIcon, isPasswordVisible)
+        }
+
+        showConfirmPasswordIcon.setOnClickListener {
+            isConfirmPasswordVisible = !isConfirmPasswordVisible
+            togglePasswordVisibility(confirmPasswordEditText, showConfirmPasswordIcon, isConfirmPasswordVisible)
+        }
 
         sendCodeButton.setOnClickListener {
             val phoneNumber = phoneEditText.text.toString().trim()
@@ -91,6 +106,11 @@ class TelephoneActivity: AppCompatActivity()   {
             }
         }
     }
+
+
+
+
+
 
     private fun sendVerificationCode(phoneNumber: String) {
         val options = PhoneAuthOptions.newBuilder(auth)
@@ -136,7 +156,7 @@ class TelephoneActivity: AppCompatActivity()   {
                     Toast.makeText(this, "Autenticazione riuscita", Toast.LENGTH_SHORT).show()
 
                     val username = findViewById<EditText>(R.id.usernamepercellulare).text.toString().trim()
-                    val password = findViewById<EditText>(R.id.passwordEditText).text.toString().trim()
+                    val password = findViewById<EditText>(R.id.passwordTel).text.toString().trim()
                     val name = findViewById<EditText>(R.id.nomeecognomephone).text.toString().trim()
                     val address = findViewById<EditText>(R.id.indirizzophone).text.toString().trim()
                     val email= ""
@@ -172,4 +192,16 @@ class TelephoneActivity: AppCompatActivity()   {
         finish()
     }
 
+    private fun togglePasswordVisibility(editText: EditText, icon: ImageView, isVisible: Boolean) {
+        if (isVisible) {
+            editText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+        } else {
+            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+        }
+        // Mantenere il cursore alla fine del testo
+        editText.setSelection(editText.text.length)
+    }
 }
+

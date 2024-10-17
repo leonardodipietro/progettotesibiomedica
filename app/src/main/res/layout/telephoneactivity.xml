@@ -1,97 +1,118 @@
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_vertical">
 
     <EditText
         android:id="@+id/phoneEditText"
         android:layout_width="match_parent"
-        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
+        android:background="@drawable/edittext"
         android:hint="Inserisci numero di telefono"
         android:inputType="phone"
-        android:layout_marginTop="30sp"
-        android:layout_alignParentTop="true" />
+        android:layout_marginBottom="16sp" />
 
     <!-- Campo per Nome e Cognome -->
     <EditText
         android:id="@+id/nomeecognomephone"
         android:layout_width="match_parent"
-        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
+        android:background="@drawable/edittext"
         android:hint="Nome e Cognome"
-        android:layout_below="@id/phoneEditText"
-        android:layout_marginTop="16sp" />
+        android:layout_marginBottom="16sp" />
 
     <!-- Campo per Indirizzo -->
     <EditText
         android:id="@+id/indirizzophone"
         android:layout_width="match_parent"
-        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
+        android:background="@drawable/edittext"
         android:hint="Indirizzo"
-        android:layout_below="@id/nomeecognomephone"
-        android:layout_marginTop="16sp" />
+        android:layout_marginBottom="16sp" />
 
     <EditText
         android:id="@+id/usernamepercellulare"
         android:layout_width="match_parent"
-        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
+        android:background="@drawable/edittext"
         android:hint="Inserisci un username"
-        android:layout_below="@id/indirizzophone"
-        android:layout_marginTop="16sp" />
+        android:layout_marginBottom="16sp" />
 
-    <!-- Campo per la password -->
-    <EditText
-        android:id="@+id/passwordEditText"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
-        android:hint="Inserisci una password"
-        android:inputType="textPassword"
-        android:layout_below="@id/usernamepercellulare"
-        android:layout_marginTop="16sp" />
+        android:layout_marginBottom="16sp">
 
-    <!-- Campo per la conferma della password -->
-    <EditText
-        android:id="@+id/confirmPasswordEditText"
+        <EditText
+            android:id="@+id/passwordTel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:background="@drawable/edittext"
+            android:paddingEnd="48dp" />
+
+        <ImageView
+            android:id="@+id/showPasswordTel"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
-        android:hint="Conferma la password"
-        android:inputType="textPassword"
-        android:layout_below="@id/passwordEditText"
-        android:layout_marginTop="16sp" />
+        android:layout_marginBottom="16sp">
+
+        <EditText
+            android:id="@+id/confermapasswordtel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edittext"
+            android:hint="Conferma Password"
+            android:inputType="textPassword"
+            android:paddingEnd="48dp" />
+
+        <ImageView
+            android:id="@+id/showConfirmPasswordTel"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Conferma Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/sendCodeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Invia Codice"
+        style="@style/GreenButton"
+        android:layout_marginBottom="16sp" />
 
     <EditText
         android:id="@+id/codeEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Inserisci codice di verifica"
         android:background="@drawable/edittext"
+        android:hint="Inserisci codice di verifica"
         android:inputType="number"
-        android:layout_below="@id/confirmPasswordEditText"
-        android:layout_marginTop="16dp" />
+        android:layout_marginBottom="16sp" />
 
-    <Button
-        android:id="@+id/sendCodeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Invia Codice"
-        style="@style/GreenButton"
-        android:layout_below="@id/codeEditText"
-        android:layout_marginTop="16dp"
-        android:layout_alignParentStart="true" />
 
     <Button
         android:id="@+id/verifyCodeButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Verifica codice"
-        style="@style/GreenButton"
-        android:layout_below="@id/codeEditText"
-        android:layout_marginTop="16dp"
-        android:layout_alignParentEnd="true" />
-
-</RelativeLayout>
+        android:text="Verifica codice e accedi "
+        style="@style/GreenButton" />
+</LinearLayout>

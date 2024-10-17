@@ -25,39 +25,40 @@ class MainActivity: AppCompatActivity()  {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //auth = FirebaseAuth.getInstance()
-       // val currentUser = auth.currentUser
-
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-        val isAdmin = sharedPreferences.getBoolean("isAdmin", false)
-        Log.d("SharedPreferences", "Dati utente recuperati: $isLoggedIn")
+        val ruolo = sharedPreferences.getString("ruolo", "user") // "user" come valore predefinito
+
+        Log.d("SharedPreferences", "Dati utente recuperati: $isLoggedIn, Ruolo: $ruolo")
         if (isLoggedIn) {
             val utenteJson = sharedPreferences.getString("utente", null)
-            Log.d("SharedPreferences", "Dati utente recuperati: $utenteJson")
-            Log.d("SharedPreferences", "Dati utente recuperati: ")
-            if (isAdmin) {
-                Log.d("AdminCheck", "Utente è admin, avvio AdminActivity")
-                //val utenteJson = sharedPreferences.getString("utente", null)
-                val utente = Gson().fromJson(utenteJson, Utente::class.java)
-                val intent = Intent(this, AdminActivity::class.java).apply {
-                    putExtra("utente", utente)
-                }
-                startActivity(intent)
-            } else {
-               // val utenteJson = sharedPreferences.getString("utente", null)
-                val utente = Gson().fromJson(utenteJson, Utente::class.java)
+            val utente = Gson().fromJson(utenteJson, Utente::class.java)
 
-                // Se l'utente è loggato, vai direttamente alla MainPage
-                val intent = Intent(this, MainPage::class.java).apply {
-                    putExtra("utente", utente)
+            when (ruolo) {
+                "admin" -> {
+                    Log.d("RoleCheck", "Utente è admin, avvio AdminActivity")
+                    val intent = Intent(this, AdminActivity::class.java).apply {
+                        putExtra("utente", utente)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
-                finish()
+                "superadmin" -> {
+                    Log.d("RoleCheck", "Utente è superadmin, avvio SuperAdminActivity")
+                    val intent = Intent(this, SuperAdminActivity::class.java).apply {
+                        putExtra("utente", utente)
+                    }
+                    startActivity(intent)
+                }
+                else -> {
+                    Log.d("RoleCheck", "Utente è user, avvio MainPage")
+                    val intent = Intent(this, MainPage::class.java).apply {
+                        putExtra("utente", utente)
+                    }
+                    startActivity(intent)
+                }
             }
             finish()
         } else {
-            // Se l'utente non è loggato, mostra la schermata di login
             setContentView(R.layout.activitymain)
             interfacciagrafica()
         }
@@ -95,17 +96,17 @@ class MainActivity: AppCompatActivity()  {
         mailpswdbutton.setOnClickListener {
             val intent1 = Intent(this, EmailPasswordActivity::class.java)
             startActivity(intent1)
-            finish()
+
         }
         phonebutton.setOnClickListener{
             val intent2 = Intent(this, TelephoneActivity::class.java)
             startActivity(intent2)
-            finish()
+
         }
         loginroot.setOnClickListener{
             val intent3 = Intent(this, LoginActivity::class.java)
             startActivity(intent3)
-            finish()
+
         }
 
     }

@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
 
 
     class LoginActivity : AppCompatActivity(), LoginInterface {
-//TODO RIVEDERE NUMERO DI TELEFONO PER ADMIN
+
         private lateinit var presenter: LoginPresenter
         private lateinit var usernameEditText: EditText
         private lateinit var passwordEditText: EditText

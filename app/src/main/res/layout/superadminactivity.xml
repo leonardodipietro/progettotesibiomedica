@@ -9,15 +9,19 @@
         <EditText
             android:id="@+id/emailsuperadmin"
             android:layout_width="match_parent"
+            android:background="@drawable/edittext"
             android:layout_height="wrap_content"
             android:hint="Email"
+            android:layout_marginBottom="16sp"
             android:inputType="textEmailAddress"/>
 
         <EditText
             android:id="@+id/usernamesuperadmin"
             android:layout_width="match_parent"
+            android:background="@drawable/edittext"
             android:layout_height="wrap_content"
             android:hint="Username"
+            android:layout_marginBottom="16sp"
             android:inputType="text"/>
 
 
@@ -26,49 +30,70 @@
             android:id="@+id/passwordsuperadmin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/edittext"
             android:hint="Password"
+            android:layout_marginBottom="16sp"
             android:inputType="textPassword"/>
 
         <EditText
             android:id="@+id/confermapasswordsuperadmin"
             android:layout_width="match_parent"
+            android:background="@drawable/edittext"
             android:layout_height="wrap_content"
             android:hint="Conferma Password"
+            android:layout_marginBottom="16sp"
             android:inputType="textPassword"/>
 
         <Button
             android:id="@+id/registerbuttonsuperadmin"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16sp"
+            style="@style/GreenButton"
             android:text="Crea Admin"/>
         <Button
              android:id="@+id/logoutsuperadmin"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+            android:layout_marginBottom="16sp"
+            style="@style/GreenButton"
                android:text="Logout"/>
     <EditText
         android:id="@+id/questionEditText"
         android:layout_width="match_parent"
+        android:background="@drawable/edittext"
+        android:layout_marginBottom="16sp"
         android:layout_height="wrap_content"
         android:hint="Inserisci la domanda" />
 
     <EditText
         android:id="@+id/answerEditText"
         android:layout_width="match_parent"
+        android:background="@drawable/edittext"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16sp"
         android:hint="Inserisci la risposta" />
 
     <Button
         android:id="@+id/addFaqButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/GreenButton"
         android:text="Aggiungi FAQ" />
+    <View
+        android:id="@+id/divisoresintomi"
+        android:layout_width="match_parent"
+        android:layout_height="5sp"
+        android:layout_below="@id/answerTextView"
+        android:background="#4CAF50"
+        android:layout_marginTop="16dp" />
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/faqRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp" />
 
 
     </LinearLayout>

@@ -8,10 +8,25 @@
     tools:context=".InfoActivity">
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/faqRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+    <!-- CardView per il contorno e padding della RecyclerView -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/borderbackground"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="8dp">
+
+        <!-- RecyclerView centrata orizzontalmente e verticalmente -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/faqRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:padding="20dp"/>
+    </androidx.cardview.widget.CardView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

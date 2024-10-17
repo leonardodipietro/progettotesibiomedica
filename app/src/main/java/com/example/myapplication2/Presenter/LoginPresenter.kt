@@ -84,7 +84,6 @@ class LoginPresenter(
                                 Log.d("ResetPassword", "Email inviata a: $email")
                             } else {
                                 view.showResetPasswordError("Errore nell'invio dell'email di reset. Controlla l'email associata.")
-
                             }
                         }
                 } else {

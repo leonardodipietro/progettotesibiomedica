@@ -4,18 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="15dp">
 
       <TextView
          android:id="@+id/questionTextView"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
            android:textStyle="bold"
+          android:textSize="30sp"
           android:text="Question"/>
 
        <TextView
-               android:id="@+id/answerTextView"
+          android:id="@+id/answerTextView"
           android:layout_width="wrap_content"
            android:layout_height="wrap_content"
+           android:textSize="20sp"
+           android:layout_marginTop="12dp"
             android:text="Answer"/>
+
+
     </LinearLayout>

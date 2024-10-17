@@ -44,7 +44,13 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
         presenter = SuperAdminPresenter(this)
 
+        val user = intent.getParcelableExtra<Utente>("utente")
+         // Carica i dati utente dal presenter
+        user?.let {
+            saveUserToPreferences(user)
 
+            //presenter.scheduleNotifications(it.id)
+        }
 
         emailEditText = findViewById(R.id.emailsuperadmin)
         usernameEditText = findViewById(R.id.usernamesuperadmin)
@@ -199,7 +205,7 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
         val editor = sharedPreferences.edit()
         val json = Gson().toJson(user)
         editor.putString("utente", json)
-        editor.putString("ruolo", "admin")
+        editor.putString("ruolo", "superadmin")
         editor.putBoolean("isLoggedIn", true)
         editor.apply()
     }
