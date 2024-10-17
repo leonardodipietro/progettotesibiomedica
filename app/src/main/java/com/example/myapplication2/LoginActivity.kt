@@ -1,6 +1,11 @@
 package com.example.myapplication2
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -11,6 +16,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.myapplication2.Presenter.LoginPresenter
 import com.example.myapplication2.interfacepackage.LoginInterface
 import com.example.myapplication2.model.Utente
@@ -25,7 +33,8 @@ import com.google.gson.Gson
 import java.util.concurrent.TimeUnit
 
 
-    class LoginActivity : AppCompatActivity(), LoginInterface {
+
+class LoginActivity : AppCompatActivity(), LoginInterface {
 
         private lateinit var presenter: LoginPresenter
         private lateinit var usernameEditText: EditText
@@ -138,9 +147,64 @@ import java.util.concurrent.TimeUnit
         override fun onShowPasswordClicked() {
             presenter.handleShowPassword()
         }
+
+    override fun showResetPasswordNotification(username: String) {
+        // Crea il canale di notifica (solo per Android 8.0 e superiori)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channelId = "reset_password_channel"
+            val channelName = "Reset Password Notifications"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val notificationChannel = NotificationChannel(channelId, channelName, importance).apply {
+                description = "Canale per notifiche di reset password"
+            }
+
+            // Crea il canale nel NotificationManager
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+
+        val intent = Intent(this, ResetPasswordActivity::class.java).apply {
+            putExtra("username", username)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, "reset_password_channel")
+            .setSmallIcon(R.drawable.notificaicona)
+            .setContentTitle("Reset Password")
+            .setContentText("Clicca per reimpostare la tua password.")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        NotificationManagerCompat.from(this).notify(1, notification)
     }
 
-    //todo vedere occhio
+}
+
+
+
+
+//todo vedere occhio
     //TODO CREAREICONA
     /*private lateinit var auth: FirebaseAuth
     private var verificationId: String? = null

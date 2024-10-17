@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/newPasswordresetpage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nuova password"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/confirmPasswordresetpage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Conferma password"
+        android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/resetButtonresetpage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reimposta" />
+</LinearLayout>

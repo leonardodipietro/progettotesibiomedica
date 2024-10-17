@@ -212,7 +212,35 @@ class UserRepo {
             }
         })
     }
+    fun changePassword(username: String, newPassword: String, callback: (Boolean) -> Unit) {
+        // Trova l'utente tramite username
+        val userQuery = usersRef.orderByChild("username").equalTo(username)
+        userQuery.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    // Aggiorna la password per tutti i nodi che corrispondono all'username
+                    for (userSnapshot in snapshot.children) {
+                        userSnapshot.ref.child("password").setValue(newPassword)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    callback(true)
+                                } else {
+                                    callback(false)
+                                }
+                            }
+                    }
+                } else {
+                    // Username non trovato
+                    callback(false)
+                }
+            }
 
+            override fun onCancelled(error: DatabaseError) {
+                // Gestisci l'errore
+                callback(false)
+            }
+        })
+    }
 
     fun checkPhoneNumberExists(phone: String, callback: (Boolean) -> Unit) {
         val phoneRef = usersRef.orderByChild("phoneNumber").equalTo(phone)

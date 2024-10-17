@@ -2,6 +2,7 @@ package com.example.myapplication2.Presenter
 
 
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.example.myapplication2.interfacepackage.LoginInterface
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
@@ -74,7 +75,12 @@ class LoginPresenter(
     }
 
      fun handleResetPassword(username: String) {
+
+
+
         if (username.isNotEmpty()) {
+            userRepo.checkUsernameExists(username) { exists ->
+                if (exists) {
             userRepo.getEmailByUsername(username) { email, error ->
                 if (email != null) {
                     FirebaseAuth.getInstance().sendPasswordResetEmail(email)
@@ -87,12 +93,16 @@ class LoginPresenter(
                             }
                         }
                 } else {
-                    view.showResetPasswordError(error ?: "Errore sconosciuto")
+                    view.showResetPasswordNotification(username)
                 }
             }
         } else {
             view.promptForUsername()
         }
     }
+        }
+     }
+
+
 
 }
