@@ -145,6 +145,78 @@ class UserRepo {
             }
         })
     }
+
+    fun verifyUserByEmail(email: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
+        Log.d("verifyUserByEmail", "Verifica in corso per email: $email")
+
+        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    Log.d("verifyUserByEmail", "Utente trovato per email: $email")
+
+                    val user = snapshot.children.first().getValue(Utente::class.java)
+                    if (user != null) {
+                        Log.d("verifyUserByEmail", "Utente recuperato: ${user.username}")
+
+                        if (BCrypt.checkpw(password, user.password)) {
+                            Log.d("verifyUserByEmail", "Password corretta per utente: ${user.username}")
+                            callback(true, null, user.ruolo, user)
+                        } else {
+                            Log.d("verifyUserByEmail", "Password errata per utente: ${user.username}")
+                            callback(false, "Password errata", null, null)
+                        }
+                    } else {
+                        Log.d("verifyUserByEmail", "Impossibile recuperare i dati dell'utente.")
+                        callback(false, "Utente non trovato", null, null)
+                    }
+                } else {
+                    Log.d("verifyUserByEmail", "Nessun utente trovato per l'email: $email")
+                    callback(false, "Utente non trovato", null, null)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("verifyUserByEmail", "Errore durante la ricerca dell'email: ${error.message}")
+                callback(false, error.message, null, null)
+            }
+        })
+    }
+
+    fun verifyUserByPhone(phoneNumber: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
+        Log.d("verifyUserByPhone", "Verifica in corso per numero di telefono: $phoneNumber")
+
+        usersRef.orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    Log.d("verifyUserByPhone", "Utente trovato per numero di telefono: $phoneNumber")
+
+                    val user = snapshot.children.first().getValue(Utente::class.java)
+                    if (user != null) {
+                        Log.d("verifyUserByPhone", "Utente recuperato: ${user.username}")
+
+                        if (BCrypt.checkpw(password, user.password)) {
+                            Log.d("verifyUserByPhone", "Password corretta per utente: ${user.username}")
+                            callback(true, null, user.ruolo, user)
+                        } else {
+                            Log.d("verifyUserByPhone", "Password errata per utente: ${user.username}")
+                            callback(false, "Password errata", null, null)
+                        }
+                    } else {
+                        Log.d("verifyUserByPhone", "Impossibile recuperare i dati dell'utente.")
+                        callback(false, "Utente non trovato", null, null)
+                    }
+                } else {
+                    Log.d("verifyUserByPhone", "Nessun utente trovato per il numero di telefono: $phoneNumber")
+                    callback(false, "Utente non trovato", null, null)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("verifyUserByPhone", "Errore durante la ricerca del numero di telefono: ${error.message}")
+                callback(false, error.message, null, null)
+            }
+        })
+    }
 //al posto del terzo callback c era un booleano con ?
     fun verifyUserCredentials(username: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
         //val usersRef = FirebaseDatabase.getInstance().getReference("users")
@@ -308,6 +380,7 @@ class UserRepo {
                 callback(false)
             }
     }
+
     fun savePhoneUserToFirebase(username: String,name:String,address:String, hashedPassword: String,email:String) {
         Log.d("userrepo", "Funzione chiamata")
         try {
@@ -342,6 +415,7 @@ class UserRepo {
             Log.e("userrepo", "Eccezione: ${e.message}")
         }
     }
+    // Funzione per recuperare i sintomi dell'utente
 
     fun submitSintomi(userId: String, sintomiList: List<Sintomo>) {
         // Riferimento al nodo dell'utente nel database

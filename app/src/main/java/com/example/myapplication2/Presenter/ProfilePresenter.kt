@@ -13,10 +13,15 @@ import com.google.firebase.auth.PhoneAuthProvider
 import org.mindrot.jbcrypt.BCrypt
 import java.util.concurrent.TimeUnit
 import android.util.Log
+import com.example.myapplication2.model.Sintomo
+import com.example.myapplication2.repository.ExAccountRepo
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
 
 class ProfilePresenter(private val view: ProfileView, private val userRepo: UserRepo) {
     private var verificationId: String? = null
     private var phoneNumber: String? = null
+    private val exAccountRepo=ExAccountRepo()
     private var auth = FirebaseAuth.getInstance()
     fun loadUserData(userId: String) {
         userRepo.getUserData(userId) { user ->
@@ -199,28 +204,44 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
     }
     fun deleteAccount(user: Utente) {
         user.id?.let { userId ->
+            Log.d("deleteAccount", "Inizio procedura di eliminazione per l'utente: $userId")
+
             userRepo.getUserData(userId) { userData ->
                 if (userData != null) {
+                    Log.d("deleteAccount", "Dati utente recuperati: $userData")
+
                     if (userData.email != null && userData.password != null) {
+                        Log.d("deleteAccount", "Procedura di autenticazione con email per l'utente: $userId")
                         view.showPasswordDialog(userData.email, userData.password) { password ->
                             if (BCrypt.checkpw(password, userData.password)) {
+                                Log.d("deleteAccount", "Password verificata con successo per l'utente: $userId")
                                 auth.signInWithEmailAndPassword(userData.email, password)
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
+                                            Log.d("deleteAccount", "Autenticazione con email avvenuta con successo per l'utente: $userId")
                                             deleteUserAccount(userId)
                                         } else {
+                                            Log.e("deleteAccount", "Errore di autenticazione per l'utente: $userId")
                                             view.showError("Errore di autenticazione.")
                                         }
                                     }
                             } else {
+                                Log.e("deleteAccount", "Password non valida per l'utente: $userId")
                                 view.showError("Password non valida")
                             }
                         }
                     } else if (userData.phoneNumber != null) {
+                        Log.d("deleteAccount", "Inizio verifica del numero di telefono per l'utente: ${userData.phoneNumber}")
                         startPhoneVerification(userData.phoneNumber)
+                    } else {
+                        Log.e("deleteAccount", "Nessun metodo di autenticazione disponibile per l'utente: $userId")
                     }
+                } else {
+                    Log.e("deleteAccount", "Dati utente non recuperati per l'utente: $userId")
                 }
             }
+        } ?: run {
+            Log.e("deleteAccount", "ID utente non disponibile per l'eliminazione.")
         }
     }
 
@@ -264,25 +285,38 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
             }
         }
     }
-
     private fun deleteUserAccount(userId: String) {
-        auth.currentUser?.delete()?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                userRepo.deleteAccount(userId) { success ->
-                    if (success) {
-                        view.showSuccess("Account eliminato")
-                        view.navigateToHome()
+        val exAccountRepo = ExAccountRepo()
+
+        // Chiama la funzione per creare l'utente eliminato nel nodo exaccount
+        exAccountRepo.creaUtenteEliminato(userId) { success ->
+            if (success) {
+                // Dopo aver creato l'utente eliminato, procedi con l'eliminazione dell'account
+                auth.currentUser?.delete()?.addOnCompleteListener { deleteTask ->
+                    if (deleteTask.isSuccessful) {
+                        Log.d("deleteUserAccount", "Utente eliminato con successo da Firebase Authentication: $userId")
+                        // Elimina anche l'account dal Realtime Database
+                        userRepo.deleteAccount(userId) { success ->
+                            if (success) {
+                                Log.d("deleteUserAccount", "Account eliminato dal database per l'utente: $userId")
+                                view.showSuccess("Account eliminato")
+                                view.navigateToHome()
+                            } else {
+                                view.showError("Errore nell'eliminazione dell'account.")
+                            }
+                        }
                     } else {
-                        view.showError("Errore nell'eliminazione.")
+                        view.showError("Errore nell'eliminazione dell'account.")
                     }
                 }
             } else {
-                view.showError("Errore nell'eliminazione dell'account.")
+                view.showError("Errore nella creazione dell'utente eliminato.")
             }
         }
     }
-}
 
+
+}
 
 
 

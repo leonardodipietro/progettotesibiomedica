@@ -28,12 +28,14 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.DatabaseReference
 import java.util.concurrent.TimeUnit
 import com.example.myapplication2.model.Utente
+import com.example.myapplication2.utility.UserExperience
 import org.mindrot.jbcrypt.BCrypt
 class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var presenter: ProfilePresenter
     private lateinit var currentUser: Utente
     private lateinit var currentPhoneNumber: String
 
+    private lateinit var userExperience: UserExperience
 
     //
     // Variabili UI
@@ -67,6 +69,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         currentUser = intent.getParcelableExtra("utente") ?: throw IllegalStateException("Utente non trovato")
         currentUser.id?.let { presenter.loadUserData(it) }
         auth=FirebaseAuth.getInstance()
+        userExperience= UserExperience()
         setupUI()
         setupListeners()
         setupBottomNavigation()
@@ -89,6 +92,9 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         usernameEditText = findViewById(R.id.edit_username)
         nameEditText = findViewById(R.id.edit_name)
         addressEditText = findViewById(R.id.edit_address)
+        userExperience.normalizeInputs(usernameEditText,nameEditText,emailEditText,addressEditText)
+        userExperience.formatPhoneNumber(phoneEditText,(+39).toString())
+        userExperience.validateEmailInput(emailEditText)
     }
 
     private fun setupListeners() {

@@ -38,14 +38,29 @@
             android:layout_marginEnd="8dp"
             />
 
-        <Spinner
-            android:id="@+id/spinnerDistanzaUltimoPasto"
+        <FrameLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/spinnerdrawable"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:entries="@array/distanze_tempo_pasto" />
+            android:layout_marginStart="8dp">
+
+            <!-- Spinner -->
+            <Spinner
+                android:id="@+id/spinnerDistanzaUltimoPasto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/spinnerdrawable"
+                android:entries="@array/distanze_tempo_pasto" />
+
+            <!-- Freccetta posizionata sopra lo Spinner -->
+            <ImageView
+                android:id="@+id/freccetta"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:src="@drawable/freccetta"
+                android:layout_marginEnd="16dp" />
+        </FrameLayout>
 
     </LinearLayout>
 

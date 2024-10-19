@@ -25,6 +25,7 @@ import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.ExportRepo
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
+import com.example.myapplication2.utility.UserExperience
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -36,6 +37,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
 
     private lateinit var presenter: AdminPresenter
     private lateinit var auth: FirebaseAuth
+    private lateinit var userExperience: UserExperience
 
     // Viste UI
     private lateinit var emailEditText: EditText
@@ -56,6 +58,8 @@ class AdminActivity : AppCompatActivity(), AdminView {
     private lateinit var inviosintomo: Button
     private lateinit var spinnerRimuoviSint: Spinner
 
+
+
     // Adapter per lo spinner
     private lateinit var spinnerSintAdapter: SpinnerSintomoAdapter
     private val sintomiList = mutableListOf<String>()
@@ -72,7 +76,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
         //clearUserPreferences()
 
         presenter = AdminPresenter(this, UserRepo(), SintomoRepo(), ExportRepo(), this)
-
+        userExperience=UserExperience()
         //var utente = intent.getParcelableExtra<Utente>("utente")
        /* saveUserToPreferences(utente!!)
         Log.d("Lifecycle", "onCreate avviato in AdminActivity $utente")
@@ -119,6 +123,10 @@ class AdminActivity : AppCompatActivity(), AdminView {
         // Configura adapter e spinner
         spinnerSintAdapter = SpinnerSintomoAdapter(this, sintomiList)
         spinnerRimuoviSint.adapter = spinnerSintAdapter
+
+        userExperience.normalizeInputs(emailEditText,usernameEditText)
+        userExperience.formatPhoneNumber(phoneEditText,(+39).toString())
+        userExperience.validateEmailInput(emailEditText)
 
         // Event listeners
         aggiungiSintButton.setOnClickListener {

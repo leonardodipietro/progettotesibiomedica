@@ -18,14 +18,30 @@ class LoginPresenter(
     private var lockDuration: Long = 0
     private var isPasswordVisible = false
 
-    fun handleLogin(username: String, password: String) {
+    fun handleLogin(input: String, password: String) {
         if (isAccountLocked()) {
             val remainingTime = (lockStartTime + lockDuration - System.currentTimeMillis()) / 1000
             view.showAccountLocked(remainingTime)
             return
         }
+        when {
+            input.contains("@") -> {
+                Log.d("handleLogin", "Rilevata email: $input")
+                verifyLoginByEmail(input, password)
+            }
+            input.matches(Regex("^\\+[0-9]+$")) -> {
+                Log.d("handleLogin", "Rilevato numero di telefono: $input")
+                verifyLoginByPhoneNumber(input, password)
+            }
+            else -> {
+                Log.d("handleLogin", "Rilevato username: $input")
+                verifyLoginByUsername(input, password)
+            }
+        }
 
-        if (username.isNotEmpty() && password.isNotEmpty()) {
+
+
+       /* if (username.isNotEmpty() && password.isNotEmpty()) {
             //ricambiare con admin se necessario
             userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, ruolo, user ->
                 if (isSuccess) {
@@ -43,8 +59,59 @@ class LoginPresenter(
             }
         } else {
             view.promptForUsername()
+        }*/
+    }
+
+    private fun verifyLoginByEmail(email: String, password: String) {
+        userRepo.verifyUserByEmail(email, password) { isSuccess, errorMessage, ruolo, user ->
+            handleLoginResult(isSuccess, errorMessage, ruolo, user)
         }
     }
+
+    private fun verifyLoginByPhoneNumber(phoneNumber: String, password: String) {
+        userRepo.verifyUserByPhone(phoneNumber, password) { isSuccess, errorMessage, ruolo, user ->
+            handleLoginResult(isSuccess, errorMessage, ruolo, user)
+        }
+    }
+
+    private fun verifyLoginByUsername(username: String, password: String) {
+        userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, ruolo, user ->
+            handleLoginResult(isSuccess, errorMessage, ruolo, user)
+        }
+    }
+
+    private fun handleLoginResult(isSuccess: Boolean, errorMessage: String?, ruolo: String?, user: Utente?) {
+        if (isSuccess) {
+            view.showLoginSuccess(ruolo ?: "user", user)
+        } else {
+            handleFailedLogin()
+            //da vedere  view.showLoginFailure(errorMessage ?: "Errore di autenticazione")
+            // Messaggio d'errore specifico in base all'input
+            val specificErrorMessage = when {
+                errorMessage == "Utente non trovato" -> {
+                    when {
+                        // Messaggio specifico per email non trovata
+                        user?.email?.contains("@") == true -> "Email non trovata. Verifica di aver inserito correttamente l'email."
+                        // Messaggio specifico per numero di telefono non trovato
+                        user?.phoneNumber?.matches(Regex("^\\+[0-9]+$")) == true -> "Numero di telefono non trovato. Verifica di aver inserito correttamente il numero."
+                        // Messaggio specifico per username non trovato
+                        else -> "Username non trovato. Verifica di aver inserito correttamente lo username."
+                    }
+                }
+                // Messaggio di password errata
+                errorMessage == "Password errata" -> "Password errata. Riprova o reimposta la password."
+                // Altri errori generici
+                else -> errorMessage ?: "Errore di autenticazione"
+            }
+            view.showLoginFailure(specificErrorMessage)
+        }
+    }
+
+
+
+
+
+
 
     fun handleShowPassword() {
         isPasswordVisible = !isPasswordVisible

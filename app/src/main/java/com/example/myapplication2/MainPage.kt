@@ -49,7 +49,7 @@ class MainPage : AppCompatActivity(), MainPageView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mainpageactivity)
 
-//HINT TEXT DENTRO LO SPINNER
+         //HINT TEXT DENTRO LO SPINNER
         // Inizializza il presenter
         userRepo = UserRepo()
         sintomoRepo = SintomoRepo()

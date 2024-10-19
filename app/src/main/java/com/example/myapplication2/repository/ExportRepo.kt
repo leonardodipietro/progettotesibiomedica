@@ -97,35 +97,7 @@ class ExportRepo {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val sintomiList = mutableListOf<Pair<Sintomo, String>>()  // Sintomi con nome utente associato
 
-  /*              for (userSnapshot in dataSnapshot.children) {
-                    val user = userSnapshot.getValue(Utente::class.java)
-                    val username = user?.username ?: "Sconosciuto"  // Recupero del nome utente
-
-                    if (user != null) {
-                        // Recupera i sintomi per ogni utente
-                        val sintomiSnapshot = userSnapshot.child("sintomi")
-
-                        for (sintomoSnapshot in sintomiSnapshot.children) {
-                            val sintomoId = sintomoSnapshot.key ?: ""
-                            for (dataSnapshot in sintomoSnapshot.children) {
-                                val data = dataSnapshot.key ?: ""
-
-                                // Ciclo attraverso tutte le ore per quella data
-                                for (oraSnapshot in dataSnapshot.children) {
-                                    val ora = oraSnapshot.key ?: ""
-                                    var sintomoData = oraSnapshot.getValue(Sintomo::class.java)
-
-                                    if (sintomoData != null) {
-                                        Log.d("SintomoData", "Utente: $username, SintomoID: $sintomoId, Data: $data, Ora: $ora, Gravità: ${sintomoData.gravità}, Ultimo Pasto ${sintomoData.tempoTrascorsoUltimoPasto}")
-                                        sintomoData.id = sintomoId
-                                        // Aggiungi il sintomo e il nome utente alla lista
-                                        sintomiList.add(Pair(sintomoData, username))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }*/
+                // Recupera i sintomi dagli utenti attivi
                 for (userSnapshot in dataSnapshot.children) {
                     val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
 
@@ -135,11 +107,7 @@ class ExportRepo {
                         val sintomoId = sintomoIdSnapshot.key ?: ""
 
                         for (yearSnapshot in sintomoIdSnapshot.children) {
-                            val year = yearSnapshot.key ?: ""
-
                             for (weekSnapshot in yearSnapshot.children) {
-                                val week = weekSnapshot.key ?: ""
-
                                 for (dataSnapshot in weekSnapshot.children) {
                                     val dataSegnalazione = dataSnapshot.key ?: ""
 
@@ -152,7 +120,7 @@ class ExportRepo {
                                             sintomoData.dataSegnalazione = dataSegnalazione
                                             sintomoData.oraSegnalazione = oraSegnalazione
 
-                                            Log.d("SintomoData", "Utente: $username, SintomoID: $sintomoId, Anno: $year, Settimana: $week, Data: $dataSegnalazione, Ora: $oraSegnalazione, Gravità: ${sintomoData.gravità}, Ultimo Pasto: ${sintomoData.tempoTrascorsoUltimoPasto}")
+                                            Log.d("SintomoData", "Utente: $username, SintomoID: $sintomoId, Data: $dataSegnalazione, Ora: $oraSegnalazione")
                                             sintomiList.add(Pair(sintomoData, username))
                                         }
                                     }
@@ -162,32 +130,76 @@ class ExportRepo {
                     }
                 }
 
-                // Recupera i sintomi globali (nomi) separatamente
-                fetchGlobalSintomi { sintomiListaNomi ->
-                    // Ora che hai sia i dati dei sintomi utente che i nomi globali dei sintomi
-                    val fileName = "Report_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}.xlsx"
-                    val success = generateExcel(context, sintomiList, sintomiListaNomi, fileName)
+                // Recupero dei sintomi degli utenti eliminati
+                database.reference.child("exaccount").addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(exAccountSnapshot: DataSnapshot) {
+                        var counter = 1
 
-                    // Genera il file Excel e restituisce un booleano
-                    if (success) {
-                        uploadFileToFirebaseStorage(context, fileName) { uploadSuccess, url ->
-                            if (uploadSuccess) {
-                                // Copia il file nella directory Home
-                                if (saveFileToUserHome(context, fileName)) {
-                                    Log.d("FileSave", "File salvato su tel")
-                                } else {
-                                    Log.e("FileSave", "Errore nel salvataggio sul telef.")
+                        for (deletedUserSnapshot in exAccountSnapshot.children) {
+                            val deletedUserId = deletedUserSnapshot.key ?: "Sconosciuto"
+                            val usernameEliminato = "Utente eliminato $counter"
+                            counter++
+
+                            val sintomiSnapshot = deletedUserSnapshot.child("sintomi")
+                            for (sintomoIdSnapshot in sintomiSnapshot.children) {
+                                val sintomoId = sintomoIdSnapshot.key ?: ""
+
+                                for (yearSnapshot in sintomoIdSnapshot.children) {
+                                    for (weekSnapshot in yearSnapshot.children) {
+                                        for (dataSnapshot in weekSnapshot.children) {
+                                            val dataSegnalazione = dataSnapshot.key ?: ""
+
+                                            for (oraSnapshot in dataSnapshot.children) {
+                                                val oraSegnalazione = oraSnapshot.key ?: ""
+                                                val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
+
+                                                if (sintomoData != null) {
+                                                    sintomoData.id = sintomoId
+                                                    sintomoData.dataSegnalazione = dataSegnalazione
+                                                    sintomoData.oraSegnalazione = oraSegnalazione
+
+                                                    Log.d("SintomoData", "Utente eliminato: $usernameEliminato, SintomoID: $sintomoId, Data: $dataSegnalazione, Ora: $oraSegnalazione")
+                                                    sintomiList.add(Pair(sintomoData, usernameEliminato))
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
-                    } else {
-                        Log.e("FirebaseStorage", "Errore di creazione file")
-                    }//QUI C è ELSE
-                }
+
+                        // Recupera i sintomi globali (nomi) separatamente
+                        fetchGlobalSintomi { sintomiListaNomi ->
+                            // Ora che hai sia i dati dei sintomi utente che i nomi globali dei sintomi
+                            val fileName = "Report_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}.xlsx"
+                            val success = generateExcel(context, sintomiList, sintomiListaNomi, fileName)
+
+                            // Genera il file Excel e restituisce un booleano
+                            if (success) {
+                                uploadFileToFirebaseStorage(context, fileName) { uploadSuccess, url ->
+                                    if (uploadSuccess) {
+                                        // Copia il file nella directory Home
+                                        if (saveFileToUserHome(context, fileName)) {
+                                            Log.d("FileSave", "File salvato su tel")
+                                        } else {
+                                            Log.e("FileSave", "Errore nel salvataggio sul telef.")
+                                        }
+                                    }
+                                }
+                            } else {
+                                Log.e("FirebaseStorage", "Errore di creazione file")
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("Firebase", "Errore nel recupero degli utenti eliminati: ${error.message}")
+                    }
+                })
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                Log.e("Firebase", "Errore nel recupero dei sintomi: ${error.message}")
             }
         })
     }

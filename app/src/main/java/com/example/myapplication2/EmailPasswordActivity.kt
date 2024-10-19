@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
+import com.example.myapplication2.utility.UserExperience
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
@@ -30,14 +31,16 @@ class EmailPasswordActivity : AppCompatActivity() {
     private lateinit var showConfirmPasswordIcon: ImageView
     private var isPasswordVisible = false
     private var isConfirmPasswordVisible = false
-
+    private lateinit var userExperience: UserExperience
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.emailpasswordactivity)
 
-        userRepo = UserRepo()
 
+        auth = FirebaseAuth.getInstance()
+        userRepo = UserRepo()
+        userExperience=UserExperience()
 
         val emailEditText = findViewById<EditText>(R.id.email)
         val usernameEditText = findViewById<EditText>(R.id.usernameregistrazione)
@@ -48,6 +51,8 @@ class EmailPasswordActivity : AppCompatActivity() {
         val confermaPasswordEditText = findViewById<EditText>(R.id.confermapassword)
         showPasswordIcon = findViewById(R.id.showPassword)
         showConfirmPasswordIcon = findViewById(R.id.showConfirmPassword)
+
+
 
         showPasswordIcon.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
@@ -69,14 +74,23 @@ class EmailPasswordActivity : AppCompatActivity() {
             val confermaPassword = confermaPasswordEditText.text.toString()
             val phoneNumber=""
 
+            /*Inserire qui condizioni sintattiche per i campi mail telefono username*/
+
+
+
+            userExperience.normalizeInputs(usernameEditText, emailEditText, addressEditText)
+            userExperience.validateEmailInput(emailEditText)
+
             if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty() &&
                 name.isNotEmpty() && address.isNotEmpty()) {
+
 
                 if (password == confermaPassword) {
                     userRepo.checkUsernameExists(username) { exists ->
                         if (exists) {
                             Toast.makeText(this, "Username già in uso, selezionare un altro", Toast.LENGTH_SHORT).show()
                         } else {
+
                             // Procedi con la registrazione su Firebase Authentication
                             auth.createUserWithEmailAndPassword(email, password)
                                 .addOnCompleteListener(this) { task ->

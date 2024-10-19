@@ -23,6 +23,7 @@ import com.example.myapplication2.Presenter.LoginPresenter
 import com.example.myapplication2.interfacepackage.LoginInterface
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
+import com.example.myapplication2.utility.UserExperience
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -37,7 +38,8 @@ import java.util.concurrent.TimeUnit
 class LoginActivity : AppCompatActivity(), LoginInterface {
 
         private lateinit var presenter: LoginPresenter
-        private lateinit var usernameEditText: EditText
+        private lateinit var credentialEditText: EditText
+        private lateinit var userExperience: UserExperience
         private lateinit var passwordEditText: EditText
         private lateinit var showPasswordImageView: ImageView
 
@@ -47,17 +49,20 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
 
             val userRepo = UserRepo()
             presenter = LoginPresenter(this, userRepo)
-
-            usernameEditText = findViewById(R.id.usernamelogin)
+            userExperience= UserExperience()
+            credentialEditText = findViewById(R.id.usernamelogin)
+            //userExperience.normalizeInputs(credentialEditText)
+            //userExperience.formatPhoneNumber(credentialEditText,(+39).toString())
+            //userExperience.validateEmailInput(credentialEditText)
             passwordEditText = findViewById(R.id.pswlogin)
             showPasswordImageView = findViewById(R.id.mostraPassword)
 
             findViewById<Button>(R.id.loginconmail).setOnClickListener {
-                onLoginClicked(usernameEditText.text.toString(), passwordEditText.text.toString())
+                onLoginClicked(credentialEditText.text.toString(), passwordEditText.text.toString())
             }
 
             findViewById<TextView>(R.id.iniziaresetpsw).setOnClickListener {
-                onResetPasswordClicked(usernameEditText.text.toString())
+                onResetPasswordClicked(credentialEditText.text.toString())
             }
 
             showPasswordImageView.setOnClickListener {
