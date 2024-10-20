@@ -1,0 +1,66 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+<LinearLayout
+
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Data Segnalazione -->
+    <TextView
+        android:id="@+id/data_segnalazionestats"
+        android:layout_width="100sp"
+    android:layout_height="wrap_content"
+    android:text="Data"
+    android:padding="4dp" />
+
+    <!-- Nome Utente -->
+    <TextView
+        android:id="@+id/nome_utentestats"
+        android:layout_width="100sp"
+    android:layout_height="wrap_content"
+    android:text="Nome Utente"
+    android:padding="4dp" />
+
+    <!-- Ora Segnalazione -->
+    <TextView
+        android:id="@+id/ora_segnalazionestats"
+        android:layout_width="100sp"
+    android:layout_height="wrap_content"
+    android:text="Ora Segnalazione"
+    android:padding="4dp" />
+
+    <!-- Tempo Trascorso Ultimo Pasto -->
+    <TextView
+        android:id="@+id/tempo_ultimo_pastostats"
+        android:layout_width="100sp"
+    android:layout_height="wrap_content"
+    android:text="Ultimo Pasto"
+    android:padding="4dp" />
+
+    <!-- Gravità -->
+    <TextView
+        android:id="@+id/gravitastats"
+        android:layout_width="100sp"
+    android:layout_height="wrap_content"
+    android:text="Gravità"
+    android:padding="4dp" />
+
+    <!-- Colonna per il Nome del Sintomo -->
+    <TextView
+        android:id="@+id/nome_sintomostats"
+        android:layout_width="100sp"
+        android:layout_height="wrap_content"
+        android:text="Nome Sintomo"
+        android:padding="4dp" />
+</LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4sp"
+        android:background="#4CAF50"/>
+</LinearLayout>

@@ -31,6 +31,9 @@
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".ProfileAdminActivity"
+            android:exported="false" />
+        <activity
             android:name=".EmailPasswordActivity"
             android:exported="false" />
         <activity

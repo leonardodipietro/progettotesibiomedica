@@ -17,15 +17,20 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication2.Presenter.AdminPresenter
+import com.example.myapplication2.adapter.AdapterStats
 import com.example.myapplication2.adapter.SpinnerSintomoAdapter
 import com.example.myapplication2.interfacepackage.AdminView
 import com.example.myapplication2.interfacepackage.PasswordType
+import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.ExportRepo
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.example.myapplication2.utility.UserExperience
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -35,21 +40,15 @@ class AdminActivity : AppCompatActivity(), AdminView {
         private const val PERMISSION_REQUEST_CODE = 1001 // Aggiungi qui il PERMISSION_REQUEST_CODE
     }
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var sintomoAdapter: AdapterStats
+
     private lateinit var presenter: AdminPresenter
     private lateinit var auth: FirebaseAuth
     private lateinit var userExperience: UserExperience
 
     // Viste UI
-    private lateinit var emailEditText: EditText
-    private lateinit var phoneEditText: EditText
-    private lateinit var usernameEditText: EditText
-    private lateinit var oldPasswordEditText: EditText
-    private lateinit var newPasswordEditText: EditText
-    private lateinit var confirmPasswordEditText: EditText
-    private lateinit var showOldPassword: ImageView
-    private lateinit var showNewPassword: ImageView
-    private lateinit var showConfirmPassword: ImageView
-    private lateinit var modifyButton: Button
+
     private lateinit var logoutButton: Button
     private lateinit var generateExcelButton: Button
     private lateinit var aggiungiSintButton: Button
@@ -69,6 +68,8 @@ class AdminActivity : AppCompatActivity(), AdminView {
     private var isOldPasswordVisible = false
     private var isNewPasswordVisible = false
     private var isConfirmPasswordVisible = false
+    private var isUserInteractingWithSpinner = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,24 +78,17 @@ class AdminActivity : AppCompatActivity(), AdminView {
 
         presenter = AdminPresenter(this, UserRepo(), SintomoRepo(), ExportRepo(), this)
         userExperience=UserExperience()
-        //var utente = intent.getParcelableExtra<Utente>("utente")
-       /* saveUserToPreferences(utente!!)
-        Log.d("Lifecycle", "onCreate avviato in AdminActivity $utente")
-        if (utente == null) {
-            utente = loadUserFromPreferences()
-        } else {
-            saveUserToPreferences(utente)
-        }*/
+
 
         auth=FirebaseAuth.getInstance()
         val user = intent.getParcelableExtra<Utente>("utente")
-        presenter.loadUserData(user) // Carica i dati utente dal presenter
+        user!!.id?.let { presenter.loadUserData(it) } // Carica i dati utente dal presenter
         user?.let {
             saveUserToPreferences(user)
 
         //presenter.scheduleNotifications(it.id)
         }
-
+        presenter.fetchSintomiUltimaSettimana()
 
         /*utente?.id?.let {
             presenter.loadUserData(it)
@@ -102,16 +96,10 @@ class AdminActivity : AppCompatActivity(), AdminView {
         //presenter = AdminPresenter(this, UserRepo(), SintomoRepo(), ExportRepo())
 
         // Inizializzazione viste
-        emailEditText = findViewById(R.id.editemailadmin)
-        phoneEditText = findViewById(R.id.editphoneadmin)
-        usernameEditText = findViewById(R.id.editusernameadmin)
-        oldPasswordEditText = findViewById(R.id.editpswadminold)
-        newPasswordEditText = findViewById(R.id.editpswadmindnew)
-        confirmPasswordEditText = findViewById(R.id.editpswadminconferm)
-        showOldPassword = findViewById(R.id.mostraVecchiaPassword)
-        showNewPassword = findViewById(R.id.mostraNuovaPassword)
-        showConfirmPassword = findViewById(R.id.mostraConfermaPassword)
-        modifyButton = findViewById(R.id.buttonmodifyadmin)
+
+        recyclerView = findViewById(R.id.recycler_view_statistiche)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
         logoutButton = findViewById(R.id.logoutadmin)
         generateExcelButton = findViewById(R.id.exporttoexcel)
         aggiungiSintButton = findViewById(R.id.aggiungisintomo)
@@ -124,9 +112,46 @@ class AdminActivity : AppCompatActivity(), AdminView {
         spinnerSintAdapter = SpinnerSintomoAdapter(this, sintomiList)
         spinnerRimuoviSint.adapter = spinnerSintAdapter
 
-        userExperience.normalizeInputs(emailEditText,usernameEditText)
-        userExperience.formatPhoneNumber(phoneEditText,(+39).toString())
-        userExperience.validateEmailInput(emailEditText)
+
+
+
+
+
+        // Esempio di dati, sostituire con i dati reali
+        val sintomiList = listOf(
+            Sintomo(
+                id = "1",
+                nomeSintomo = "depressione",
+                gravità = 3,
+                tempoTrascorsoUltimoPasto = 4,
+                dataSegnalazione = "2024-10-19",
+                oraSegnalazione = "22:02"
+            ),
+
+        )
+
+
+
+
+
+
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation_admin)
+
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_profile -> {  // Naviga verso AdminActivity (la home admin)
+                    val user = loadUserFromPreferences()
+                    val intent = Intent(this, ProfileAdminActivity::class.java).apply {
+                        putExtra("utente", user)
+                    }
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+        }
+
+
 
         // Event listeners
         aggiungiSintButton.setOnClickListener {
@@ -146,40 +171,49 @@ class AdminActivity : AppCompatActivity(), AdminView {
 
         removeSintButton.setOnClickListener {
             if (spinnerRimuoviSint.visibility == View.VISIBLE) {
-                spinnerRimuoviSint.visibility = View.GONE  // Nascondi lo spinner se è già visibile
+                // Nascondi lo spinner e la freccetta
+                spinnerRimuoviSint.visibility = View.GONE
+                findViewById<ImageView>(R.id.freccettaadmin).visibility = View.GONE
             } else {
-                spinnerRimuoviSint.visibility = View.VISIBLE  // Mostra lo spinner se è nascosto
+                // Mostra lo spinner e la freccetta
+                spinnerRimuoviSint.visibility = View.VISIBLE
+                findViewById<ImageView>(R.id.freccettaadmin).visibility = View.VISIBLE
                 presenter.loadSintomi()  // Carica i sintomi tramite il presenter solo quando diventa visibile
             }
         }
-
 // Gestisce la selezione di un elemento nello Spinner
-        // Gestisce la selezione di un elemento nello Spinner
         spinnerRimuoviSint.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position >= 0 && position < sintomiIdList.size) {
-                    val idSintomo = sintomiIdList[position]
-                    AlertDialog.Builder(this@AdminActivity)
-                        .setTitle("Conferma Rimozione")
-                        .setMessage("Vuoi rimuovere il sintomo selezionato?")
-                        .setPositiveButton("Sì") { _, _ ->
-                            presenter.removeSintomo(idSintomo)  // Rimuovi il sintomo tramite il presenter
-                        }
-                        .setNegativeButton("No", null)
-                        .show()
-                } else {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                // Ignora la selezione automatica al momento in cui lo spinner diventa visibile
+                if (isUserInteractingWithSpinner) {
+                    if (position >= 0 && position < sintomiIdList.size) {
+                        val idSintomo = sintomiIdList[position]
+                        AlertDialog.Builder(this@AdminActivity)
+                            .setTitle("Conferma Rimozione")
+                            .setMessage("Vuoi rimuovere il sintomo selezionato?")
+                            .setPositiveButton("Sì") { _, _ ->
+                                presenter.removeSintomo(idSintomo)  // Rimuovi il sintomo tramite il presenter
+                            }
+                            .setNegativeButton("No", null)
+                            .show()
+                    }
                 }
+                isUserInteractingWithSpinner = false // Reset flag dopo la selezione
             }
-
             override fun onNothingSelected(parent: AdapterView<*>) {
 
             }
         }
 
+        spinnerRimuoviSint.setOnTouchListener { _, _ ->
+            isUserInteractingWithSpinner = true
+            false
+        }
 
 
 
-        showOldPassword.setOnClickListener {
+
+       /* showOldPassword.setOnClickListener {
             togglePasswordVisibility(PasswordType.OLD_PASSWORD, isOldPasswordVisible)
         }
 
@@ -209,7 +243,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
                     confirmPassword)
             }
 
-                }
+                }*/
 
         logoutButton.setOnClickListener {
             presenter.logout()
@@ -221,10 +255,14 @@ class AdminActivity : AppCompatActivity(), AdminView {
     }
 
     override fun showUserData(email: String?, phone: String?, username: String?) {
-        emailEditText.setText(email ?: "")
-        phoneEditText.setText(phone ?: "")
-        usernameEditText.setText(username ?: "")
+        TODO("Not yet implemented")
     }
+
+    /*  override fun showUserData(email: String?, phone: String?, username: String?) {
+          emailEditText.setText(email ?: "")
+          phoneEditText.setText(phone ?: "")
+          usernameEditText.setText(username ?: "")
+      }*/
 
     override fun showUserNotFoundError() {
         Toast.makeText(this, "Nessun dato utente trovato", Toast.LENGTH_SHORT).show()
@@ -235,6 +273,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
         writeSintomo.visibility = View.GONE
         inviosintomo.visibility = View.GONE
     }
+
 
     override fun showAddSintomoError() {
         Toast.makeText(this, "Sintomo già esistente o errore", Toast.LENGTH_SHORT).show()
@@ -294,6 +333,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
         sharedPreferences.edit().clear().apply()
     }
 
+
     override fun showRemoveSintomoSuccess() {
         Toast.makeText(this, "Sintomo rimosso con successo", Toast.LENGTH_SHORT).show()
     }
@@ -301,6 +341,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
     override fun showRemoveSintomoError() {
         Toast.makeText(this, "Errore nella rimozione del sintomo", Toast.LENGTH_SHORT).show()
     }
+
 
 
     override fun showSintomiList(nomiSintomi: List<String>, idSintomi: List<String>) {
@@ -322,7 +363,19 @@ class AdminActivity : AppCompatActivity(), AdminView {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    override fun togglePasswordVisibility(passwordType: PasswordType, isVisible: Boolean) {
+
+
+
+    override fun showSintomiListUser(sintomi: List<Pair<Sintomo, String>>) {
+        sintomoAdapter = AdapterStats(sintomi)
+        recyclerView.adapter = sintomoAdapter
+    }
+
+
+
+
+
+    /*override fun togglePasswordVisibility(passwordType: PasswordType, isVisible: Boolean) {
         val editText = when (passwordType) {
             PasswordType.OLD_PASSWORD -> oldPasswordEditText
             PasswordType.NEW_PASSWORD -> newPasswordEditText
@@ -345,7 +398,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
             PasswordType.NEW_PASSWORD -> isNewPasswordVisible = !isVisible
             PasswordType.CONFIRM_PASSWORD -> isConfirmPasswordVisible = !isVisible
         }
-    }
+    }*/
 
     override fun showLogoutConfirmation() {
         AlertDialog.Builder(this)

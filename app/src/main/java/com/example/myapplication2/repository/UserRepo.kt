@@ -445,7 +445,8 @@ class UserRepo {
                 "gravità" to sintomo.gravità,
                 "tempoTrascorsoUltimoPasto" to sintomo.tempoTrascorsoUltimoPasto,
                 "dataSegnalazione" to sintomo.dataSegnalazione,  // Aggiungi la data
-                "oraSegnalazione" to sintomo.oraSegnalazione    // Aggiungi l'ora
+                "oraSegnalazione" to sintomo.oraSegnalazione,    // Aggiungi l'ora
+
             )
 
             Log.d("SubmitSintomi", "Dati da inviare per sintomo ${sintomo.nomeSintomo}: $sintomoMap")

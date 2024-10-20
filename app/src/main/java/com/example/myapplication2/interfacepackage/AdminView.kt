@@ -1,9 +1,10 @@
 package com.example.myapplication2.interfacepackage
 
+import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 
-
 interface AdminView {
+
     // Gestione utente
     fun showUserData(email: String?, phone: String?, username: String?)
     fun showUserNotFoundError()
@@ -13,30 +14,29 @@ interface AdminView {
     fun showAddSintomoError()
     fun showRemoveSintomoSuccess()
     fun showRemoveSintomoError()
-    fun showSintomiList(sintomi: List<String>,sintomid: List<String>)
+    fun showSintomiList(nomiSintomi: List<String>, idSintomi: List<String>)
+    fun showSintomiListUser(sintomi: List<Pair<Sintomo, String>>)
+
+    // Messaggi di errore e successo
     fun showError(message: String)
-    // Gestione modifica
     fun showUpdateSuccess(message: String)
     fun showUpdateError(message: String)
 
-
-    // Visualizzazione password
-    fun togglePasswordVisibility(passwordType: PasswordType, isVisible: Boolean)
-
-    fun loadUserFromPreferences(): Utente?
-
-    fun showLogoutConfirmation()
-    fun returnToMain()
-    fun hasWritePermission(): Boolean
+    // Gestione esportazione dati
     fun showExportSuccessMessage()
     fun showExportErrorMessage()
-    // Esportazione dati
+
+    // Gestione dei permessi
     fun requestWritePermission()
     fun showPermissionDeniedError()
-    fun saveUserToPreferences(user: Utente)
-    fun clearUserPreferences()
-}
+    fun hasWritePermission(): Boolean
 
-enum class PasswordType {
-    OLD_PASSWORD, NEW_PASSWORD, CONFIRM_PASSWORD
+    // Gestione logout
+    fun showLogoutConfirmation()
+    fun returnToMain()
+
+    // Preferenze utente
+    fun saveUserToPreferences(user: Utente)
+    fun loadUserFromPreferences(): Utente?
+    fun clearUserPreferences()
 }

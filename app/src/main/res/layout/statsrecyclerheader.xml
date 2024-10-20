@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#4CAF50"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Data"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="4dp" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Nome Utente"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="4dp" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#FFFFFF"
+        android:text="Ora Segnalazione"
+        android:textStyle="bold"
+        android:padding="4dp" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Ultimo Pasto"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="4dp" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Gravità"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="4dp" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Nome Sintomo"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="4dp" />
+
+</LinearLayout>

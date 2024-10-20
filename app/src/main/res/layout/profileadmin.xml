@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Modifica la tua mail:"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        />
+
+    <EditText
+        android:id="@+id/editemailadmin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci la tua nuova mail"
+        android:inputType="textEmailAddress"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/edittext"/>
+
+    <!-- Modifica il tuo numero di telefono -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Modifica il tuo telefono:"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"/>
+    <EditText
+        android:id="@+id/editphoneadmin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci il nuovo numero di telefono"
+        android:inputType="phone"
+        android:padding="10dp"
+        android:background="@drawable/edittext"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="Modifica il tuo username"/>
+
+
+
+    <EditText
+        android:id="@+id/editusernameadmin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Inserisci il nuovo username"
+        android:padding="10dp"
+        android:background="@drawable/edittext"/>
+    <!-- Modifica la tua password -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Modifica la tua password:"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"/>
+
+
+    <FrameLayout
+        android:id="@+id/oldPasswordFrame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <EditText
+            android:id="@+id/editpswadminold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci la vecchia password"
+            android:inputType="textPassword"
+            android:paddingEnd="48dp"
+            android:selectAllOnFocus="true"
+            android:background="@drawable/edittext"/>
+
+        <ImageView
+            android:id="@+id/mostraVecchiaPassword"
+            android:layout_width="40sp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Vecchia Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/newPasswordFrame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <EditText
+            android:id="@+id/editpswadmindnew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci la nuova password"
+            android:inputType="textPassword"
+            android:paddingEnd="48dp"
+            android:selectAllOnFocus="true"
+            android:background="@drawable/edittext"/>
+
+        <ImageView
+            android:id="@+id/mostraNuovaPassword"
+            android:layout_width="40sp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Nuova Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/confirmPasswordFrame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <EditText
+            android:id="@+id/editpswadminconferm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Conferma la nuova password"
+            android:inputType="textPassword"
+            android:paddingEnd="48dp"
+            android:selectAllOnFocus="true"
+            android:background="@drawable/edittext"/>
+
+        <ImageView
+            android:id="@+id/mostraConfermaPassword"
+            android:layout_width="40sp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|center_vertical"
+            android:padding="8dp"
+            android:src="@drawable/passwordicon"
+            android:contentDescription="Mostra Conferma Password"
+            android:layout_marginEnd="12dp"/>
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/buttonmodifyadmin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Salva le modifiche"
+        style="@style/GreenButton"
+        android:layout_marginTop="16dp"/>
+
+
+
+
+</LinearLayout>
+
+    <!-- Aggiungi la BottomNavigationView alla fine -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_profileadmin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:menu="@menu/nav_bar_admin"
+        android:layout_alignParentBottom="true"
+        android:background="#4CAF50"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white"
+        />
+</RelativeLayout>

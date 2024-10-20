@@ -6,6 +6,7 @@ import android.os.Environment
 import android.util.Log
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
+import com.example.myapplication2.model.UtenteEliminato
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -15,10 +16,127 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 class ExportRepo {
+
+    private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
+    private val exAccountRef = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app").reference
+
+    fun fetchLastWeekReports(callback: (List<Pair<Sintomo, String>>, List<Sintomo>) -> Unit) {
+        fetchGlobalSintomi { globalSintomiList ->
+            val sintomiList = mutableListOf<Pair<Sintomo, String>>()
+            val currentDate = LocalDate.now()
+            val pastWeek = currentDate.minusWeeks(1)
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+
+            // Recupero delle segnalazioni dal nodo "users"
+            database.reference.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    for (userSnapshot in dataSnapshot.children) {
+                        val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
+                        val sintomiSnapshot = userSnapshot.child("sintomi")
+                        for (sintomoIdSnapshot in sintomiSnapshot.children) {
+                            val sintomoId = sintomoIdSnapshot.key ?: "" // Qui otteniamo l'ID del sintomo
+                            for (yearSnapshot in sintomoIdSnapshot.children) {
+                                for (weekSnapshot in yearSnapshot.children) {
+                                    for (dataSnapshot in weekSnapshot.children) {
+                                        val dataSegnalazione = dataSnapshot.key ?: ""
+
+                                        if (LocalDate.parse(dataSegnalazione, dateFormatter).isAfter(pastWeek)) {
+                                            for (oraSnapshot in dataSnapshot.children) {
+                                                val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
+
+                                                if (sintomoData != null) {
+                                                    sintomoData.id = sintomoId // Assegna l'ID del sintomo recuperato
+                                                    sintomoData.dataSegnalazione = dataSegnalazione
+                                                    sintomoData.oraSegnalazione = oraSnapshot.key ?: ""
+
+                                                    // Log dell'ID del sintomo per debug
+                                                    Log.d("SintomoDebug", "ID Sintomo: ${sintomoData.id}")
+
+                                                    // Associa il nome del sintomo dalla lista globale usando l'ID
+                                                    val nomeSintomo = globalSintomiList.find { it.id == sintomoData.id }?.nomeSintomo ?: "Sintomo sconosciuto"
+                                                    sintomoData.nomeSintomo = nomeSintomo
+
+                                                    sintomiList.add(Pair(sintomoData, username))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Dopo aver recuperato le segnalazioni da "users", procediamo con "exaccount"
+                    fetchExAccountReports(sintomiList, pastWeek, dateFormatter, globalSintomiList, callback)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Errore nel recupero dei dati: ${databaseError.message}")
+                    callback(emptyList(), emptyList())
+                }
+            })
+        }
+    }
+
+
+    private fun fetchExAccountReports(
+        sintomiList: MutableList<Pair<Sintomo, String>>,
+        pastWeek: LocalDate,
+        dateFormatter: DateTimeFormatter,
+        globalSintomiList: List<Sintomo>, // Passiamo la lista globale dei sintomi qui
+        callback: (List<Pair<Sintomo, String>>, List<Sintomo>) -> Unit
+    ) {
+        database.reference.child("exaccount").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(exAccountSnapshot: DataSnapshot) {
+                var counter = 1
+                for (deletedUserSnapshot in exAccountSnapshot.children) {
+                    val usernameEliminato = "Utente eliminato $counter"
+                    counter++
+                    val sintomiSnapshot = deletedUserSnapshot.child("sintomi")
+                    for (sintomoIdSnapshot in sintomiSnapshot.children) {
+                        for (yearSnapshot in sintomoIdSnapshot.children) {
+                            for (weekSnapshot in yearSnapshot.children) {
+                                for (dataSnapshot in weekSnapshot.children) {
+                                    val dataSegnalazione = dataSnapshot.key ?: ""
+
+                                    if (LocalDate.parse(dataSegnalazione, dateFormatter).isAfter(pastWeek)) {
+                                        for (oraSnapshot in dataSnapshot.children) {
+                                            val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
+
+                                            if (sintomoData != null) {
+                                                sintomoData.dataSegnalazione = dataSegnalazione
+                                                sintomoData.oraSegnalazione = oraSnapshot.key ?: ""
+
+                                                // Verifica se il nome del sintomo è vuoto e recupera dalla lista globale
+                                                if (sintomoData.nomeSintomo.isEmpty()) {
+                                                    val globalSintomo = globalSintomiList.find { it.id == sintomoData.id }
+                                                    sintomoData.nomeSintomo = globalSintomo?.nomeSintomo ?: "Sintomo sconosciuto"
+                                                }
+
+                                                sintomiList.add(Pair(sintomoData, usernameEliminato))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                callback(sintomiList, globalSintomiList)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Errore nel recupero dei dati exaccount: ${databaseError.message}")
+                callback(emptyList(), emptyList()) // Gestione dell'errore
+            }
+        })
+    }
 
     fun generateExcel(
         context: Context,
