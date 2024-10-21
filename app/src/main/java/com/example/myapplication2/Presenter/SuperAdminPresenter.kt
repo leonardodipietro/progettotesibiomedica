@@ -42,7 +42,7 @@ class SuperAdminPresenter (private val view: SuperAdminView){
                                     userRepo.saveUserToFirebase(username, name, address, hashedPassword,"admin")
                                     view.showSuccess("Admin registrato con successo")
                                 } else {
-                                    view.showError("Registrazione fallita: ${task.exception?.message}")
+                                    view.showError("Registrazione fallita:")
                                 }
                             }
                     }
@@ -65,7 +65,7 @@ class SuperAdminPresenter (private val view: SuperAdminView){
             faqRepo.addFaq(question, answer, {
                 view.showSuccess("FAQ aggiunta con successo")
             }, { error ->
-                view.showError("Errore durante l'aggiunta della FAQ: ${error.message}")
+                view.showError("Errore durante l'aggiunta della FAQ:")
             })
         } else {
             view.showError("Domanda e risposta non possono essere vuoti")
@@ -76,7 +76,7 @@ class SuperAdminPresenter (private val view: SuperAdminView){
         faqRepo.updateFaq(faqId, question, answer, {
             view.showSuccess("FAQ aggiornata con successo")
         }, { error ->
-            view.showError("Errore durante l'aggiornamento della FAQ: ${error.message}")
+            view.showError("Errore update")
         })
     }
 
@@ -91,7 +91,7 @@ class SuperAdminPresenter (private val view: SuperAdminView){
         faqRepo.deleteFaq(faqId, {
             view.showSuccess("FAQ eliminata con successo")
         }, { error ->
-            view.showError("Errore durante l'eliminazione della FAQ: ${error.message}")
+            view.showError("Errore durante l'eliminazione ")
         })
     }
     fun confirmLogout() {

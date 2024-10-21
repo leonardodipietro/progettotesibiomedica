@@ -40,7 +40,7 @@ class ExportRepo {
                         val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
                         val sintomiSnapshot = userSnapshot.child("sintomi")
                         for (sintomoIdSnapshot in sintomiSnapshot.children) {
-                            val sintomoId = sintomoIdSnapshot.key ?: "" // Qui otteniamo l'ID del sintomo
+                            val sintomoId = sintomoIdSnapshot.key ?: ""
                             for (yearSnapshot in sintomoIdSnapshot.children) {
                                 for (weekSnapshot in yearSnapshot.children) {
                                     for (dataSnapshot in weekSnapshot.children) {
@@ -55,10 +55,10 @@ class ExportRepo {
                                                     sintomoData.dataSegnalazione = dataSegnalazione
                                                     sintomoData.oraSegnalazione = oraSnapshot.key ?: ""
 
-                                                    // Log dell'ID del sintomo per debug
+
                                                     Log.d("SintomoDebug", "ID Sintomo: ${sintomoData.id}")
 
-                                                    // Associa il nome del sintomo dalla lista globale usando l'ID
+                                                    // Associa il nome del sintomo dalla lista princ usando l'ID
                                                     val nomeSintomo = globalSintomiList.find { it.id == sintomoData.id }?.nomeSintomo ?: "Sintomo sconosciuto"
                                                     sintomoData.nomeSintomo = nomeSintomo
 
@@ -72,7 +72,7 @@ class ExportRepo {
                         }
                     }
 
-                    // Dopo aver recuperato le segnalazioni da "users", procediamo con "exaccount"
+
                     fetchExAccountReports(sintomiList, pastWeek, dateFormatter, globalSintomiList, callback)
                 }
 
@@ -349,18 +349,18 @@ class ExportRepo {
                     }
                 }
                 Log.d("Firebase", "Sintomi globali recuperati: $sintomiList")
-                callback(sintomiList)  // Restituisce la lista solo dopo aver terminato
+                callback(sintomiList)
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
                 Log.e("Firebase", "Errore nel recupero: ${databaseError.message}")
-                callback(emptyList())  // Restituisce una lista vuota in caso di errore
+                callback(emptyList())
             }
         })
     }
 
     fun uploadFileToFirebaseStorage(context: Context, fileName: String, callback: (Boolean, String?) -> Unit) {
-        // Ottieni il riferimento allo storage di Firebase
+
         val storage = FirebaseStorage.getInstance().reference
         val file = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports", fileName)
 
@@ -371,15 +371,15 @@ class ExportRepo {
             // Carica il file
             storageRef.putFile(uri)
                 .addOnSuccessListener {
-                    // Ottieni l'URL di download
+
                     storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
                         Log.d("FirebaseStorage", "File caricato  $fileName")
-                        callback(true, downloadUri.toString()) // Successo, ritorna l'URL
+                        callback(true, downloadUri.toString())
                     }
                 }
                 .addOnFailureListener { e ->
                     Log.e("FirebaseStorage", "Errore nel carvare", e)
-                    callback(false, null) // Fallimento
+                    callback(false, null)
                 }
         } else {
             Log.e("FirebaseStorage", "File non trovato: $fileName")

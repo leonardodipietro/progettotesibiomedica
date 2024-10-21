@@ -40,26 +40,6 @@ class LoginPresenter(
         }
 
 
-
-       /* if (username.isNotEmpty() && password.isNotEmpty()) {
-            //ricambiare con admin se necessario
-            userRepo.verifyUserCredentials(username, password) { isSuccess, errorMessage, ruolo, user ->
-                if (isSuccess) {
-                    resetLock()
-                    if (ruolo != null) {
-                        Log.d("LoginPresenter", "Accesso riuscito, utente admin: $ruolo,,,, $user")
-                        view.showLoginSuccess(ruolo, user)
-                    }
-                } else {
-                    handleFailedLogin()
-                    if (errorMessage != null) {
-                        view.showLoginFailure(errorMessage)
-                    }
-                }
-            }
-        } else {
-            view.promptForUsername()
-        }*/
     }
 
     private fun verifyLoginByEmail(email: String, password: String) {

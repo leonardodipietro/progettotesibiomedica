@@ -38,10 +38,10 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
     fun checkPhoneNumber(userId: String) {
         userRepo.getPhoneNumber(userId) { phoneNumber ->
             if (phoneNumber.isNullOrEmpty()) {
-                Log.d("PhoneCheck", "Nessun numero di telefono trovato per l'utente con ID: $userId")
-                view.showPhoneEditText() // Mostra l'EditText se il numero non esiste
+                Log.d("PhoneCheck", "Nessun numero di telefono trovato : $userId")
+                view.showPhoneEditText()
             } else {
-                Log.d("PhoneCheck", "Numero di telefono trovato: $phoneNumber per l'utente con ID: $userId")
+                Log.d("PhoneCheck", "Numero di telefono trovato: $phoneNumber")
                 view.showPhoneNumber(phoneNumber) // Mostra il numero esistente
             }
         }
@@ -62,46 +62,41 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
     }
 
 
-    // Funzione per aggiornare il numero nel database
     private fun updatePhoneNumberInDatabase(userId: String, newPhone: String) {
         userRepo.updatePhoneNumber(userId, newPhone) { success ->
             if (success) {
                 view.showSuccess("Numero di telefono aggiornato con successo ")
-                Log.d("PhoneUpdate", "Numero di telefono aggiornato con successo  $newPhone")
+
             } else {
                 view.showError("Errore nell'aggiornamento del numero di telefono")
-                Log.e("PhoneUpdate", "Errore durante l'aggiornamento del numero: $newPhone")
+
             }
         }
     }
     fun authenticateAndModifyPhoneNumber(userId: String, oldPhone: String, newPhone: String) {
-        Log.d("PhoneUpdate", "Avvio del processo: vecchio numero = $oldPhone, nuovo numero = $newPhone")
 
-        // Step 1: Verifica il vecchio numero di telefono
-        Log.d("PhoneUpdate", "Inizio verifica vecchio numero: $oldPhone")
+
+
         startPhoneVerificationModify(oldPhone, userId, true) { oldPhoneVerified ->
             if (oldPhoneVerified) {
-                Log.d("PhoneUpdate", "Vecchio numero verificato con successo: $oldPhone")
 
-                // Step 2: Ora inviamo il codice di verifica al nuovo numero
-                Log.d("PhoneUpdate", "Inizio verifica nuovo numero: $newPhone")
                 startPhoneVerificationModify(newPhone, userId, false) { newPhoneVerified ->
                     if (newPhoneVerified) {
-                        Log.d("PhoneUpdate", "Nuovo numero verificato con successo: $newPhone")
+
 
                         // Step 3: Aggiorna il numero di telefono nel database
                         userRepo.updatePhoneNumber(userId, newPhone) { success ->
                             if (success) {
                                 view.showSuccess("Numero di telefono aggiornato con successo")
-                                Log.d("PhoneUpdate", "Numero aggiornato con successo nel database: $newPhone")
+
                             } else {
                                 view.showError("Errore nell'aggiornamento del numero di telefono")
-                                Log.e("PhoneUpdate", "Errore durante l'aggiornamento nel database del numero: $newPhone")
+
                             }
                         }
                     } else {
                         view.showError("Verifica del nuovo numero fallita.")
-                        Log.e("PhoneUpdate", "Verifica del nuovo numero fallita: $newPhone")
+
                     }
                 }
             } else {
@@ -114,7 +109,7 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
 
 
     private fun startPhoneVerificationModify(phoneNumber: String, userId: String, isOldPhone: Boolean, onPhoneVerified: (Boolean) -> Unit = {}) {
-        Log.d("PhoneUpdate", "Inizio verifica telefonica per $phoneNumber (isOldPhone: $isOldPhone)")
+
 
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber(phoneNumber)
@@ -123,36 +118,36 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
             .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
 
                 override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                    Log.d("PhoneUpdate", "Verifica completata automaticamente per: $phoneNumber")
+
 
                     auth.signInWithCredential(credential).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            Log.d("PhoneUpdate", "Autenticazione completata con successo per $phoneNumber")
+                            Log.d("PhoneUpdate", "Autenticazione completata $phoneNumber")
                             onPhoneVerified(true)
                         } else {
                             view.showError("Errore nell'autenticazione.")
-                            Log.e("PhoneUpdate", "Errore durante l'autenticazione per $phoneNumber: ${task.exception?.message}")
+                            Log.e("PhoneUpdate", "Errore: ${task.exception?.message}")
                             onPhoneVerified(false)
                         }
                     }
                 }
 
                 override fun onVerificationFailed(e: FirebaseException) {
-                    view.showError("Errore di verifica telefonica: ${e.message}")
+
                     Log.e("PhoneUpdate", "Errore di verifica per $phoneNumber: ${e.message}")
                     //onPhoneVerified(false)
                 }
 
                 override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-                    Log.d("PhoneUpdate", "Codice inviato per il numero: $phoneNumber")
+
 
                     // Mostra il dialogo solo dopo che il codice è stato inviato
                     view.showNewPhoneVerificationDialog(phoneNumber) { verificationCode ->
                         val credential = PhoneAuthProvider.getCredential(verificationId, verificationCode)
 
-                        Log.d("PhoneUpdate", "Tentativo di verifica con il codice inserito: $verificationCode")
+                        Log.d("PhoneUpdate", "Tentativo di verifica  $verificationCode")
                         signInWithPhoneAuthCredentialForModify(credential, userId, phoneNumber) { verified ->
-                            Log.d("PhoneUpdate", "Verifica completata per il numero: $phoneNumber")
+                            Log.d("PhoneUpdate", "Verifica completata $phoneNumber")
                             onPhoneVerified(verified)
                         }
                     }
@@ -169,24 +164,22 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         phoneNumber: String,
         onPhoneVerified: (Boolean) -> Unit
     ) {
-        Log.d("PhoneUpdate", "Tentativo di accesso con le credenziali per il numero: $phoneNumber")
+
 
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                // Se il vecchio numero è autenticato correttamente
+
                 onPhoneVerified(true)
-                Log.d("PhoneUpdate", "Accesso completato con successo per il numero: $phoneNumber")
+                Log.d("PhoneUpdate", "Accesso completato  $phoneNumber")
             } else {
                 // Se l'autenticazione con il vecchio numero fallisce
-                Log.e("PhoneUpdate", "Errore di autenticazione per il numero: $phoneNumber - ${task.exception?.message}")
+                Log.e("PhoneUpdate", "Errore : $phoneNumber - ${task.exception?.message}")
 
-                // Chiamare qui la funzione per aggiornare il numero nel database anche se l'autenticazione è fallita
-                Log.d("siamo arrivati qui","Il vecchio numero non è stato trovato in Firebase Authentication. Aggiorno comunque il numero.")
 
-                // Chiamata alla funzione per aggiornare il numero nel database
+                Log.d("siamo arrivati qui","Il vecchio numero non è stato trovato in authfirebase Aggiorno comunque il numero.")
+
                 updatePhoneNumberInDatabase(userId, phoneNumber)
 
-                // Completa l'operazione di verifica con false
                 onPhoneVerified(false)
             }
         }
@@ -365,44 +358,44 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
     }
     fun deleteAccount(user: Utente) {
         user.id?.let { userId ->
-            Log.d("deleteAccount", "Inizio procedura di eliminazione per l'utente: $userId")
+
 
             userRepo.getUserData(userId) { userData ->
                 if (userData != null) {
                     Log.d("deleteAccount", "Dati utente recuperati: $userData")
 
                     if (userData.email != null && userData.password != null) {
-                        Log.d("deleteAccount", "Procedura di autenticazione con email per l'utente: $userId")
+
                         view.showPasswordDialog(userData.email, userData.password) { password ->
                             if (BCrypt.checkpw(password, userData.password)) {
-                                Log.d("deleteAccount", "Password verificata con successo per l'utente: $userId")
+
                                 auth.signInWithEmailAndPassword(userData.email, password)
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
-                                            Log.d("deleteAccount", "Autenticazione con email avvenuta con successo per l'utente: $userId")
+
                                             deleteUserAccount(userId)
                                         } else {
-                                            Log.e("deleteAccount", "Errore di autenticazione per l'utente: $userId")
+
                                             view.showError("Errore di autenticazione.")
                                         }
                                     }
                             } else {
-                                Log.e("deleteAccount", "Password non valida per l'utente: $userId")
+
                                 view.showError("Password non valida")
                             }
                         }
                     } else if (userData.phoneNumber != null) {
-                        Log.d("deleteAccount", "Inizio verifica del numero di telefono per l'utente: ${userData.phoneNumber}")
+
                         startPhoneVerification(userData.phoneNumber)
                     } else {
-                        Log.e("deleteAccount", "Nessun metodo di autenticazione disponibile per l'utente: $userId")
+                        Log.e("deleteAccount", "Nessuna possibilita di auth")
                     }
                 } else {
-                    Log.e("deleteAccount", "Dati utente non recuperati per l'utente: $userId")
+                    Log.e("deleteAccount", "Dati utente non recuperati ")
                 }
             }
         } ?: run {
-            Log.e("deleteAccount", "ID utente non disponibile per l'eliminazione.")
+            Log.e("deleteAccount", "ID utente non disponibile")
         }
     }
 
@@ -449,17 +442,15 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
     private fun deleteUserAccount(userId: String) {
         val exAccountRepo = ExAccountRepo()
 
-        // Chiama la funzione per creare l'utente eliminato nel nodo exaccount
         exAccountRepo.creaUtenteEliminato(userId) { success ->
             if (success) {
-                // Dopo aver creato l'utente eliminato, procedi con l'eliminazione dell'account
                 auth.currentUser?.delete()?.addOnCompleteListener { deleteTask ->
                     if (deleteTask.isSuccessful) {
-                        Log.d("deleteUserAccount", "Utente eliminato con successo da Firebase Authentication: $userId")
+                        Log.d("deleteUserAccount", "Utente eliminato da Firebase Authentication: $userId")
                         // Elimina anche l'account dal Realtime Database
                         userRepo.deleteAccount(userId) { success ->
                             if (success) {
-                                Log.d("deleteUserAccount", "Account eliminato dal database per l'utente: $userId")
+                                Log.d("deleteUserAccount", "Account eliminato dal db $userId")
                                 view.showSuccess("Account eliminato")
                                 view.navigateToHome()
                             } else {
@@ -471,7 +462,7 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
                     }
                 }
             } else {
-                view.showError("Errore nella creazione dell'utente eliminato.")
+                Log.d("deleteUserAccount", "boh")
             }
         }
     }

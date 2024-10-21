@@ -83,7 +83,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
 
 
         setupUI()
-        // Controlla il ruolo dell'utente e imposta la navigazione corretta
+
         when (currentUser.ruolo) {
             "admin", "superadmin" -> setupAdminNavigation()
             "user" -> setupUserNavigation()
@@ -159,7 +159,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             showPhoneUpdateDialog()
         }
     }
-    // Mostra il dialogo per inserire il vecchio e il nuovo numero di telefono
+
     fun showPhoneUpdateDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_update_phone, null)
         val oldPhoneEditText = dialogView.findViewById<EditText>(R.id.edit_old_phone)
@@ -185,7 +185,6 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             .show()
     }
 
-    // Implementa il metodo per mostrare il dialogo per l'inserimento del codice di verifica per il nuovo numero
     override fun showNewPhoneVerificationDialog(newPhone: String, onCodeEntered: (String) -> Unit) {
         val dialogView = layoutInflater.inflate(R.layout.second_dialogphone, null)
         val verificationCodeEditText = dialogView.findViewById<EditText>(R.id.edit_verification_code)
@@ -205,11 +204,11 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             .show()
     }
     private fun setupAdminNavigation() {
-        // Mostra solo la barra di navigazione admin
+
         bottomNavigationAdmin.visibility = View.VISIBLE
         bottomNavigationView.visibility = View.GONE
 
-        // Posiziona lo ScrollView sopra la barra di navigazione admin
+        // Posiziona lo ScrollView sopra la barra di navigazione
         val params = scrollView.layoutParams as RelativeLayout.LayoutParams
         params.addRule(RelativeLayout.ABOVE, R.id.bottom_navigation_admin)
         scrollView.layoutParams = params
@@ -309,14 +308,12 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        // Imposta lo stile al background dell'EditText
+
         phoneEditText.setBackgroundResource(R.drawable.edittext)
         phoneEditText.inputType = InputType.TYPE_CLASS_PHONE
 
-        // Trova la TextView dell'email
         val emailTextView = findViewById<TextView>(R.id.textview_email)
 
-        // Inserisci l'EditText sopra la TextView della mail (tra il telefono e l'email)
         val indexOfEmailTextView = parentLayout.indexOfChild(emailTextView)
         parentLayout.addView(phoneEditText, indexOfEmailTextView) // Lo inseriamo appena sopra la TextView dell'email
 
@@ -327,10 +324,9 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
                 currentUser.id?.let { userId ->
                     presenter.updatePhoneNumber(userId, newPhone)
 
-                    // Dopo il salvataggio, nascondi l'EditText e rendi cliccabile la TextView del telefono
                     phoneEditText.visibility = View.GONE
                    //phoneTextView.text = newPhone
-                    phoneTextView.isClickable = true // Rendi cliccabile la TextView del telefono
+                    phoneTextView.isClickable = true
                 }
             } else {
                 //view.showError("Inserisci un numero di telefono valido")

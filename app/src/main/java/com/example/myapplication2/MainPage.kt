@@ -60,7 +60,7 @@ class MainPage : AppCompatActivity(), MainPageView {
 
 
         val intentUser = intent.getParcelableExtra<Utente>("utente")
-        Log.d("IntentData", "Utente ripreso dall'Intent:${intentUser?.id?: "Nessun utent.id"} ${intentUser?.username ?: "Nessun utente"} - Ruolo: ${intentUser?.ruolo ?: "Ruolo non disponibile"}")
+        Log.d("IntentData", "Utente ripreso ${intentUser?.id?: "Nessun utent.id"} ${intentUser?.username ?: "Nessun utente"} - Ruolo: ${intentUser?.ruolo ?: "Ruolo non disponibile"}")
         presenter.loadUserData(intentUser)
         intentUser?.let {
             //presenter.scheduleNotifications(it.id)
@@ -159,7 +159,7 @@ class MainPage : AppCompatActivity(), MainPageView {
     }
     private fun setupNotificationChannelAndPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.d("NotificationSetup", "Checking if notification channel needs to be created")
+
             val name = "Daily Notification"
             val descriptionText = "Channel for daily notifications"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -169,20 +169,20 @@ class MainPage : AppCompatActivity(), MainPageView {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
             scheduleDailyNotification()
-            Log.d("NotificationSetup", "Notification channel created")
+
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Log.d("NotificationSetup", "Checking notification permission for Android 13+")
+
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                Log.d("NotificationSetup", "Permission not granted, requesting permission")
+
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE)
             } else {
-                Log.d("NotificationSetup", "Permission already granted, scheduling notification")
+
                 scheduleDailyNotification()
             }
         } else {
-            Log.d("NotificationSetup", "Android version below 13, no permission required, scheduling notification")
+
             scheduleDailyNotification()
         }
     }
@@ -196,12 +196,11 @@ class MainPage : AppCompatActivity(), MainPageView {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("NotificationPermission", "Notification permission granted: ${checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED}")
 
                 scheduleDailyNotification()
 
             } else {
-                Log.d("NotificationPermission", "Permesso per le notifiche negato")
+
             }
         }
     }
@@ -214,7 +213,7 @@ class MainPage : AppCompatActivity(), MainPageView {
             .get() // Ottiene i risultati in modo sincrono
 
         if (workInfos.isNullOrEmpty() || workInfos.none { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }) {
-            Log.d("WorkManager", "No existing work found, scheduling new periodic work")
+
             val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificaWorker>(15, TimeUnit.MINUTES)
                 .addTag("daily_notification")
                 .build()
@@ -225,71 +224,18 @@ class MainPage : AppCompatActivity(), MainPageView {
                 periodicWorkRequest
             )
         } else {
-            Log.d("WorkManager", "Periodic work already scheduled, skipping")
+
         }
     }
 
 
 
 
-    // Log per verificare lo stato del WorkRequest
-    /* WorkManager.getInstance(this).getWorkInfoByIdLiveData(periodicWorkRequest.id).observe(this) { workInfo ->
-         if (workInfo != null) {
-             Log.d("WorkManager", "Work ID: ${periodicWorkRequest.id}, State: ${workInfo.state}")
-
-             when (workInfo.state) {
-                 WorkInfo.State.ENQUEUED -> Log.d("WorkManager", "Periodic work is enqueued")
-                 WorkInfo.State.RUNNING -> Log.d("WorkManager", "Periodic work is running")
-                 WorkInfo.State.SUCCEEDED -> Log.d("WorkManager", "Periodic work succeeded")
-                 WorkInfo.State.FAILED -> Log.d("WorkManager", "Periodic work failed")
-                 WorkInfo.State.BLOCKED -> Log.d("WorkManager", "Periodic work is blocked")
-                 WorkInfo.State.CANCELLED -> Log.d("WorkManager", "Periodic work is cancelled")
-                 else -> Log.d("WorkManager", "Unknown work state")
-             }
-         } else {
-             Log.d("WorkManager", "WorkInfo is null")
-         }*/
-
-
-
-
-        /*val workRequest = OneTimeWorkRequestBuilder<NotificaWorker>()
-            //.addTag("daily_notification")
-            //.setInitialDelay(10, TimeUnit.SECONDS)
-            .build()
-        WorkManager.getInstance(this).enqueueUniqueWork(
-            "UniqueNotificationWork",
-            ExistingWorkPolicy.REPLACE,
-            workRequest
-        )
-        //WorkManager.getInstance(this).enqueue(workRequest)
-
-        // Log per verificare lo stato del WorkRequest
-        WorkManager.getInstance(this).getWorkInfoByIdLiveData(workRequest.id).observe(this) { workInfo ->
-            if (workInfo != null) {
-                Log.d("WorkManager", "Work ID: ${workRequest.id}, State: ${workInfo.state}")
-
-                when (workInfo.state) {
-                    WorkInfo.State.ENQUEUED -> Log.d("WorkManager", "Work is enqueued")
-                    WorkInfo.State.RUNNING -> Log.d("WorkManager", "Work is running")
-                    WorkInfo.State.SUCCEEDED -> Log.d("WorkManager", "Work succeeded")
-                    WorkInfo.State.FAILED -> Log.d("WorkManager", "Work failed")
-                    WorkInfo.State.BLOCKED -> Log.d("WorkManager", "Work is blocked")
-                    WorkInfo.State.CANCELLED -> Log.d("WorkManager", "Work is cancelled")
-                    else -> Log.d("WorkManager", "Unknown work state")
-                }
-            } else {
-                Log.d("WorkManager", "WorkInfo is null")
-            }
-        }*/
 
     override fun saveUserToPreferences(user: Utente) {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val json = Gson().toJson(user)
-
-        Log.d("saveUserToPreferences", "Salvataggio utente nelle preferenze. JSON: $json")
-        Log.d("saveUserToPreferences", "Ruolo: ${user.ruolo} - Stato login: true")
 
         editor.putString("utente", json)
         editor.putString("ruolo", user.ruolo)
@@ -301,12 +247,12 @@ class MainPage : AppCompatActivity(), MainPageView {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("utente", null)
 
-        Log.d("loadUserFromPreferences", "Dati utente caricati dalle preferenze: $json")
+        Log.d("loadUserFromPreferences", "Dati utente $json")
 
         return if (json != null) {
             Gson().fromJson(json, Utente::class.java)
         } else {
-            Log.d("loadUserFromPreferences", "Nessun utente salvato nelle preferenze.")
+            Log.d("loadUserFromPreferences", "Nessun utente salvato.")
             null
         }
     }
@@ -325,236 +271,4 @@ class MainPage : AppCompatActivity(), MainPageView {
 }
 
 
-/*class MainPage : AppCompatActivity() {
-    private lateinit var sintomoRepo: SintomoRepo
-    private lateinit var sintadapter: SintomiAdapter
-    private lateinit var userRepo: UserRepo
-    private val gson = Gson()
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.mainpageactivity)
-
-        //todo salvare l utente con il nodo su firebase
-        //todo bloccare fatta loa registrazione il ritorno alla pagina di signin
-        //todo verificare effetto della recycler sulla navbar
-        //todo vedere in basso
-        var utente = intent.getParcelableExtra<Utente>("utente")
-        val userid= utente?.id
-        val benvenutoTextView: TextView = findViewById(R.id.titolo)
-
-        Log.d("funziona","funziona $userid")
-            utente = loadUserFromPreferences() // Prova a caricare dalle Shared Preferences
-
-            saveUserToPreferences(utente!!) // Salva l'utente nelle Shared Preferences se presente nell'intent
-
-
-        if (utente != null) {
-            val userId = utente.id
-            Log.d("funziona", "Utente trovato con ID: $userId")
-            benvenutoTextView.text = "Benvenuto ${utente.username}, come ti senti oggi?"
-        } else {
-            // Se l'utente non è presente, torna alla MainActivity
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-
-        // Inizializza il repository
-        sintomoRepo = SintomoRepo()
-        userRepo= UserRepo()
-
-        val spinnerDistanza: Spinner = findViewById(R.id.spinnerDistanzaUltimoPasto)
-
-        val inviaButton: Button = findViewById(R.id.inviadati)
-        inviaButton.setOnClickListener {
-
-            // Recupera la distanza selezionata dallo spinner
-            val distanzapasto = when (spinnerDistanza.selectedItem.toString()) {
-                "Meno di 1 ora" -> 0
-                "1 ora" -> 1
-                "2 ore" -> 2
-                "3 ore" -> 3
-                "Più di 3 ore" -> 4
-                else -> 0
-            }
-            Log.d("SpinnerDistanza", "Distanza selezionata dallo spinner: $distanzapasto")
-
-
-            val selectedSintomi = sintadapter.getSelectedSintomi()
-            Log.d("InviaButton", "Selected Sintomi e Gravità: $selectedSintomi")
-
-            // Aggiungi la distanza dall'ultimo pasto a ogni sintomo selezionato
-            selectedSintomi.forEach { sintomo ->
-                sintomo.tempoTrascorsoUltimoPasto = distanzapasto
-
-                Log.d("Sintomo", "Sintomo ${sintomo.nomeSintomo} ha tempoTrascorsoUltimoPasto: ${sintomo.tempoTrascorsoUltimoPasto}")
-            }
-
-
-
-            if (utente != null) {
-                val userId = utente.id
-
-                // Aggiungi un controllo di nullità per userId
-                if (userId != null) {
-                    Log.d("submitSintomi", "Inviando sintomi per utente con ID: $userId")
-
-                    // Invia i sintomi selezionati
-                    userRepo.submitSintomi(userId, selectedSintomi)
-
-                    // Rimuovi i sintomi deselezionati (quelli che non sono più nella lista selectedSintomi)
-                    val allSintomi = sintadapter.getAllSintomi()
-                    val allSintomiIds = allSintomi.map { it.id }
-                    val selectedSintomiIds = selectedSintomi.map { it.id }
-                    val sintomiDaRimuovere = allSintomiIds.minus(selectedSintomiIds)
-
-                    sintomiDaRimuovere.forEach { sintomoId ->
-                        userRepo.removeSintomo(userId, sintomoId)
-                    }
-                } else {
-                    Log.e("submitSintomi", "L'ID dell'utente è null. Impossibile inviare i sintomi.")
-                }
-            } else {
-                Log.e("InviaButton", "L'oggetto utente è null. Nessun utente autenticato.")
-            }
-        }
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerSintomi)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        recyclerView.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeLeft() {
-                // Naviga alla ProfileActivity
-                startActivity(Intent(this@MainPage, ProfileActivity::class.java))
-            }
-        })
-       /* val recyclerView: SwipeableRecyclerView = findViewById(R.id.recyclerSintomi)
-        recyclerView.setSwipeEnabled(false)*/
-
-        sintadapter = SintomiAdapter(emptyList())
-        recyclerView.adapter = sintadapter
-
-        sintomoRepo.fetchSintomi()
-
-        sintomoRepo.sintomi.observe(this, Observer { sintomiList ->
-            Log.d("Recuperoactivit", "Listasintomi: $sintomiList")
-            sintadapter.submitlist(sintomiList)
-        })
-
-
-        sintomoRepo.fetchSintomi()
-
-
-
-        // Osserva i cambiamenti nella lista dei sintomi
-        sintomoRepo.sintomi.observe(this, Observer { sintomiList ->
-            Log.d("Recuperoactivity", "Listasintomi: $sintomiList")
-            sintadapter.submitlist(sintomiList)
-
-
-        })
-
-
-
-
-
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-        bottomNavigationView.selectedItemId = R.id.nav_home // Set the default selection
-
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    // Sei già su questa Activity, non fare nulla
-                    true
-                }
-                R.id.nav_profile -> {
-                    // Passa alla ProfileActivity
-                    val intent = Intent(this, ProfileActivity::class.java).apply {
-                        putExtra("utente", utente) // Passa l'oggetto Utente
-                    }
-                    startActivity(intent)
-                    true
-                }
-
-                else -> false
-            }
-        }
-        val mainpageLayout: View = findViewById(R.id.mainpageroot)
-
-        // Rileva il movimento di swipe
-        mainpageLayout.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            override fun onSwipeLeft() {
-                val intent = Intent(this@MainPage, ProfileActivity::class.java).apply {
-                    putExtra("utente", utente) // Passa l'oggetto Utente
-                }
-            }
-    })
-
-        // Configurazione notifiche giornaliere se l'utente è loggato
-        if (userid != null) {
-            scheduleDailyNotification()
-            // Crea il canale di notifica ùù
-            createNotificationChannel()
-        }
-
-        if (userid != null) {
-            scheduleTestNotification()  //Test ogni 15 sec sarà da rimuovere
-            // Crea il canale di notifica ùù
-            createNotificationChannel()
-        }
-
-}
-    private fun scheduleDailyNotification() {
-        val workRequest = PeriodicWorkRequestBuilder<NotificaWorker>(1, TimeUnit.DAYS)
-            .build()
-
-        WorkManager.getInstance(this).enqueue(workRequest)
-    }
-
-    private fun scheduleTestNotification() {
-        Log.d("MainPage", "Scheduling the notification worker")
-
-        val workRequest = OneTimeWorkRequestBuilder<NotificaWorker>()
-            .setInitialDelay(10, TimeUnit.MINUTES)  // 10 min atest
-            .build()
-
-        WorkManager.getInstance(this)
-            .enqueueUniqueWork("NotificaWorker", ExistingWorkPolicy.REPLACE, workRequest)
-
-    }
-
-
-
-
-    // Funzione per salvare l'utente nelle Shared Preferences
-    private fun saveUserToPreferences(user: Utente) {
-        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        val json = gson.toJson(user)
-        editor.putString("utente", json)
-        editor.putBoolean("isLoggedIn", true)
-        editor.apply()
-
-        // Log per verificare il salvataggio
-        Log.d("debuglogin", "Utente salvato nelle Shared Preferences: $json")
-        Log.d("debuglogin", "isLoggedIn salvato come true")
-    }
-
-    // Funzione per caricare l'utente dalle Shared Preferences
-    private fun loadUserFromPreferences(): Utente? {
-        val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
-        val json = sharedPreferences.getString("utente", null)
-
-        // Log per verificare i dati caricati
-        if (json != null) {
-            Log.d("debuglogin", "Utente caricato dalle Shared Preferences: $json")
-            return gson.fromJson(json, Utente::class.java)
-        } else {
-            Log.d("debuglogins", "Nessun utente trovato nelle Shared Preferences")
-            return null
-        }
-    }
-
-}
-*/
 

@@ -23,12 +23,12 @@ class SwapRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(con
                 val deltaY = e.y - initialY
 
                 if (isSwipeEnabled && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
-                    // Movimento in orizzontale (swipe) rilevato
-                    return false // Non intercettare per permettere lo swipe
+
+                    return false
                 }
             }
         }
-        // Per movimento verticale o se swipe è disabilitato, lascia che la RecyclerView gestisca l'evento
+
         return super.onInterceptTouchEvent(e)
     }
 

@@ -158,7 +158,7 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
                     showUpdateFaqDialog(faq.id, question, answer)
                 }
                 .setNegativeButton("Elimina") { _, _ ->
-                    // Mostra l'alert di conferma finale prima dell'eliminazione
+
                     showDeleteConfirmationDialog(faq.id)
                 }
                 .setNeutralButton("Annulla", null)
@@ -213,28 +213,28 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
     override fun loadUserFromPreferences(): Utente? {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("utente", null)
-        Log.d("Lifecycle", "onCreate avviato in AdminActivity chiamata load")
+
         // Log per visualizzare il contenuto delle Shared Preferences
-        Log.d("SharedPreferences", "Dati trovati nelle Shared Preferences: $json")
+        Log.d("SharedPreferences", "Dati trovati  $json")
 
         return try {
             if (json != null) {
                 // Controllo se il JSON è un oggetto valido per la deserializzazione
                 if (json.startsWith("{") && json.endsWith("}")) {
                     val utente = Gson().fromJson(json, Utente::class.java)
-                    Log.d("Deserializzazione", "Deserializzazione completata con successo: $utente")
+                    Log.d("Deserializzazione", "Deserializzazione done $utente")
                     utente
                 } else {
-                    Log.e("Deserializzazione", "Il JSON non è un oggetto valido: $json")
+                    Log.e("Deserializzazione", "Il JSON non valido: $json")
                     null
                 }
             } else {
-                Log.d("SharedPreferences", "Nessun dato utente salvato.")
+                Log.d("SharedPreferences", "Nessun dato .")
                 null
             }
         } catch (e: JsonSyntaxException) {
             // Log dell'errore di deserializzazione
-            Log.e("Deserializzazione", "Errore nella deserializzazione dei dati utente", e)
+            Log.e("Deserializzazione", "Errore ", e)
 
             // Cancella i dati corrotti dalle Shared Preferences
             //clearUserPreferences()

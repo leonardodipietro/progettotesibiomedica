@@ -126,9 +126,9 @@ class TelephoneActivity: AppCompatActivity()   {
     private fun sendVerificationCode(phoneNumber: String) {
         Toast.makeText(this, "Codice inviato a $phoneNumber", Toast.LENGTH_SHORT).show()
         val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(phoneNumber)       // Numero di telefono
+            .setPhoneNumber(phoneNumber)
             .setTimeout(60L, TimeUnit.SECONDS) // Timeout per il codice di verifica
-            .setActivity(this)                 // Activity
+            .setActivity(this)
             .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks()
             {
 
@@ -139,7 +139,7 @@ class TelephoneActivity: AppCompatActivity()   {
                 }
 
                 override fun onVerificationFailed(e: FirebaseException) {
-                    Toast.makeText(this@TelephoneActivity, "Verifica fallita: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     Log.d("MainActivity", "qualcosa non va $${e.message}")
                 }
 

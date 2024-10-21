@@ -9,7 +9,7 @@ class ExAccountRepo {
 
         private val exAccountRef = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app").reference
     fun creaUtenteEliminato(userId: String, callback: (Boolean) -> Unit) {
-        // Recupera i sintomi dell'utente
+
         val userRef = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
             .getReference("users/$userId/sintomi")
 
@@ -19,9 +19,9 @@ class ExAccountRepo {
                 val sintomiMap = mutableMapOf<String, MutableMap<String, MutableMap<String, MutableMap<String, MutableMap<String, Sintomo>>>>>() // Mappa corretta con Sintomo
 
                 if (sintomiSnapshot.exists()) {
-                    // Itera attraverso i sintomi e mappa i dati
+
                     for (idSintomoSnapshot in sintomiSnapshot.children) {
-                        val sintomoId = idSintomoSnapshot.key ?: ""  // Usa l'ID del sintomo esistente come chiave
+                        val sintomoId = idSintomoSnapshot.key ?: ""
                         if (sintomoId.isNotEmpty()) {
                             for (annoSnapshot in idSintomoSnapshot.children) {
                                 val annoKey = annoSnapshot.key ?: ""
@@ -46,7 +46,7 @@ class ExAccountRepo {
                                                     oraSegnalazione = sintomoMapData["oraSegnalazione"]?.toString() ?: ""
                                                 )
 
-                                                // Verifica se la chiave "sintomi -> id sintomo -> anno -> settimana -> giorno" esiste
+
                                                 if (!sintomiMap.containsKey(sintomoId)) {
                                                     sintomiMap[sintomoId] = mutableMapOf()
                                                 }
@@ -60,7 +60,6 @@ class ExAccountRepo {
                                                     sintomiMap[sintomoId]!![annoKey]!![settimanaKey]!![giornoKey] = mutableMapOf()
                                                 }
 
-                                                // Inserisci il sintomo nella struttura corretta usando l'ID esistente come chiave
                                                 sintomiMap[sintomoId]!![annoKey]!![settimanaKey]!![giornoKey]!![oraKey] = sintomo
                                             }
                                         }
@@ -71,14 +70,13 @@ class ExAccountRepo {
                     }
                 }
 
-                // Genera un nuovo ID utente eliminato e salva i dati
                 val nuovoUtenteId = exAccountRef.child("exaccount").push().key
 
                 if (nuovoUtenteId != null) {
                     val utenteEliminato = UtenteEliminato(
                         id = nuovoUtenteId,
                         nome = "Utente eliminato $nuovoUtenteId",
-                        sintomi = sintomiMap // Salva la struttura completa con l'ID dei sintomi e l'ora
+                        sintomi = sintomiMap
                     )
 
                     // Salva l'utente eliminato nel nodo exaccount con la struttura temporale
@@ -86,19 +84,19 @@ class ExAccountRepo {
                         .setValue(utenteEliminato)
                         .addOnCompleteListener { saveTask ->
                             if (saveTask.isSuccessful) {
-                                Log.d("ExAccountRepo", "Utente eliminato salvato con successo: $nuovoUtenteId")
+                                Log.d("ExAccountRepo", "ex utente slavato $nuovoUtenteId")
                                 callback(true)
                             } else {
-                                Log.e("ExAccountRepo", "Errore nel salvataggio dell'utente eliminato: $nuovoUtenteId")
+                                Log.e("ExAccountRepo", "Errore salvatggio $nuovoUtenteId")
                                 callback(false)
                             }
                         }
                 } else {
-                    Log.e("ExAccountRepo", "Errore nella generazione dell'ID per l'utente eliminato.")
+                    Log.e("ExAccountRepo", "Errore id ute ekli.")
                     callback(false)
                 }
             } else {
-                Log.e("ExAccountRepo", "Errore nel recupero dei sintomi per l'utente: ${task.exception?.message}")
+                Log.e("ExAccountRepo", "Errore nel fetch sintomi ${task.exception?.message}")
                 callback(false)
             }
         }

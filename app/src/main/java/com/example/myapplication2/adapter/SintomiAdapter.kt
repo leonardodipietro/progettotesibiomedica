@@ -57,7 +57,6 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
                 }
             }
 
-            // Definiamo una funzione per gestire il secondo click
             fun handleSecondClick(
                 checkBox: CheckBox,
                 gravita: Int,
@@ -113,7 +112,6 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
 
 
 
-        // Imposta l'azione del checkbox per il sintomo
 
         }
 
@@ -140,9 +138,9 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
             }
         }) //prende il sintomo selezionatom e la sua gravita
         { item, gravita ->
-            // Se gravità è deselezionata (ad esempio impostiamo gravita = 0 o altro valore per indicare deselezione)
+            // Se gravità è deselezionata
             if (gravita == 0) {
-                // Rimuovi il sintomo dalla lista se la gravità è stata deselezionata
+
                 selectedSintomi.remove(item)
                 Log.d("SintomiAdapter", "Sintomo rimosso: ${item.nomeSintomo}")
             } else {
@@ -151,7 +149,7 @@ class SintomiAdapter(private var itemList: List<Sintomo>) : RecyclerView.Adapter
                 if (!selectedSintomi.contains(item)) {
                     selectedSintomi.add(item)
                 } else {
-                    // Se il sintomo è già presente nella lista, aggiorna solo la sua gravità
+
                     selectedSintomi.find { it.id == item.id }?.gravità = gravita
                 }
                 Log.d("SintomiAdapter", "Sintomo aggiornato: ${item.nomeSintomo}, Gravità: $gravita")

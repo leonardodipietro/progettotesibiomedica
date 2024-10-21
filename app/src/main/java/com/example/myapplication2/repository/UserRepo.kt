@@ -112,7 +112,7 @@ class UserRepo {
             }
     }
     fun getPhoneNumber(userId: String, callback: (String?) -> Unit) {
-        Log.d("UserRepo", "Avvio del recupero del numero di telefono per l'utente con ID: $userId")
+
 
         // Riferimento al nodo dell'utente nel database
         usersRef.child(userId).child("phoneNumber").addListenerForSingleValueEvent(object : ValueEventListener {
@@ -127,15 +127,14 @@ class UserRepo {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("UserRepo", "Errore nel recupero del numero di telefono per l'utente con ID: $userId, errore: ${error.message}")
+
                 callback(null)
             }
         })
 
-        Log.d("UserRepo", "Fine della richiesta per il recupero del numero di telefono per l'utente con ID: $userId")
+
     }
 
-    // Recupera il numero di telefono dell'utente
     fun getAddress(userId: String, callback: (String?) -> Unit) {
         usersRef.child("users").child(userId).child("address").get()
             .addOnSuccessListener { snapshot ->
@@ -182,12 +181,12 @@ class UserRepo {
     }
 
     fun verifyUserByEmail(email: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
-        Log.d("verifyUserByEmail", "Verifica in corso per email: $email")
+
 
         usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    Log.d("verifyUserByEmail", "Utente trovato per email: $email")
+
 
                     val user = snapshot.children.first().getValue(Utente::class.java)
                     if (user != null) {
@@ -201,53 +200,53 @@ class UserRepo {
                             callback(false, "Password errata", null, null)
                         }
                     } else {
-                        Log.d("verifyUserByEmail", "Impossibile recuperare i dati dell'utente.")
+
                         callback(false, "Utente non trovato", null, null)
                     }
                 } else {
-                    Log.d("verifyUserByEmail", "Nessun utente trovato per l'email: $email")
+
                     callback(false, "Utente non trovato", null, null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("verifyUserByEmail", "Errore durante la ricerca dell'email: ${error.message}")
+
                 callback(false, error.message, null, null)
             }
         })
     }
 
     fun verifyUserByPhone(phoneNumber: String, password: String, callback: (Boolean, String?, String?, Utente?) -> Unit) {
-        Log.d("verifyUserByPhone", "Verifica in corso per numero di telefono: $phoneNumber")
+
 
         usersRef.orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    Log.d("verifyUserByPhone", "Utente trovato per numero di telefono: $phoneNumber")
+                    Log.d("verifyUserByPhone", "Utente  $phoneNumber")
 
                     val user = snapshot.children.first().getValue(Utente::class.java)
                     if (user != null) {
                         Log.d("verifyUserByPhone", "Utente recuperato: ${user.username}")
 
                         if (BCrypt.checkpw(password, user.password)) {
-                            Log.d("verifyUserByPhone", "Password corretta per utente: ${user.username}")
+                            Log.d("verifyUserByPhone", "Password corretta per${user.username}")
                             callback(true, null, user.ruolo, user)
                         } else {
-                            Log.d("verifyUserByPhone", "Password errata per utente: ${user.username}")
+                            Log.d("verifyUserByPhone", "Password errata per: ${user.username}")
                             callback(false, "Password errata", null, null)
                         }
                     } else {
-                        Log.d("verifyUserByPhone", "Impossibile recuperare i dati dell'utente.")
+                        Log.d("verifyUserByPhone", "Impossibile prendere ")
                         callback(false, "Utente non trovato", null, null)
                     }
                 } else {
-                    Log.d("verifyUserByPhone", "Nessun utente trovato per il numero di telefono: $phoneNumber")
+                    Log.d("verifyUserByPhone", "Nessun utente trovato per 9 $phoneNumber")
                     callback(false, "Utente non trovato", null, null)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("verifyUserByPhone", "Errore durante la ricerca del numero di telefono: ${error.message}")
+                Log.e("verifyUserByPhone", "Errore : ${error.message}")
                 callback(false, error.message, null, null)
             }
         })
@@ -272,27 +271,26 @@ class UserRepo {
                         if (user.email.isNullOrEmpty()) {
                             // Email non trovata, verifica numero di telefono
                             if (!user.phoneNumber.isNullOrEmpty()) {
-                                Log.d("verifyUserCredentials", "Numero di telefono trovato per utente, verifica password...")
 
                                 // Verifica la password
                                 if (BCrypt.checkpw(password, user.password)) {
-                                    Log.d("verifyUserCredentials", "Password corretta. Accesso come admin: ${user.ruolo}")
+                                    Log.d("verifyUserCredentials", "Password corretta. Accesso admin: ${user.ruolo}")
                                     val ruolo = user.ruolo
                                     callback(true, null, ruolo, user)
                                     /*val isAdmin = user.admin ?: false
                                     callback(true, null, isAdmin, user)*/
-                                    Log.d("verifyUserCredentials", "Callback chiamato con successo per admin: ${user.ruolo} e utente: $user")
+                                    Log.d("verifyUserCredentials", "Callbackncon  ${user.ruolo} e utente: $user")
                                 } else {
-                                    Log.d("verifyUserCredentials", "Password errata per numero di telefono.")
+                                    Log.d("verifyUserCredentials", "Password errata")
                                     callback(false, "Password errata", null, null)
                                 }
                             } else {
-                                Log.d("verifyUserCredentials", "Nessun numero di telefono trovato per questo utente.")
+                                Log.d("verifyUserCredentials", "Nessun numero di telefono trovato.")
                                 callback(false, "Utente non trovato", null, null)
                             }
                         } else {
                             // Email trovata, verifica la password
-                            Log.d("verifyUserCredentials", "Email trovata per utente, verifica password...")
+                            Log.d("verifyUserCredentials", "Email trovata verifica password...")
 
                             if (BCrypt.checkpw(password, user.password)) {
                                 Log.d("verifyUserCredentials", "Password corretta. Accesso come UTENTE: ${user.ruolo}")
@@ -600,102 +598,6 @@ class UserRepo {
 
 
 
-    /*  fun syncUsers() {
-        val auth = FirebaseAuth.getInstance()
-
-        // Step 1: Recupera tutti gli ID utente dal Realtime Database
-        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val usersInDatabase = snapshot.children.mapNotNull { it.key }.toSet()
-
-                // Step 2: Recupera gli utenti da Firebase Authentication
-                auth.listUsers(null)
-                    .addOnSuccessListener { result ->
-                        val usersInAuth = result.users.map { it.uid }.toSet()
-
-                        // Step 3: Trova utenti in Authentication ma non nel Database
-                        val usersToDelete = usersInAuth - usersInDatabase
-
-                        // Step 4: Elimina utenti non presenti nel Database
-                        usersToDelete.forEach { uid ->
-                            auth.deleteUser(uid)
-                                .addOnSuccessListener {
-                                    println("Utente con UID: $uid eliminato da Firebase Authentication")
-                                }
-                                .addOnFailureListener { exception ->
-                                    println("Errore durante l'eliminazione dell'utente con UID: $uid. Errore: ${exception.message}")
-                                }
-                        }
-                    }
-                    .addOnFailureListener { exception ->
-                        println("Errore nel recupero degli utenti da Firebase Authentication. Errore: ${exception.message}")
-                    }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                println("Errore nel recupero degli utenti dal Realtime Database. Errore: ${error.message}")
-            }
-        })
-    }
-*/
-    // Inizia la verifica del numero di telefono
-   /* fun updatePhoneNumber(newPhoneNumber: String, activity: Activity) {
-        val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(newPhoneNumber)
-            .setTimeout(60L, TimeUnit.SECONDS)
-            .setActivity(activity)
-            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                    // Collegare il nuovo numero di telefono all'utente
-                    auth.currentUser?.updatePhoneNumber(credential)
-                        ?.addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                Log.d("ProfileActivity", "Numero di telefono aggiornato correttamente")
-                            } else {
-                                Log.d("ProfileActivity", "Errore nell'aggiornamento del numero: ${task.exception?.message}")
-                            }
-                        }
-                }
-
-                override fun onVerificationFailed(e: FirebaseException) {
-                    Log.e("ProfileActivity", "Errore nella verifica del numero: ${e.message}")
-                }
-
-                override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-                    // Gestisci l'invio del codice e richiedi all'utente di inserire il codice di verifica
-                    // Puoi memorizzare `verificationId` e `token` per usarli successivamente
-                }
-            }).build()
-        PhoneAuthProvider.verifyPhoneNumber(options)
-    }
-
-    fun linkWithPhoneNumber(credential: PhoneAuthCredential) {
-        val user = auth.currentUser
-        user?.linkWithCredential(credential)
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("ProfileActivity", "Account collegato correttamente")
-                } else {
-                    Log.d("ProfileActivity", "Errore nel collegamento dell'account: ${task.exception?.message}")
-                }
-            }
-    }
-
-    fun linkWithEmailPassword(email: String, password: String) {
-        val credential = EmailAuthProvider.getCredential(email, password)
-        val user = auth.currentUser
-        user?.linkWithCredential(credential)
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("ProfileActivity", "Account email/password collegato correttamente")
-                } else {
-                    Log.d("ProfileActivity", "Errore nel collegamento dell'account: ${task.exception?.message}")
-                }
-            }
-    }
-*/
-
-
     fun removeSintomo(userId: String, sintomoId: String) {
         val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi").child(sintomoId)
 
@@ -708,56 +610,6 @@ class UserRepo {
         }
     }
 
-   /* fun fetchSelectedSintomiForUser(userId: String, callback: (List<Sintomo>) -> Unit) {
-        Log.d("fetchSelectedSintomi", "si inizia")
-
-        val userSintomiRef = database.reference.child("users").child(userId).child("selectedSintomi")
-
-        userSintomiRef.get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val selectedSintomiIds = task.result.children.map { it.getValue(Long::class.java)?.toString() ?: "" }.filter { it.isNotEmpty() }
-
-                //val selectedSintomiIds = task.result.children.map { it.getValue(String::class.java) ?: "" }.filter { it.isNotEmpty() }
-                Log.d("fetchSelectedSintomi", "Recuperati ID dei sintomi selezionati: $selectedSintomiIds")
-
-                val sintomiList = mutableListOf<Sintomo>()
-                val sintomiRef = database.reference.child("sintomi")
-
-                var count = 0
-                if (selectedSintomiIds.isEmpty()) {
-                    Log.d("fetchSelectedSintomi", "Nessun sintomo selezionato trovato per l'utente con ID: $userId")
-                    callback(sintomiList)
-                    return@addOnCompleteListener
-                }
-
-                for (sintomoId in selectedSintomiIds) {
-                    Log.d("fetchSelectedSintomi", "Inizio recupero dati per il sintomo con ID: $sintomoId")
-
-                    sintomiRef.child(sintomoId).get().addOnCompleteListener { sintomoTask ->
-                        if (sintomoTask.isSuccessful) {
-                            val sintomo = sintomoTask.result.getValue(Sintomo::class.java)
-                            if (sintomo != null) {
-                                Log.d("fetchSelectedSintomi", "Sintomo Nome: ${sintomo.nomeSintomo}")
-                                sintomiList.add(sintomo)
-                            } else {
-                                Log.d("fetchSelectedSintomi", "Sintomo non trogvato")
-                            }
-                        } else {
-                            Log.e("fetchSelectedSintomi", "Sintomo non trovato : $sintomoId", sintomoTask.exception)
-                        }
-                        count++
-                        if (count == selectedSintomiIds.size) {
-                            Log.d("fetchSelectedSintomi", "Fatto e riuscito")
-                            callback(sintomiList)
-                        }
-                    }
-                }
-            } else {
-                Log.e("fetchSelectedSintomi", "Errore nel recupero id")
-                callback(emptyList())
-            }
-        }
-    }*/
 
 
 

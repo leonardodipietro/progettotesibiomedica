@@ -33,7 +33,7 @@ class AdapterStats(private val sintomiList: List<Pair<Sintomo, String>>) :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is SintomoViewHolder && position > 0) {
-            val (sintomo, nomeUtente) = sintomiList[position - 1] // Sottrai 1 perché la posizione 0 è l'header
+            val (sintomo, nomeUtente) = sintomiList[position - 1]
             holder.bind(sintomo, nomeUtente)
         }
     }
@@ -51,14 +51,14 @@ class AdapterStats(private val sintomiList: List<Pair<Sintomo, String>>) :
         private val nomeSintomo: TextView = itemView.findViewById(R.id.nome_sintomostats)
 
         fun bind(sintomo: Sintomo, nomeUtenteStr: String) {
-            // Imposta i campi di testo
+
             dataSegnalazione.text = sintomo.dataSegnalazione
             nomeUtente.text = nomeUtenteStr
             oraSegnalazione.text = sintomo.oraSegnalazione
             gravita.text = sintomo.gravità.toString()
             tempoUltimoPasto.text = sintomo.tempoTrascorsoUltimoPasto.toString()
 
-            // Visualizza il nome del sintomo
+
             nomeSintomo.text = sintomo.nomeSintomo
         }
     }
