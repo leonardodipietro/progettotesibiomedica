@@ -49,7 +49,6 @@ class AdminActivity : AppCompatActivity(), AdminView {
 
     // Viste UI
 
-    private lateinit var logoutButton: Button
     private lateinit var generateExcelButton: Button
     private lateinit var aggiungiSintButton: Button
     private lateinit var removeSintButton: Button
@@ -100,7 +99,6 @@ class AdminActivity : AppCompatActivity(), AdminView {
         recyclerView = findViewById(R.id.recycler_view_statistiche)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        logoutButton = findViewById(R.id.logoutadmin)
         generateExcelButton = findViewById(R.id.exporttoexcel)
         aggiungiSintButton = findViewById(R.id.aggiungisintomo)
         writeSintomo = findViewById(R.id.editaggiuntasintomo)
@@ -245,9 +243,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
 
                 }*/
 
-        logoutButton.setOnClickListener {
-            presenter.logout()
-        }
+
 
         generateExcelButton.setOnClickListener {
             presenter.exportToExcel(this)

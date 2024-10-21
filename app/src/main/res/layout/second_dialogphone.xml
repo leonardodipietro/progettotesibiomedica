@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Inserisci il codice di verifica per il nuovo numero"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:layout_gravity="center"
         android:paddingBottom="8dp" />
 
@@ -18,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Codice di verifica"
+        android:background="@drawable/edittext"
         android:inputType="number"
         android:maxLength="6"
         android:layout_gravity="center"/>

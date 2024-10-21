@@ -8,6 +8,7 @@
         <EditText
             android:id="@+id/edit_old_phone"
             android:layout_width="match_parent"
+            android:background="@drawable/edittext"
             android:layout_height="wrap_content"
             android:hint="Vecchio numero di telefono"
             android:inputType="phone" />
@@ -16,14 +17,10 @@
             android:id="@+id/edit_new_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/edittext"
             android:hint="Nuovo numero di telefono"
             android:inputType="phone" />
 
-        <EditText
-            android:id="@+id/edit_verification_code"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Inserisci codice di verifica"
-            android:inputType="number" />
+
     </LinearLayout>
 

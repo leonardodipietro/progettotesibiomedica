@@ -17,5 +17,8 @@ interface ProfileView {
         fun showPasswordDialog(email: String, hashedPassword: String, onPasswordConfirmed: (String) -> Unit)
         fun showPhoneVerificationDialog(phoneNumber: String, onCodeEntered: (String) -> Unit)
 
+
+        fun showPhoneEditText()
+        fun showPhoneNumber(phoneNumber:String)
 }
 

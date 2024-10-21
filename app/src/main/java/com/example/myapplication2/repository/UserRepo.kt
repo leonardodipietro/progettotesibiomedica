@@ -111,6 +111,30 @@ class UserRepo {
                 callback(null)
             }
     }
+    fun getPhoneNumber(userId: String, callback: (String?) -> Unit) {
+        Log.d("UserRepo", "Avvio del recupero del numero di telefono per l'utente con ID: $userId")
+
+        // Riferimento al nodo dell'utente nel database
+        usersRef.child(userId).child("phoneNumber").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val phoneNumber = snapshot.getValue(String::class.java)
+                if (phoneNumber.isNullOrEmpty()) {
+                    Log.d("UserRepo", "Nessun numero di telefono trovato per l'utente con ID: $userId")
+                } else {
+                    Log.d("UserRepo", "Numero di telefono trovato: $phoneNumber per l'utente con ID: $userId")
+                }
+                callback(phoneNumber)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("UserRepo", "Errore nel recupero del numero di telefono per l'utente con ID: $userId, errore: ${error.message}")
+                callback(null)
+            }
+        })
+
+        Log.d("UserRepo", "Fine della richiesta per il recupero del numero di telefono per l'utente con ID: $userId")
+    }
+
     // Recupera il numero di telefono dell'utente
     fun getAddress(userId: String, callback: (String?) -> Unit) {
         usersRef.child("users").child(userId).child("address").get()

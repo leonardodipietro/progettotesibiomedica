@@ -35,6 +35,45 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
             }
         }
     }
+    fun checkPhoneNumber(userId: String) {
+        userRepo.getPhoneNumber(userId) { phoneNumber ->
+            if (phoneNumber.isNullOrEmpty()) {
+                Log.d("PhoneCheck", "Nessun numero di telefono trovato per l'utente con ID: $userId")
+                view.showPhoneEditText() // Mostra l'EditText se il numero non esiste
+            } else {
+                Log.d("PhoneCheck", "Numero di telefono trovato: $phoneNumber per l'utente con ID: $userId")
+                view.showPhoneNumber(phoneNumber) // Mostra il numero esistente
+            }
+        }
+    }
+
+    fun updatePhoneNumber(userId: String, newPhone: String) {
+        if (newPhone.isNotEmpty()) {
+            userRepo.updatePhoneNumber(userId, newPhone) { success ->
+                if (success) {
+                    view.showSuccess("Numero di telefono aggiornato con successo")
+                } else {
+                    view.showError("Errore nell'aggiornamento del numero di telefono")
+                }
+            }
+        } else {
+            view.showError("Inserisci un numero di telefono valido")
+        }
+    }
+
+
+    // Funzione per aggiornare il numero nel database
+    private fun updatePhoneNumberInDatabase(userId: String, newPhone: String) {
+        userRepo.updatePhoneNumber(userId, newPhone) { success ->
+            if (success) {
+                view.showSuccess("Numero di telefono aggiornato con successo ")
+                Log.d("PhoneUpdate", "Numero di telefono aggiornato con successo  $newPhone")
+            } else {
+                view.showError("Errore nell'aggiornamento del numero di telefono")
+                Log.e("PhoneUpdate", "Errore durante l'aggiornamento del numero: $newPhone")
+            }
+        }
+    }
     fun authenticateAndModifyPhoneNumber(userId: String, oldPhone: String, newPhone: String) {
         Log.d("PhoneUpdate", "Avvio del processo: vecchio numero = $oldPhone, nuovo numero = $newPhone")
 
@@ -66,25 +105,14 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
                     }
                 }
             } else {
-                view.showError("Verifica del vecchio numero fallita.")
-                Log.e("PhoneUpdate", "Verifica del vecchio numero fallita: $oldPhone")
+                //view.showError("Verifica del vecchio numero fallita.")
+
+                //Log.e("PhoneUpdate", "Verifica del vecchio numero fallita: $oldPhone")
             }
         }
     }
 
 
-    // Funzione per aggiornare il numero nel database
-    private fun updatePhoneNumberInDatabase(userId: String, newPhone: String) {
-        userRepo.updatePhoneNumber(userId, newPhone) { success ->
-            if (success) {
-                view.showSuccess("Numero di telefono aggiornato con successo nel database")
-                Log.d("PhoneUpdate", "Numero di telefono aggiornato con successo nel database: $newPhone")
-            } else {
-                view.showError("Errore nell'aggiornamento del numero di telefono nel database")
-                Log.e("PhoneUpdate", "Errore durante l'aggiornamento del numero nel database: $newPhone")
-            }
-        }
-    }
     private fun startPhoneVerificationModify(phoneNumber: String, userId: String, isOldPhone: Boolean, onPhoneVerified: (Boolean) -> Unit = {}) {
         Log.d("PhoneUpdate", "Inizio verifica telefonica per $phoneNumber (isOldPhone: $isOldPhone)")
 
@@ -112,7 +140,7 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
                 override fun onVerificationFailed(e: FirebaseException) {
                     view.showError("Errore di verifica telefonica: ${e.message}")
                     Log.e("PhoneUpdate", "Errore di verifica per $phoneNumber: ${e.message}")
-                    onPhoneVerified(false)
+                    //onPhoneVerified(false)
                 }
 
                 override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
@@ -135,7 +163,6 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         Log.d("PhoneUpdate", "Chiamo PhoneAuthProvider.verifyPhoneNumber per $phoneNumber")
         PhoneAuthProvider.verifyPhoneNumber(options)
     }
-
     private fun signInWithPhoneAuthCredentialForModify(
         credential: PhoneAuthCredential,
         userId: String,
@@ -146,16 +173,24 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
 
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                // Se il vecchio numero è autenticato correttamente
                 onPhoneVerified(true)
                 Log.d("PhoneUpdate", "Accesso completato con successo per il numero: $phoneNumber")
             } else {
-                onPhoneVerified(false)
-                view.showError("Errore di autenticazione per la modifica del numero.")
+                // Se l'autenticazione con il vecchio numero fallisce
                 Log.e("PhoneUpdate", "Errore di autenticazione per il numero: $phoneNumber - ${task.exception?.message}")
+
+                // Chiamare qui la funzione per aggiornare il numero nel database anche se l'autenticazione è fallita
+                Log.d("siamo arrivati qui","Il vecchio numero non è stato trovato in Firebase Authentication. Aggiorno comunque il numero.")
+
+                // Chiamata alla funzione per aggiornare il numero nel database
+                updatePhoneNumberInDatabase(userId, phoneNumber)
+
+                // Completa l'operazione di verifica con false
+                onPhoneVerified(false)
             }
         }
     }
-
 
 
 

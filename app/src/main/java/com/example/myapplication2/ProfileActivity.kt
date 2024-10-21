@@ -8,9 +8,13 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -64,14 +68,20 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     private var isOldPasswordVisible = false
     private var isNewPasswordVisible = false
     private var isConfirmPasswordVisible = false
+    private lateinit var scrollView:ScrollView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-
+        scrollView = findViewById<ScrollView>(R.id.scrollView)
         presenter = ProfilePresenter(this, UserRepo())
         currentUser = intent.getParcelableExtra("utente") ?: throw IllegalStateException("Utente non trovato")
         currentUser.id?.let { presenter.loadUserData(it) }
+
+        currentUser.id?.let { presenter.checkPhoneNumber(it) }
+
+
+
         setupUI()
         // Controlla il ruolo dell'utente e imposta la navigazione corretta
         when (currentUser.ruolo) {
@@ -79,6 +89,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             "user" -> setupUserNavigation()
             else -> throw IllegalStateException("Ruolo non riconosciuto")
         }
+
 
         auth=FirebaseAuth.getInstance()
         userExperience= UserExperience()
@@ -198,6 +209,10 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         bottomNavigationAdmin.visibility = View.VISIBLE
         bottomNavigationView.visibility = View.GONE
 
+        // Posiziona lo ScrollView sopra la barra di navigazione admin
+        val params = scrollView.layoutParams as RelativeLayout.LayoutParams
+        params.addRule(RelativeLayout.ABOVE, R.id.bottom_navigation_admin)
+        scrollView.layoutParams = params
         bottomNavigationAdmin.selectedItemId = R.id.nav_profile
         bottomNavigationAdmin.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -272,6 +287,59 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             .create()
             .show()
     }
+
+    override fun showPhoneNumber(phoneNumber: String) {
+        phoneTextView.isClickable = true
+        //phoneTextView.visibility = View.VISIBLE
+        //phoneTextView.text = phoneNumber
+    }
+
+    override fun showPhoneEditText() {
+        // Disabilita il click sulla TextView del telefono, ma non nasconderla
+        phoneTextView.isClickable = false
+
+        // Trova il parent layout dove vogliamo inserire l'EditText
+        val parentLayout = findViewById<LinearLayout>(R.id.parentlayout)
+
+        // Crea l'EditText per inserire il nuovo numero
+        val phoneEditText = EditText(this)
+        phoneEditText.id = R.id.edit_phone // ID univoco per il nuovo EditText
+        phoneEditText.hint = "Inserisci il tuo numero di telefono"
+        phoneEditText.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        // Imposta lo stile al background dell'EditText
+        phoneEditText.setBackgroundResource(R.drawable.edittext)
+        phoneEditText.inputType = InputType.TYPE_CLASS_PHONE
+
+        // Trova la TextView dell'email
+        val emailTextView = findViewById<TextView>(R.id.textview_email)
+
+        // Inserisci l'EditText sopra la TextView della mail (tra il telefono e l'email)
+        val indexOfEmailTextView = parentLayout.indexOfChild(emailTextView)
+        parentLayout.addView(phoneEditText, indexOfEmailTextView) // Lo inseriamo appena sopra la TextView dell'email
+
+        // Collega il pulsante di salvataggio
+        saveButton.setOnClickListener {
+            val newPhone = phoneEditText.text.toString().trim()
+            if (newPhone.isNotEmpty()) {
+                currentUser.id?.let { userId ->
+                    presenter.updatePhoneNumber(userId, newPhone)
+
+                    // Dopo il salvataggio, nascondi l'EditText e rendi cliccabile la TextView del telefono
+                    phoneEditText.visibility = View.GONE
+                   //phoneTextView.text = newPhone
+                    phoneTextView.isClickable = true // Rendi cliccabile la TextView del telefono
+                }
+            } else {
+                //view.showError("Inserisci un numero di telefono valido")
+            }
+        }
+    }
+
+
+
     override fun showPasswordDialog(email: String, hashedPassword: String, onPasswordConfirmed: (String) -> Unit) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Conferma Password")

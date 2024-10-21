@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 
+
 class EmailPasswordActivity : AppCompatActivity() {
 
 
@@ -134,51 +135,51 @@ class EmailPasswordActivity : AppCompatActivity() {
         }
 
 
-       /* FirebaseApp.initializeApp(this)
-        auth = FirebaseAuth.getInstance()
+        /* FirebaseApp.initializeApp(this)
+         auth = FirebaseAuth.getInstance()
 
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            // Ricarica l'utente e controlla se è ancora autenticato
-            currentUser.reload().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    auth.currentUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
-                        if (tokenTask.isSuccessful) {
-                            // L'utente esiste, avvia `SecondActivity`
-                            Log.d("MainActivity", "User è autenticato: ${currentUser.email}")
-                            //startSecondActivity()
-                        } else {
-                            // L'utente non esiste
-                            auth.signOut()
+         val currentUser = auth.currentUser
+         if (currentUser != null) {
+             // Ricarica l'utente e controlla se è ancora autenticato
+             currentUser.reload().addOnCompleteListener { task ->
+                 if (task.isSuccessful) {
+                     auth.currentUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                         if (tokenTask.isSuccessful) {
+                             // L'utente esiste, avvia `SecondActivity`
+                             Log.d("MainActivity", "User è autenticato: ${currentUser.email}")
+                             //startSecondActivity()
+                         } else {
+                             // L'utente non esiste
+                             auth.signOut()
 
-                            setContentView(R.layout.emailpasswordactivity)
-                            setupUIAndRegister()
-                        }
-                    }
-                } else {
-                    // Ricaricamento fallito, esegui il logout e mostra il layout di `MainActivity`
-                    auth.signOut()
-                    setContentView(R.layout.emailpasswordactivity)
-                    setupUIAndRegister()
-                }
-            }
-        } else {
-            // Nessun utente autenticato, mostra il layout di `MainActivity`
-            setContentView(R.layout.emailpasswordactivity)
-            setupUIAndRegister()
-        }
-        */
+                             setContentView(R.layout.emailpasswordactivity)
+                             setupUIAndRegister()
+                         }
+                     }
+                 } else {
+                     // Ricaricamento fallito, esegui il logout e mostra il layout di `MainActivity`
+                     auth.signOut()
+                     setContentView(R.layout.emailpasswordactivity)
+                     setupUIAndRegister()
+                 }
+             }
+         } else {
+             // Nessun utente autenticato, mostra il layout di `MainActivity`
+             setContentView(R.layout.emailpasswordactivity)
+             setupUIAndRegister()
+         }
+         */
 
     }
 
-        /*private fun startSecondActivity(user) {
-            val intent = Intent(this, MainPage::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("utente", user)
-            }
-            startActivity(intent)
-            finish()
-            }*/
+    /*private fun startSecondActivity(user) {
+        val intent = Intent(this, MainPage::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("utente", user)
+        }
+        startActivity(intent)
+        finish()
+        }*/
 
     private fun togglePasswordVisibility(editText: EditText, icon: ImageView, isVisible: Boolean) {
         if (isVisible) {
@@ -191,7 +192,7 @@ class EmailPasswordActivity : AppCompatActivity() {
         // Mantenere il cursore alla fine del testo
         editText.setSelection(editText.text.length)
     }
-    }
+}
 
 
 

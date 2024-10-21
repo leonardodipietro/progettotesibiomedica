@@ -9,6 +9,7 @@
         android:id="@+id/newPasswordresetpage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/edittext"
         android:hint="Nuova password"
         android:inputType="textPassword" />
 
@@ -16,6 +17,7 @@
         android:id="@+id/confirmPasswordresetpage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/edittext"
         android:hint="Conferma password"
         android:inputType="textPassword" />
 
