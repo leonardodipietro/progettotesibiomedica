@@ -13,6 +13,9 @@ import com.google.firebase.auth.PhoneAuthProvider
 import org.mindrot.jbcrypt.BCrypt
 import java.util.concurrent.TimeUnit
 import android.util.Log
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import com.example.myapplication2.R
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.repository.ExAccountRepo
 import com.google.firebase.database.FirebaseDatabase
@@ -32,13 +35,134 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
             }
         }
     }
+    fun authenticateAndModifyPhoneNumber(userId: String, oldPhone: String, newPhone: String) {
+        Log.d("PhoneUpdate", "Avvio del processo: vecchio numero = $oldPhone, nuovo numero = $newPhone")
+
+        // Step 1: Verifica il vecchio numero di telefono
+        Log.d("PhoneUpdate", "Inizio verifica vecchio numero: $oldPhone")
+        startPhoneVerificationModify(oldPhone, userId, true) { oldPhoneVerified ->
+            if (oldPhoneVerified) {
+                Log.d("PhoneUpdate", "Vecchio numero verificato con successo: $oldPhone")
+
+                // Step 2: Ora inviamo il codice di verifica al nuovo numero
+                Log.d("PhoneUpdate", "Inizio verifica nuovo numero: $newPhone")
+                startPhoneVerificationModify(newPhone, userId, false) { newPhoneVerified ->
+                    if (newPhoneVerified) {
+                        Log.d("PhoneUpdate", "Nuovo numero verificato con successo: $newPhone")
+
+                        // Step 3: Aggiorna il numero di telefono nel database
+                        userRepo.updatePhoneNumber(userId, newPhone) { success ->
+                            if (success) {
+                                view.showSuccess("Numero di telefono aggiornato con successo")
+                                Log.d("PhoneUpdate", "Numero aggiornato con successo nel database: $newPhone")
+                            } else {
+                                view.showError("Errore nell'aggiornamento del numero di telefono")
+                                Log.e("PhoneUpdate", "Errore durante l'aggiornamento nel database del numero: $newPhone")
+                            }
+                        }
+                    } else {
+                        view.showError("Verifica del nuovo numero fallita.")
+                        Log.e("PhoneUpdate", "Verifica del nuovo numero fallita: $newPhone")
+                    }
+                }
+            } else {
+                view.showError("Verifica del vecchio numero fallita.")
+                Log.e("PhoneUpdate", "Verifica del vecchio numero fallita: $oldPhone")
+            }
+        }
+    }
+
+
+    // Funzione per aggiornare il numero nel database
+    private fun updatePhoneNumberInDatabase(userId: String, newPhone: String) {
+        userRepo.updatePhoneNumber(userId, newPhone) { success ->
+            if (success) {
+                view.showSuccess("Numero di telefono aggiornato con successo nel database")
+                Log.d("PhoneUpdate", "Numero di telefono aggiornato con successo nel database: $newPhone")
+            } else {
+                view.showError("Errore nell'aggiornamento del numero di telefono nel database")
+                Log.e("PhoneUpdate", "Errore durante l'aggiornamento del numero nel database: $newPhone")
+            }
+        }
+    }
+    private fun startPhoneVerificationModify(phoneNumber: String, userId: String, isOldPhone: Boolean, onPhoneVerified: (Boolean) -> Unit = {}) {
+        Log.d("PhoneUpdate", "Inizio verifica telefonica per $phoneNumber (isOldPhone: $isOldPhone)")
+
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(view as Activity)
+            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                    Log.d("PhoneUpdate", "Verifica completata automaticamente per: $phoneNumber")
+
+                    auth.signInWithCredential(credential).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("PhoneUpdate", "Autenticazione completata con successo per $phoneNumber")
+                            onPhoneVerified(true)
+                        } else {
+                            view.showError("Errore nell'autenticazione.")
+                            Log.e("PhoneUpdate", "Errore durante l'autenticazione per $phoneNumber: ${task.exception?.message}")
+                            onPhoneVerified(false)
+                        }
+                    }
+                }
+
+                override fun onVerificationFailed(e: FirebaseException) {
+                    view.showError("Errore di verifica telefonica: ${e.message}")
+                    Log.e("PhoneUpdate", "Errore di verifica per $phoneNumber: ${e.message}")
+                    onPhoneVerified(false)
+                }
+
+                override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+                    Log.d("PhoneUpdate", "Codice inviato per il numero: $phoneNumber")
+
+                    // Mostra il dialogo solo dopo che il codice è stato inviato
+                    view.showNewPhoneVerificationDialog(phoneNumber) { verificationCode ->
+                        val credential = PhoneAuthProvider.getCredential(verificationId, verificationCode)
+
+                        Log.d("PhoneUpdate", "Tentativo di verifica con il codice inserito: $verificationCode")
+                        signInWithPhoneAuthCredentialForModify(credential, userId, phoneNumber) { verified ->
+                            Log.d("PhoneUpdate", "Verifica completata per il numero: $phoneNumber")
+                            onPhoneVerified(verified)
+                        }
+                    }
+                }
+            })
+            .build()
+
+        Log.d("PhoneUpdate", "Chiamo PhoneAuthProvider.verifyPhoneNumber per $phoneNumber")
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    private fun signInWithPhoneAuthCredentialForModify(
+        credential: PhoneAuthCredential,
+        userId: String,
+        phoneNumber: String,
+        onPhoneVerified: (Boolean) -> Unit
+    ) {
+        Log.d("PhoneUpdate", "Tentativo di accesso con le credenziali per il numero: $phoneNumber")
+
+        auth.signInWithCredential(credential).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                onPhoneVerified(true)
+                Log.d("PhoneUpdate", "Accesso completato con successo per il numero: $phoneNumber")
+            } else {
+                onPhoneVerified(false)
+                view.showError("Errore di autenticazione per la modifica del numero.")
+                Log.e("PhoneUpdate", "Errore di autenticazione per il numero: $phoneNumber - ${task.exception?.message}")
+            }
+        }
+    }
+
 
 
 
     fun saveUserData(
         userId: String,
         email: String,
-        phone: String,
+        //phone: String,
         username: String,
         name: String,
         address: String,
@@ -101,7 +225,7 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
 
 
         // Phone update
-        userRepo.getUserPhoneNumber(userId) { currentPhone ->
+        /*userRepo.getUserPhoneNumber(userId) { currentPhone ->
             if (phone.isNotEmpty() && currentPhone != phone) {
                 userRepo.checkPhoneNumberExists(phone) { exists ->
                     if (!exists) {
@@ -113,7 +237,7 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
                     }
                 }
             }
-        }
+        }*/
 
         // Username update
         userRepo.getUsername(userId) { currentUsername ->
@@ -152,13 +276,13 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
             }
         }
         // Cambio password
-        /*if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
+        if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
             userRepo.changePassword(userId, oldPassword, newPassword) { success ->
                 if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
             }
         } else if (newPassword != confirmPassword) {
             view.showError("Le nuove password non coincidono")
-        }*/
+        }
     }
 
     fun logout() {

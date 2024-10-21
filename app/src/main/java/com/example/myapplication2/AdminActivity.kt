@@ -141,7 +141,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
             when (item.itemId) {
                 R.id.nav_profile -> {  // Naviga verso AdminActivity (la home admin)
                     val user = loadUserFromPreferences()
-                    val intent = Intent(this, ProfileAdminActivity::class.java).apply {
+                    val intent = Intent(this, ProfileActivity::class.java).apply {
                         putExtra("utente", user)
                     }
                     startActivity(intent)

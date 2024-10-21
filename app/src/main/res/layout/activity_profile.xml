@@ -90,18 +90,12 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Modifica il tuo telefono:"
+                android:text="Modifica il tuo telefono"
                 android:textSize="16sp"
+                android:id="@+id/edit_phone"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"/>
-            <EditText
-                android:id="@+id/edit_phone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Inserisci il nuovo numero di telefono"
-                android:inputType="phone"
-                android:padding="10dp"
-                android:background="@drawable/edittext"/>
+
 
             <!-- Modifica la tua email -->
             <TextView
@@ -255,7 +249,23 @@
         android:layout_marginBottom="0sp"
         android:background="#4CAF50"
         android:layout_marginTop="5sp"
+        android:visibility="gone"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white"
         app:menu="@menu/nav_bar" />
+
+    <!-- Barra di navigazione per admin -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_admin"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0sp"
+        android:layout_height="wrap_content"
+        android:background="#4CAF50"
+        android:layout_marginTop="5sp"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white"
+        app:menu="@menu/nav_bar_admin"
+        android:visibility="gone"/>
+
 </RelativeLayout>

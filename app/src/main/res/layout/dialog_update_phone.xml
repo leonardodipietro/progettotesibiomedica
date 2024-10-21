@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/edit_old_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Vecchio numero di telefono"
+            android:inputType="phone" />
+
+        <EditText
+            android:id="@+id/edit_new_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nuovo numero di telefono"
+            android:inputType="phone" />
+
+        <EditText
+            android:id="@+id/edit_verification_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Inserisci codice di verifica"
+            android:inputType="number" />
+    </LinearLayout>
+

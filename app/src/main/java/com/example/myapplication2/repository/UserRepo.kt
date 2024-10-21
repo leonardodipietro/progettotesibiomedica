@@ -122,15 +122,26 @@ class UserRepo {
             }
     }
     // Recupera il numero di telefono dell'utente
+// Recupera il numero di telefono dell'utente
     fun getUserPhoneNumber(userId: String, callback: (String?) -> Unit) {
-        usersRef.child("users").child(userId).child("phoneNumber").get()
+        Log.d("PhoneUpdate", "Tentativo di recuperare il numero di telefono per l'utente con ID: $userId")
+
+        usersRef.child(userId).child("phoneNumber").get()
             .addOnSuccessListener { snapshot ->
-                callback(snapshot.value as? String)
+                val phoneNumber = snapshot.value as? String
+                if (phoneNumber != null) {
+                    Log.d("PhoneUpdate", "Numero di telefono recuperato con successo: $phoneNumber")
+                } else {
+                    Log.w("PhoneUpdate", "Numero di telefono non trovato per l'utente con ID: $userId")
+                }
+                callback(phoneNumber)
             }
-            .addOnFailureListener {
+            .addOnFailureListener { exception ->
+                Log.e("PhoneUpdate", "Errore durante il recupero del numero di telefono: ${exception.message}")
                 callback(null)
             }
     }
+
     fun checkUsernameExists(username: String, callback: (Boolean) -> Unit) {
         val usernameRef = usersRef.orderByChild("username").equalTo(username)
         usernameRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -309,20 +320,6 @@ class UserRepo {
 
             override fun onCancelled(error: DatabaseError) {
                 // Gestisci l'errore
-                callback(false)
-            }
-        })
-    }
-
-    fun checkPhoneNumberExists(phone: String, callback: (Boolean) -> Unit) {
-        val phoneRef = usersRef.orderByChild("phoneNumber").equalTo(phone)
-        phoneRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                callback(snapshot.exists())
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("UserRepo", "Errore query tel ${error.message}")
                 callback(false)
             }
         })

@@ -12,6 +12,8 @@ interface ProfileView {
         fun clearUserPreferences() // Aggiunto
         fun stopNotification() //
 
+        fun showNewPhoneVerificationDialog(newPhone: String, onCodeEntered: (String) -> Unit)
+
         fun showPasswordDialog(email: String, hashedPassword: String, onPasswordConfirmed: (String) -> Unit)
         fun showPhoneVerificationDialog(phoneNumber: String, onCodeEntered: (String) -> Unit)
 

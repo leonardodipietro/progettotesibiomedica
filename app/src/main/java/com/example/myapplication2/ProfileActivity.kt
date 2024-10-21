@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -42,9 +43,12 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var logoutButton: Button
     private lateinit var deleteButton: Button
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var bottomNavigationAdmin: BottomNavigationView
     private lateinit var profileLayout: View
     private lateinit var emailEditText: EditText
-    private lateinit var phoneEditText: EditText
+   // private lateinit var phoneEditText: EditText
+    private lateinit var phoneTextView: TextView
+
     private lateinit var oldPasswordEditText: EditText
     private lateinit var newPasswordEditText: EditText
     private lateinit var confirmPasswordEditText: EditText
@@ -68,20 +72,31 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         presenter = ProfilePresenter(this, UserRepo())
         currentUser = intent.getParcelableExtra("utente") ?: throw IllegalStateException("Utente non trovato")
         currentUser.id?.let { presenter.loadUserData(it) }
+        setupUI()
+        // Controlla il ruolo dell'utente e imposta la navigazione corretta
+        when (currentUser.ruolo) {
+            "admin", "superadmin" -> setupAdminNavigation()
+            "user" -> setupUserNavigation()
+            else -> throw IllegalStateException("Ruolo non riconosciuto")
+        }
+
         auth=FirebaseAuth.getInstance()
         userExperience= UserExperience()
-        setupUI()
+
         setupListeners()
-        setupBottomNavigation()
+        //setupBottomNavigation()
     }
 
     private fun setupUI() {
         logoutButton = findViewById(R.id.logoutbutton)
         deleteButton = findViewById(R.id.deleteAccount)
+        // Inizializza le BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationAdmin = findViewById(R.id.bottom_navigation_admin)
         profileLayout = findViewById(R.id.profilepageroot)
         emailEditText = findViewById(R.id.edit_email)
-        phoneEditText = findViewById(R.id.edit_phone)
+        //phoneEditText = findViewById(R.id.edit_phone)
+        phoneTextView = findViewById(R.id.edit_phone)
         oldPasswordEditText = findViewById(R.id.edit_password_old)
         newPasswordEditText = findViewById(R.id.edit_password_new)
         confirmPasswordEditText = findViewById(R.id.edit_password_confirm)
@@ -92,9 +107,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         usernameEditText = findViewById(R.id.edit_username)
         nameEditText = findViewById(R.id.edit_name)
         addressEditText = findViewById(R.id.edit_address)
-        userExperience.normalizeInputs(usernameEditText,nameEditText,emailEditText,addressEditText)
-        userExperience.formatPhoneNumber(phoneEditText,(+39).toString())
-        userExperience.validateEmailInput(emailEditText)
+
     }
 
     private fun setupListeners() {
@@ -109,7 +122,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
                 presenter.saveUserData(
                     it1,
                     emailEditText.text.toString(),
-                    phoneEditText.text.toString(),
+                    //phoneEditText.text.toString(),
                     usernameEditText.text.toString(),
                     nameEditText.text.toString(),
                     addressEditText.text.toString(),
@@ -129,9 +142,83 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         showConfirmPassword.setOnClickListener {
             isConfirmPasswordVisible = togglePasswordVisibility(confirmPasswordEditText, isConfirmPasswordVisible)
         }
+
+        // Click listener per la TextView del numero di telefono
+        phoneTextView.setOnClickListener {
+            showPhoneUpdateDialog()
+        }
+    }
+    // Mostra il dialogo per inserire il vecchio e il nuovo numero di telefono
+    fun showPhoneUpdateDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_update_phone, null)
+        val oldPhoneEditText = dialogView.findViewById<EditText>(R.id.edit_old_phone)
+        val newPhoneEditText = dialogView.findViewById<EditText>(R.id.edit_new_phone)
+
+        AlertDialog.Builder(this)
+            .setTitle("Modifica numero di telefono")
+            .setView(dialogView)
+            .setPositiveButton("Conferma") { _, _ ->
+                val oldPhone = oldPhoneEditText.text.toString().trim()
+                val newPhone = newPhoneEditText.text.toString().trim()
+
+                if (oldPhone.isNotEmpty() && newPhone.isNotEmpty()) {
+                    currentUser.id?.let { userId ->
+                        // Chiama il metodo per avviare la verifica per vecchio e nuovo numero
+                        presenter.authenticateAndModifyPhoneNumber(userId, oldPhone, newPhone)
+                    }
+                } else {
+                    showError("Inserisci il vecchio e il nuovo numero di telefono")
+                }
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
-    private fun setupBottomNavigation() {
+    // Implementa il metodo per mostrare il dialogo per l'inserimento del codice di verifica per il nuovo numero
+    override fun showNewPhoneVerificationDialog(newPhone: String, onCodeEntered: (String) -> Unit) {
+        val dialogView = layoutInflater.inflate(R.layout.second_dialogphone, null)
+        val verificationCodeEditText = dialogView.findViewById<EditText>(R.id.edit_verification_code)
+
+        AlertDialog.Builder(this)
+            .setTitle("Verifica il nuovo numero: $newPhone")
+            .setView(dialogView)
+            .setPositiveButton("Conferma") { _, _ ->
+                val verificationCode = verificationCodeEditText.text.toString().trim()
+                if (verificationCode.isNotEmpty()) {
+                    onCodeEntered(verificationCode) // Passa il codice di verifica
+                } else {
+                    showError("Inserisci il codice di verifica")
+                }
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
+    }
+    private fun setupAdminNavigation() {
+        // Mostra solo la barra di navigazione admin
+        bottomNavigationAdmin.visibility = View.VISIBLE
+        bottomNavigationView.visibility = View.GONE
+
+        bottomNavigationAdmin.selectedItemId = R.id.nav_profile
+        bottomNavigationAdmin.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_profile -> true
+                R.id.nav_admin -> {
+                    val intent = Intent(this, AdminActivity::class.java).apply {
+                        putExtra("utente", currentUser)
+                    }
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun setupUserNavigation() {
+        // Mostra solo la barra di navigazione utente
+        bottomNavigationView.visibility = View.VISIBLE
+        bottomNavigationAdmin.visibility = View.GONE
+
         bottomNavigationView.selectedItemId = R.id.nav_profile
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -221,7 +308,8 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
 
     override fun populateUserData(user: Utente) {
         emailEditText.hint = user.email
-        phoneEditText.hint = user.phoneNumber
+        //TODO FORSE CI METTIAMO ALTRO
+        //phoneEditText.hint = user.phoneNumber
         usernameEditText.hint = user.username
         nameEditText.hint = user.name
         addressEditText.hint = user.address
