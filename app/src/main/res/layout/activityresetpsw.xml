@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Nuova password"
+        android:hint="@string/hint_nuova_password_reset"
         android:inputType="textPassword" />
 
     <EditText
@@ -18,12 +18,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Conferma password"
+        android:hint="@string/hint_conferma_password_reset"
         android:inputType="textPassword" />
 
     <Button
         android:id="@+id/resetButtonresetpage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reimposta" />
+        android:text="@string/button_reimposta_password" />
 </LinearLayout>
+

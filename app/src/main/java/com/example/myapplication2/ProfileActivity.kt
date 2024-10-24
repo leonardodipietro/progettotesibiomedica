@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.utility.UserExperience
 import org.mindrot.jbcrypt.BCrypt
+import java.util.Locale
+
 class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var presenter: ProfilePresenter
     private lateinit var currentUser: Utente
@@ -52,7 +54,8 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var emailEditText: EditText
    // private lateinit var phoneEditText: EditText
     private lateinit var phoneTextView: TextView
-
+  private lateinit var italianButton:Button
+    private lateinit var englishButton:Button
     private lateinit var oldPasswordEditText: EditText
     private lateinit var newPasswordEditText: EditText
     private lateinit var confirmPasswordEditText: EditText
@@ -72,9 +75,10 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.activity_profile)
         scrollView = findViewById<ScrollView>(R.id.scrollView)
-        presenter = ProfilePresenter(this, UserRepo())
+        presenter = ProfilePresenter(this, UserRepo(),this)
         currentUser = intent.getParcelableExtra("utente") ?: throw IllegalStateException("Utente non trovato")
         currentUser.id?.let { presenter.loadUserData(it) }
 
@@ -96,6 +100,28 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
 
         setupListeners()
         //setupBottomNavigation()
+    }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
+
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
     }
 
     private fun setupUI() {
@@ -119,9 +145,29 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         nameEditText = findViewById(R.id.edit_name)
         addressEditText = findViewById(R.id.edit_address)
 
+         italianButton = findViewById<Button>(R.id.btn_italian_profile)
+         englishButton = findViewById<Button>(R.id.btn_english_profile)
+
     }
 
     private fun setupListeners() {
+
+        italianButton.setOnClickListener {
+            presenter.setLocale("it")
+            val intent = Intent(this, ProfileActivity::class.java).apply {
+                putExtra("utente", currentUser)
+            }
+            startActivity(intent)
+        }
+
+        englishButton.setOnClickListener {
+            presenter.setLocale("en")
+            val intent = Intent(this, ProfileActivity::class.java).apply {
+                putExtra("utente", currentUser)
+            }
+            startActivity(intent)
+        }
+
         logoutButton.setOnClickListener {
             showLogoutDialog()
         }
@@ -166,9 +212,9 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         val newPhoneEditText = dialogView.findViewById<EditText>(R.id.edit_new_phone)
 
         AlertDialog.Builder(this)
-            .setTitle("Modifica numero di telefono")
+            .setTitle(getString(R.string.dialog_title_phone_update)) // Usa la stringa localizzata
             .setView(dialogView)
-            .setPositiveButton("Conferma") { _, _ ->
+            .setPositiveButton(getString(R.string.dialog_confirm)) { _, _ -> // Usa la stringa localizzata
                 val oldPhone = oldPhoneEditText.text.toString().trim()
                 val newPhone = newPhoneEditText.text.toString().trim()
 
@@ -178,10 +224,10 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
                         presenter.authenticateAndModifyPhoneNumber(userId, oldPhone, newPhone)
                     }
                 } else {
-                    showError("Inserisci il vecchio e il nuovo numero di telefono")
+                    showError(getString(R.string.dialog_error_phone_empty)) // Usa la stringa localizzata
                 }
             }
-            .setNegativeButton("Annulla", null)
+            .setNegativeButton(getString(R.string.dialog_cancel), null) // Usa la stringa localizzata
             .show()
     }
 
@@ -190,19 +236,20 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         val verificationCodeEditText = dialogView.findViewById<EditText>(R.id.edit_verification_code)
 
         AlertDialog.Builder(this)
-            .setTitle("Verifica il nuovo numero: $newPhone")
+            .setTitle(getString(R.string.dialog_title_verify_new_phone, newPhone)) // Usa la stringa localizzata con il numero di telefono
             .setView(dialogView)
-            .setPositiveButton("Conferma") { _, _ ->
+            .setPositiveButton(getString(R.string.dialog_confirm_phone_verification)) { _, _ -> // Usa la stringa localizzata
                 val verificationCode = verificationCodeEditText.text.toString().trim()
                 if (verificationCode.isNotEmpty()) {
                     onCodeEntered(verificationCode) // Passa il codice di verifica
                 } else {
-                    showError("Inserisci il codice di verifica")
+                    showError(getString(R.string.dialog_error_enter_verification_code)) // Usa la stringa localizzata
                 }
             }
-            .setNegativeButton("Annulla", null)
+            .setNegativeButton(getString(R.string.dialog_cancel_phone_verification), null) // Usa la stringa localizzata
             .show()
     }
+
     private fun setupAdminNavigation() {
 
         bottomNavigationAdmin.visibility = View.VISIBLE
@@ -259,33 +306,34 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
 
     private fun showLogoutDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Uscire dall'Account?")
-            .setMessage("Sei sicuro di voler uscire dall'account?")
-            .setPositiveButton("Sì") { _, _ ->
+            .setTitle(getString(R.string.dialog_title_logout)) // Usa la stringa localizzata
+            .setMessage(getString(R.string.dialog_message_logout)) // Usa la stringa localizzata
+            .setPositiveButton(getString(R.string.dialog_confirm_logout)) { _, _ -> // Usa la stringa localizzata
                 presenter.logout()
                 clearUserPreferences()
                 stopNotification()
-               // navigateToHome()
+                // navigateToHome()
             }
-            .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(getString(R.string.dialog_cancel_logout)) { dialog, _ -> dialog.dismiss() } // Usa la stringa localizzata
             .create()
             .show()
     }
-
     private fun showDeleteDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Eliminare l'account?")
-            .setMessage("Sei sicuro di voler eliminare il tuo account?")
-            .setPositiveButton("Sì") { _, _ ->
+            .setTitle(getString(R.string.dialog_title_delete_account)) // Usa la stringa localizzata
+            .setMessage(getString(R.string.dialog_message_delete_account)) // Usa la stringa localizzata
+            .setPositiveButton(getString(R.string.dialog_confirm_delete_account)) { _, _ -> // Usa la stringa localizzata
                 presenter.deleteAccount(currentUser)
                 clearUserPreferences()
                 stopNotification()
                 //navigateToHome()
             }
-            .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton(getString(R.string.dialog_cancel_delete_account)) { dialog, _ -> dialog.dismiss() } // Usa la stringa localizzata
             .create()
             .show()
     }
+
+
 
     override fun showPhoneNumber(phoneNumber: String) {
         phoneTextView.isClickable = true
@@ -333,7 +381,9 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
             }
         }
     }
-
+    override fun getContext(): Context {
+        return this
+    }
 
 
     override fun showPasswordDialog(email: String, hashedPassword: String, onPasswordConfirmed: (String) -> Unit) {

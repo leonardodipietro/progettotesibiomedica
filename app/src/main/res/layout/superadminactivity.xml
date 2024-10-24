@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
-    <LinearLayout
 
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:background="@drawable/edittext"
             android:layout_height="wrap_content"
-            android:hint="Email"
+            android:hint="@string/hint_email_superadmin"
             android:layout_marginBottom="16sp"
             android:inputType="textEmailAddress"/>
 
@@ -25,18 +25,16 @@
             android:layout_width="match_parent"
             android:background="@drawable/edittext"
             android:layout_height="wrap_content"
-            android:hint="Username"
+            android:hint="@string/hint_username_superadmin"
             android:layout_marginBottom="16sp"
             android:inputType="text"/>
-
-
 
         <EditText
             android:id="@+id/passwordsuperadmin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edittext"
-            android:hint="Password"
+            android:hint="@string/hint_password_superadmin"
             android:layout_marginBottom="16sp"
             android:inputType="textPassword"/>
 
@@ -45,7 +43,7 @@
             android:layout_width="match_parent"
             android:background="@drawable/edittext"
             android:layout_height="wrap_content"
-            android:hint="Conferma Password"
+            android:hint="@string/hint_conferma_password_superadmin"
             android:layout_marginBottom="16sp"
             android:inputType="textPassword"/>
 
@@ -55,54 +53,53 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16sp"
             style="@style/GreenButton"
-            android:text="Crea Admin"/>
+            android:text="@string/button_crea_admin"/>
+
         <Button
-             android:id="@+id/logoutsuperadmin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            android:id="@+id/logoutsuperadmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="16sp"
             style="@style/GreenButton"
-               android:text="Logout"/>
-    <EditText
-        android:id="@+id/questionEditText"
-        android:layout_width="match_parent"
-        android:background="@drawable/edittext"
-        android:layout_marginBottom="16sp"
-        android:layout_height="wrap_content"
-        android:hint="Inserisci la domanda" />
+            android:text="@string/button_logout_superadmin"/>
 
-    <EditText
-        android:id="@+id/answerEditText"
-        android:layout_width="match_parent"
-        android:background="@drawable/edittext"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16sp"
-        android:hint="Inserisci la risposta" />
+        <EditText
+            android:id="@+id/questionEditText"
+            android:layout_width="match_parent"
+            android:background="@drawable/edittext"
+            android:layout_marginBottom="16sp"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_inserisci_domanda_superadmin"/>
 
-    <Button
-        android:id="@+id/addFaqButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/GreenButton"
-        android:text="Aggiungi FAQ" />
-    <View
-        android:id="@+id/divisoresintomi"
-        android:layout_width="match_parent"
-        android:layout_height="5sp"
-        android:layout_below="@id/answerTextView"
-        android:background="#4CAF50"
-        android:layout_marginTop="16dp" />
+        <EditText
+            android:id="@+id/answerEditText"
+            android:layout_width="match_parent"
+            android:background="@drawable/edittext"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16sp"
+            android:hint="@string/hint_inserisci_risposta_superadmin"/>
 
+        <Button
+            android:id="@+id/addFaqButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/GreenButton"
+            android:text="@string/button_aggiungi_faq"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/faqRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="16dp" />
+        <View
+            android:id="@+id/divisoresintomi"
+            android:layout_width="match_parent"
+            android:layout_height="5sp"
+            android:layout_below="@id/answerTextView"
+            android:background="#4CAF50"
+            android:layout_marginTop="16dp" />
 
-
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/faqRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp" />
     </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
+</androidx.core.widget.NestedScrollView>
 
 

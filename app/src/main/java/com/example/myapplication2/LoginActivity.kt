@@ -31,6 +31,7 @@ import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 
@@ -45,10 +46,11 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
+            loadLocale()
             setContentView(R.layout.activity_login)
 
             val userRepo = UserRepo()
-            presenter = LoginPresenter(this, userRepo)
+            presenter = LoginPresenter(this, userRepo,this)
             userExperience= UserExperience()
             credentialEditText = findViewById(R.id.usernamelogin)
             //userExperience.normalizeInputs(credentialEditText)
@@ -107,8 +109,28 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
             startActivity(intent)
         }
 
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
 
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
         override fun showLoginFailure(errorMessage: String) {
             Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
         }
@@ -180,8 +202,8 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
 
         val notification = NotificationCompat.Builder(this, "reset_password_channel")
             .setSmallIcon(R.drawable.notificaicona)
-            .setContentTitle("Reset Password")
-            .setContentText("Clicca per reimpostare la tua password.")
+            .setContentTitle(getString(R.string.notification_reset_password_title)) // Usa la stringa localizzata
+            .setContentText(getString(R.string.notification_reset_password_text)) // Usa la stringa localizzata
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .build()
@@ -191,16 +213,11 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
+
         NotificationManagerCompat.from(this).notify(1, notification)
+
     }
 
 }

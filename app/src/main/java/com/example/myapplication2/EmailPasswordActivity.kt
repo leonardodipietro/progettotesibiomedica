@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -18,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import java.util.Locale
 
 
 class EmailPasswordActivity : AppCompatActivity() {
@@ -36,6 +38,7 @@ class EmailPasswordActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.emailpasswordactivity)
 
 
@@ -79,7 +82,7 @@ class EmailPasswordActivity : AppCompatActivity() {
 
 
 
-            userExperience.normalizeInputs(usernameEditText, emailEditText, addressEditText)
+            //userExperience.normalizeInputs(usernameEditText, emailEditText, addressEditText)
             userExperience.validateEmailInput(emailEditText)
 
             if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty() &&
@@ -145,6 +148,27 @@ class EmailPasswordActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
         }*/
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
     private fun togglePasswordVisibility(editText: EditText, icon: ImageView, isVisible: Boolean) {
         if (isVisible) {

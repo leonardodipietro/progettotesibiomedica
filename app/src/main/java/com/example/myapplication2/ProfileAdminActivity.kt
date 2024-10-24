@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -19,6 +20,7 @@ import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.util.Locale
 
 class ProfileAdminActivity : AppCompatActivity(), ProfileAdminView {
 
@@ -47,6 +49,7 @@ class ProfileAdminActivity : AppCompatActivity(), ProfileAdminView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.profileadmin)
 
         userRepo = UserRepo()
@@ -68,7 +71,28 @@ class ProfileAdminActivity : AppCompatActivity(), ProfileAdminView {
 
         setupEventListeners()
     }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
     private fun initViews() {
         emailEditText = findViewById(R.id.editemailadmin)
         usernameEditText = findViewById(R.id.editusernameadmin)

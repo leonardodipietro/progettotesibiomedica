@@ -1,5 +1,6 @@
 package com.example.myapplication2.Presenter
 
+import android.content.Context
 import android.util.Log
 import com.example.myapplication2.interfacepackage.MainPageView
 import com.example.myapplication2.model.Sintomo
@@ -29,8 +30,8 @@ class MainPagePresenter(
         }
     }
 
-    fun loadSintomiList() {
-        sintomoRepo.fetchSintomi()
+    fun loadSintomiList(context: Context) {
+        sintomoRepo.fetchSintomi(context)
         sintomoRepo.sintomi.observeForever { sintomiList ->
             if (sintomiList != null) {
                 view.updateSintomiList(sintomiList)

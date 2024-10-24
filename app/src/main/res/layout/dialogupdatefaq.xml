@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,12 +10,12 @@
         android:layout_width="match_parent"
         android:background="@drawable/edittext"
         android:layout_height="wrap_content"
-        android:hint="Modifica domanda" />
+        android:hint="@string/hint_modifica_domanda" />
 
     <EditText
         android:id="@+id/updateAnswer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Modifica risposta" />
+        android:hint="@string/hint_modifica_risposta" />
 </LinearLayout>

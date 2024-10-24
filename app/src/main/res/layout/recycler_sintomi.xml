@@ -2,18 +2,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- Nome del sintomo con padding sinistro -->
     <TextView
         android:id="@+id/nomesintomo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nome Sintomo"
         android:textSize="18sp"
         android:textColor="#333333"
         android:textStyle="bold"
-        android:paddingLeft="16dp" />
+        android:paddingLeft="16dp"
+        android:text="@string/nome_sintomo" />
 
-    <!-- Layout orizzontale per le TextView delle gravità -->
     <LinearLayout
         android:id="@+id/textview_layout"
         android:layout_width="match_parent"
@@ -28,7 +26,7 @@
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Lieve"
+            android:text="@string/gravita_lieve"
             android:textStyle="bold"
             android:gravity="center"
             android:padding="16sp" />
@@ -38,7 +36,7 @@
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Moderato"
+            android:text="@string/gravita_moderata"
             android:textStyle="bold"
             android:gravity="center"
             android:padding="16sp" />
@@ -48,7 +46,7 @@
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Grave"
+            android:text="@string/gravita_grave"
             android:textStyle="bold"
             android:gravity="center"
             android:padding="16sp" />
@@ -58,13 +56,12 @@
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Molto grave"
+            android:text="@string/gravita_molto_grave"
             android:textStyle="bold"
             android:gravity="center"
             android:padding="16sp" />
     </LinearLayout>
 
-    <!-- Layout orizzontale per le CheckBox centrate sotto le TextView -->
     <LinearLayout
         android:id="@+id/checkbox_layout"
         android:layout_width="match_parent"
@@ -138,6 +135,4 @@
         android:layout_below="@id/checkbox_layout"
         android:background="#4CAF50"
         android:layout_marginTop="12dp" />
-
 </RelativeLayout>
-

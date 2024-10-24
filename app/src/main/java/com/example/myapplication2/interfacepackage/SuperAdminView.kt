@@ -1,5 +1,6 @@
 package com.example.myapplication2.interfacepackage
 
+import android.content.Context
 import com.example.myapplication2.model.Faq
 import com.example.myapplication2.model.Utente
 
@@ -17,4 +18,6 @@ interface SuperAdminView {
     fun clearInputFields()
 
     fun showFaqList(faqList: List<Faq>)
+
+    fun getContext(): Context
 }

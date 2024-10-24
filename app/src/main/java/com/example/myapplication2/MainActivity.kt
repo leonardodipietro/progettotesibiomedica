@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
+import java.util.Locale
 
 class MainActivity: AppCompatActivity()  {
 
@@ -24,6 +25,7 @@ class MainActivity: AppCompatActivity()  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
 
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
@@ -39,6 +41,7 @@ class MainActivity: AppCompatActivity()  {
                     Log.d("RoleCheck", "Utente è admin, avvio AdminActivity")
                     val intent = Intent(this, AdminActivity::class.java).apply {
                         putExtra("utente", utente)
+                        loadLocale()
                     }
                     startActivity(intent)
                 }
@@ -46,12 +49,14 @@ class MainActivity: AppCompatActivity()  {
                     Log.d("RoleCheck", "Utente è superadmin, avvio SuperAdminActivity")
                     val intent = Intent(this, SuperAdminActivity::class.java).apply {
                         putExtra("utente", utente)
+                        loadLocale()
                     }
                     startActivity(intent)
                 }
                 else -> {
                     Log.d("RoleCheck", "Utente è user, avvio MainPage")
                     val intent = Intent(this, MainPage::class.java).apply {
+                        loadLocale()
                         putExtra("utente", utente)
                     }
                     startActivity(intent)
@@ -59,10 +64,33 @@ class MainActivity: AppCompatActivity()  {
             }
             finish()
         } else {
+            loadLocale()
             setContentView(R.layout.activitymain)
+
             interfacciagrafica()
+
         }
     }
+
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it") // Imposta 'it' come default
+        Log.d("Locale", "Lingua salvata $languageCode") // Log della lingua salvata
+
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+            Log.d("Locale", "impostato: ${Locale.getDefault()}") // Log del locale impostato
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            Log.d("Locale", "Configurazione aggiornata: ${config.locales.get(0)}") // Log della configurazione
+
+            resources.updateConfiguration(config, resources.displayMetrics)
+            Log.d("Locale", "Risorse aggiornate ${resources.configuration.locales.get(0)}") // Log delle risorse aggiornate
+        }
+    }
+
     /*private fun checkUserTypeAndRedirect(uid: String) {
         val userRef = database.getReference("users").child(uid)
 
@@ -89,10 +117,21 @@ class MainActivity: AppCompatActivity()  {
         }
     }*/
     private fun interfacciagrafica() {
-       val mailpswdbutton = findViewById<Button>(R.id.pulsantemail)
-       val phonebutton=findViewById<Button>(R.id.pulsantetel)
-       val loginroot=findViewById<TextView>(R.id.vaialoginactivity)
+       val mailpswdbutton = findViewById<Button>(R.id.btn_email)
+       val phonebutton=findViewById<Button>(R.id.btn_phone)
+       val loginroot=findViewById<TextView>(R.id.tv_gotologin)
 
+        // Configura i bottoni per la selezione della lingua
+        val italianButton = findViewById<Button>(R.id.btn_italian)
+        val englishButton = findViewById<Button>(R.id.btn_english)
+
+        italianButton.setOnClickListener {
+            setLocale("it")
+        }
+
+        englishButton.setOnClickListener {
+            setLocale("en")
+        }
         mailpswdbutton.setOnClickListener {
             val intent1 = Intent(this, EmailPasswordActivity::class.java)
             startActivity(intent1)
@@ -110,6 +149,34 @@ class MainActivity: AppCompatActivity()  {
         }
 
     }
+
+    private fun setLocale(languageCode: String) {
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+
+        val config = resources.configuration
+        config.setLocale(locale)
+
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString("LANGUAGE", languageCode)
+        editor.apply()
+
+        resources.updateConfiguration(config, resources.displayMetrics)
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
+
 
     private fun startsMainPage() {
         val intent = Intent(this, MainPage::class.java)

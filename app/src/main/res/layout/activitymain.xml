@@ -1,63 +1,80 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="center"
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
+    android:padding="16dp">
+
     <TextView
-        android:id="@+id/texttitle"
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="scegli come registrarti"
-        android:layout_centerHorizontal="true"
-        android:textSize="30dp"
-        />
+        android:text="@string/tv_scegli_registrazione"
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
+        android:textSize="25sp"
+
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp"/>
+
+    <Button
+       android:id="@+id/btn_email"
+        android:layout_marginBottom="16sp"
+       android:layout_width="match_parent"
+       style="@style/GreenButton"
+       android:layout_height="wrap_content"
+       android:text="@string/btn_registrati_email"/>
+
+    <Button
+            android:id="@+id/btn_phone"
+            style="@style/GreenButton"
+            android:layout_marginBottom="16sp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/texttitle"
-            android:layout_marginTop="20sp"
-
-            android:id="@+id/bottoni">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/pulsantemail"
-                android:layout_marginHorizontal="30sp"
-                android:text="email"
-                style="@style/GreenButton"
-                 />
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/pulsantetel"
-                android:layout_marginHorizontal="30sp"
-                android:layout_toRightOf="@+id/pulsantemail"
-                android:text="telefono"
-                style="@style/GreenButton"
-                 />
-        </RelativeLayout>
-
+            android:text="@string/btn_registrati_telefono"/>
 
 
     <TextView
+        android:id="@+id/tv_gotologin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sei già registrato? Accedi"
-        android:layout_below="@+id/bottoni"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30sp"
-        android:id="@+id/vaialoginactivity"
-        android:clickable="true"
-        />
-      </RelativeLayout>
+        android:textStyle="bold"
+        android:layout_marginBottom="18sp"
+        android:text="@string/tv_gia_registrato"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="16dp"/>
 
-</RelativeLayout>
+
+    <TextView
+        android:id="@+id/sceglilingua"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18sp"
+        android:textStyle="bold"
+        android:text="@string/tvsceglilinguamainact"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="10dp"/>
+    <Button
+        android:id="@+id/btn_italian"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Italiano"
+        style="@style/GreenButton"
+        android:layout_gravity="center"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/btn_english"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="English"
+        style="@style/GreenButton"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"/>
+
+
+</LinearLayout>
+
+

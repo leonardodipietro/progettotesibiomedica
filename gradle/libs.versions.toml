@@ -22,6 +22,7 @@ lifecycleViewmodelKtx = "2.8.4"
 coroutines = "1.5.2"
 apachePoi = "5.2.3"
 firebase-storage = "20.1.0"
+retrofit = "2.9.0"
 
 
 [libraries]
@@ -58,8 +59,12 @@ work-runtime-ktx = "androidx.work:work-runtime-ktx:2.9.1"
 favre-bcrypt = "at.favre.lib:bcrypt:0.10.2"
 apache-poi = { group = "org.apache.poi", name = "poi-ooxml", version.ref = "apachePoi" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebase-storage" }
-gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 mindrot-bcrypt = { module = "org.mindrot:jbcrypt", version = "0.4" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
+okhttpLoggingInterceptor = { module = "com.squareup.okhttp3:logging-interceptor", version = "4.10.0" }
+
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

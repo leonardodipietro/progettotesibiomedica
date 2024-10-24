@@ -7,9 +7,9 @@ import com.example.myapplication2.repository.UserRepo
 class InfoPresenter(private val view: InfoActivity, private val userRepo: UserRepo,private val faqRepo: FaqRepo) {
 
 
-
     fun loadFaqData() {
-        faqRepo.fetchFaqList { faqList ->
+        val context = view.getContext() // Assicurati che la tua view possa restituire il Context
+        faqRepo.fetchFaqList(context) { faqList ->
             view.showFaqList(faqList)
         }
     }

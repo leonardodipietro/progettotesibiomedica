@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Application2</string>
+    <string name="title_activity_login">Login Activity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">Welcome!</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">Login failed</string>
+    <string-array name="distanze_tempo_pasto">
+        <item>Less than 1 hour</item>
+        <item>1 hour</item>
+        <item>2 hours</item>
+        <item>3 hours</item>
+        <item>More than 3 hours</item>
+    </string-array>
+    <string-array name="rimuovi_sintomo">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+
+    <string name="hint_nomeecognome">First and Last Name</string>
+    <string name="hint_indirizzo">Address</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm Password</string>
+    <string name="show_password">Show Password</string>
+    <string name="show_confirm_password">Show Confirm Password</string>
+    <string name="register_button">Register</string>
+
+    <string name="tv_scegli_registrazione">Choose how to register</string>
+    <string name="btn_registrati_email">Register with Email</string>
+    <string name="btn_registrati_telefono">Register with Phone</string>
+    <string name="tv_gia_registrato">Already registered? Click here to log in</string>
+
+
+        <string name="hint_inserisci_numero_telefono">Enter phone number</string>
+        <string name="hint_nome_e_cognome">First and Last Name</string>
+        <string name="hint_indirizzotel">Address</string>
+        <string name="hint_inserisci_username">Enter a username</string>
+        <string name="hint_passwordtel">Password</string>
+        <string name="hint_conferma_password">Confirm Password</string>
+        <string name="descr_mostra_password">Show Password</string>
+        <string name="descr_mostra_conferma_password">Show Confirm Password</string>
+        <string name="button_invia_codice">Send Code</string>
+        <string name="hint_inserisci_codice">Enter verification code</string>
+        <string name="button_verifica_codice">Verify code and log in</string>
+
+    <string name="hint_username_login">Username</string>
+    <string name="prompt_passwordlog">Password</string>
+    <string name="action_sign_in_shortlog">Sign In</string>
+    <string name="descr_mostra_passwordlog">Show Password</string>
+    <string name="button_accedi">Log In</string>
+    <string name="text_password_dimenticata">Forgot your password? No problem, click here</string>
+
+    <string name="text_benvenuto">Welcome [User], how do you feel today?</string>
+    <string name="button_invia_dati">Send data</string>
+
+
+        <string name="nome_sintomo">Symptom Name</string>
+        <string name="gravita_lieve">Mild</string>
+        <string name="gravita_moderata">Moderate</string>
+        <string name="gravita_grave">Severe</string>
+        <string name="gravita_molto_grave">Very Severe</string>
+
+    <string name="text_benvenuto_profile">Hello, on this page you can modify your access data</string>
+    <string name="button_logout">Logout</string>
+    <string name="text_modifica_username">Change your username</string>
+    <string name="hint_nuovo_username">Enter new username</string>
+    <string name="text_modifica_nome_cognome">Change first and last name</string>
+    <string name="hint_nuovo_nome_cognome">Enter new first and last name</string>
+    <string name="text_modifica_indirizzo">Change your address</string>
+    <string name="hint_nuovo_indirizzo">Enter new address</string>
+    <string name="text_modifica_telefono">Click here to enter or update your phone number</string>
+    <string name="text_modifica_email">Change your email</string>
+    <string name="hint_nuova_email">Enter new email</string>
+    <string name="text_modifica_password">Change your password</string>
+    <string name="hint_vecchia_password">Enter old password</string>
+    <string name="hint_nuova_password">Enter new password</string>
+    <string name="hint_conferma_nuova_password">Confirm new password</string>
+    <string name="content_descr_mostra_password_old">Show Old Password</string>
+    <string name="content_descr_mostra_password_new">Show New Password</string>
+    <string name="content_descr_mostra_password_confirm">Show Confirm Password</string>
+    <string name="button_salva_modifiche">Save changes</string>
+    <string name="button_elimina_account">Delete Account</string>
+
+    <string name="button_esporta_dati">Export data</string>
+    <string name="button_aggiungi_sintomo">Add symptom</string>
+    <string name="hint_inserisci_nuovo_sintomo">Enter new symptom</string>
+    <string name="button_invia_sintomo">Send</string>
+    <string name="button_rimuovi_sintomo">Remove symptom</string>
+
+    <string name="hint_email_superadmin">Email</string>
+    <string name="hint_username_superadmin">Username</string>
+    <string name="hint_password_superadmin">Password</string>
+    <string name="hint_conferma_password_superadmin">Confirm Password</string>
+    <string name="button_crea_admin">Create Admin</string>
+    <string name="button_logout_superadmin">Logout</string>
+    <string name="hint_inserisci_domanda_superadmin">Enter question</string>
+    <string name="hint_inserisci_risposta_superadmin">Enter answer</string>
+    <string name="button_aggiungi_faq">Add FAQ</string>
+
+    <string name="text_email_reset_message">We have sent you an email to reset your password. Please check your inbox and follow the instructions.</string>
+    <string name="button_back_to_login">Back to login page</string>
+
+
+    <string name="hint_nuova_password_reset">New password</string>
+    <string name="hint_conferma_password_reset">Confirm password</string>
+    <string name="button_reimposta_password">Reset</string>
+
+
+    <string name="hint_modifica_domanda">Edit question</string>
+    <string name="hint_modifica_risposta">Edit answer</string>
+
+
+    <string name="hint_vecchio_telefono">Old phone number</string>
+    <string name="hint_nuovo_telefono">New phone number</string>
+
+    <string name="text_inserisci_codice_verifica">Enter the verification code for the new number</string>
+    <string name="hint_codice_verifica">Verification code</string>
+
+    <string name="tvsceglilinguamainact">Choose a language</string>
+
+    <string name="notification_title">Daily Notification</string>
+    <string name="notification_text">How are you feeling today?!</string>
+
+
+    <string name="dialog_title_phone_update">Update phone number</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_error_phone_empty">Please enter both the old and new phone numbers</string>
+    <string name="dialog_success_phone_update">Phone number updated successfully</string>
+    <string name="dialog_error_phone_update">Error updating phone number</string>
+    <string name="dialog_error_new_phone_verification_failed">New phone verification failed</string>
+    <string name="dialog_error_old_phone_verification_failed">Old phone verification failed</string>
+
+
+    <string name="dialog_title_verify_new_phone">Verify the new number: %1$s</string>
+    <string name="dialog_confirm_phone_verification">Confirm</string>
+    <string name="dialog_cancel_phone_verification">Cancel</string>
+    <string name="dialog_error_enter_verification_code">Please enter the verification code</string>
+
+
+    <string name="dialog_title_logout">Log out of Account?</string>
+    <string name="dialog_message_logout">Are you sure you want to log out of your account?</string>
+    <string name="dialog_confirm_logout">Yes</string>
+    <string name="dialog_cancel_logout">No</string>
+
+    <string name="dialog_title_delete_account">Delete Account?</string>
+    <string name="dialog_message_delete_account">Are you sure you want to delete your account?</string>
+    <string name="dialog_confirm_delete_account">Yes</string>
+    <string name="dialog_cancel_delete_account">No</string>
+
+    <string name="dialog_success_delete_account">Account deleted</string>
+    <string name="dialog_error_delete_account">Error deleting account</string>
+
+
+    <string name="dialog_verification_email_sent">Verification email sent. Check your new email to confirm the change.</string>
+    <string name="dialog_error_update_email_in_db">Error updating email in the database</string>
+    <string name="dialog_error_sending_verification_email">Error sending verification request</string>
+    <string name="dialog_error_same_email">The new email is the same as the current one</string>
+    <string name="dialog_error_retrieve_current_email">Unable to retrieve the current email</string>
+    <string name="dialog_error_missing_old_password">Please enter the old password in the appropriate field</string>
+    <string name="dialog_success_update_username">Username updated</string>
+    <string name="dialog_success_update_name">Name updated</string>
+    <string name="dialog_success_update_address">Address updated</string>
+    <string name="dialog_success_update_password">Password updated</string>
+    <string name="dialog_error_update_password">Error updating password</string>
+    <string name="dialog_error_passwords_not_matching">The new passwords do not match</string>
+    <string name="dialog_success_update_email">Email updated successfully</string>
+    <string name="dialog_error_update_email">Error updating email</string>
+
+    <string name="dialog_error_authentication">Authentication error.</string>
+    <string name="dialog_error_invalid_password">Invalid password</string>
+    <string name="dialog_success_account_deleted">Account deleted</string>
+    <string name="dialog_error_account_deletion">Error deleting account.</string>
+
+
+    <string name="dialog_error_email_not_found">Email not found. Please check the email you entered.</string>
+    <string name="dialog_error_phone_not_found">Phone number not found. Please check the number you entered.</string>
+    <string name="dialog_error_username_not_found">Username not found. Please check the username you entered.</string>
+    <string name="dialog_error_wrong_password">Incorrect password. Try again or reset your password.</string>
+    <string name="dialog_error_authentication_generic">Authentication error.</string>
+    <string name="dialog_reset_password_email_sent">Password reset email sent successfully.</string>
+    <string name="dialog_reset_password_error">Error sending reset email. Please check the associated email.</string>
+    <string name="dialog_reset_password_username_not_found">Username not found. Unable to send reset email.</string>
+    <string name="dialog_prompt_for_username">Please enter a valid username to proceed.</string>
+
+    <string name="notification_reset_password_title">Reset Password</string>
+    <string name="notification_reset_password_text">Click to reset your password.</string>
+
+    <string name="toast_error_username_not_found">Error: Username not found</string>
+    <string name="toast_error_passwords_not_matching">Passwords do not match</string>
+    <string name="toast_error_saving_password">Error saving the password</string>
+
+    <string name="mainpage_welcome_message">Welcome, how are you feeling today?</string>
+
+    <string name="sintomi_inviati">Symptoms submitted successfully</string>
+    <string name="errore_utente_non_autenticato">Error: User not authenticated.</string>
+</resources>

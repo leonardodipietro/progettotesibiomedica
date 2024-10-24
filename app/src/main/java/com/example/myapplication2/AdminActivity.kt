@@ -34,6 +34,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import java.util.Locale
 
 class AdminActivity : AppCompatActivity(), AdminView {
     companion object {
@@ -71,6 +72,7 @@ class AdminActivity : AppCompatActivity(), AdminView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.activity_admin)
         //clearUserPreferences()
 
@@ -231,7 +233,28 @@ class AdminActivity : AppCompatActivity(), AdminView {
         editor.putBoolean("isLoggedIn", true)
         editor.apply()
     }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
     override fun loadUserFromPreferences(): Utente? {
         val sharedPreferences = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("utente", null)

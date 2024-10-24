@@ -1,8 +1,10 @@
 package com.example.myapplication2.Presenter
 
 
+import android.content.Context
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.myapplication2.R
 import com.example.myapplication2.interfacepackage.LoginInterface
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
@@ -10,7 +12,8 @@ import com.google.firebase.auth.FirebaseAuth
 
 class LoginPresenter(
     private val view: LoginInterface,
-    private val userRepo: UserRepo
+    private val userRepo: UserRepo,
+    private val context: Context
 ) {
 
     private var loginAttempts = 0
@@ -65,28 +68,21 @@ class LoginPresenter(
             view.showLoginSuccess(ruolo ?: "user", user)
         } else {
             handleFailedLogin()
-            //da vedere  view.showLoginFailure(errorMessage ?: "Errore di autenticazione")
             // Messaggio d'errore specifico in base all'input
             val specificErrorMessage = when {
                 errorMessage == "Utente non trovato" -> {
                     when {
-                        // Messaggio specifico per email non trovata
-                        user?.email?.contains("@") == true -> "Email non trovata. Verifica di aver inserito correttamente l'email."
-                        // Messaggio specifico per numero di telefono non trovato
-                        user?.phoneNumber?.matches(Regex("^\\+[0-9]+$")) == true -> "Numero di telefono non trovato. Verifica di aver inserito correttamente il numero."
-                        // Messaggio specifico per username non trovato
-                        else -> "Username non trovato. Verifica di aver inserito correttamente lo username."
+                        user?.email?.contains("@") == true -> context.getString(R.string.dialog_error_email_not_found) // Usa la stringa localizzata
+                        user?.phoneNumber?.matches(Regex("^\\+[0-9]+$")) == true -> context.getString(R.string.dialog_error_phone_not_found) // Usa la stringa localizzata
+                        else -> context.getString(R.string.dialog_error_username_not_found) // Usa la stringa localizzata
                     }
                 }
-                // Messaggio di password errata
-                errorMessage == "Password errata" -> "Password errata. Riprova o reimposta la password."
-                // Altri errori generici
-                else -> errorMessage ?: "Errore di autenticazione"
+                errorMessage == "Password errata" -> context.getString(R.string.dialog_error_wrong_password) // Usa la stringa localizzata
+                else -> errorMessage ?: context.getString(R.string.dialog_error_authentication_generic) // Usa la stringa localizzata
             }
             view.showLoginFailure(specificErrorMessage)
         }
     }
-
 
 
 

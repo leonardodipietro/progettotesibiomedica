@@ -1,5 +1,6 @@
 package com.example.myapplication2.repository
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.myapplication2.model.Sintomo
@@ -15,30 +16,47 @@ class SintomoRepo {
 
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     private val sintomiRef = database.getReference("sintomi")
+    private val exAccountRef=database.getReference("exaccount")
     private val userRef=database.getReference("users")
     val sintomi: MutableLiveData<List<Sintomo>> = MutableLiveData()
-
     fun aggiungiSintomo(nomeSintomo: String, onComplete: (Boolean) -> Unit) {
-        // Controlla se il sintomo esiste già nel database confrontando i nomi
         sintomiRef.orderByChild("nomeSintomo").equalTo(nomeSintomo).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    // Sintomo già esistente, quindi non viene aggiunto nulla
                     Log.d("sintrepo", "Sintomo già esistente")
                     onComplete(false)
                 } else {
-                    // Crea una mappa dei dati da salvare
                     val idSintomo = UUID.randomUUID().toString()
                     val sintomoData = mapOf(
                         "id" to idSintomo,
                         "nomeSintomo" to nomeSintomo
                     )
 
-                    // Salva la mappa nel database
+                    // Salva il sintomo nel database
                     sintomiRef.child(idSintomo).setValue(sintomoData)
                         .addOnSuccessListener {
                             Log.d("sintrepo", "Sintomo aggiunto")
-                            onComplete(true)
+
+                            // Aggiungi la traduzione tramite TranslationRepo
+                            val translationRepo = TranslationRepo()
+                            translationRepo.translate(nomeSintomo, "en") { translatedText ->
+                                if (translatedText != null) {
+                                    Log.d("sintrepo", "Traduzione del sintomo: $translatedText")
+                                    // Salva il nome tradotto nel database
+                                    sintomiRef.child(idSintomo).child("nomeSintomoTradotto").setValue(translatedText)
+                                        .addOnSuccessListener {
+                                            Log.d("sintrepo", "Traduzione salvata nel database")
+                                            onComplete(true)
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.d("sintrepo", "Errore nel salvataggio della traduzione: $e")
+                                            onComplete(false)
+                                        }
+                                } else {
+                                    Log.d("sintrepo", "Errore nella traduzione del sintomo")
+                                    onComplete(false)
+                                }
+                            }
                         }
                         .addOnFailureListener { e ->
                             Log.d("sintrepo", "Errore aggiunta sintomo: $e")
@@ -54,15 +72,24 @@ class SintomoRepo {
         })
     }
 
+    fun fetchSintomi(context: Context) {
+        // Recupera la lingua dalle SharedPreferences
+        val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it") // 'it' come default
 
-
-    fun fetchSintomi() {
         sintomiRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val sintomiIds = snapshot.children.mapNotNull { it.key }
                 retrieveNameSintomo(sintomiIds) { sintomiNames ->
-                    val sintomiList = sintomiNames.mapIndexed { index, nome ->
-                        Sintomo(sintomiIds[index], nome)
+                    val sintomiList = snapshot.children.map { childSnapshot ->
+                        val sintomoId = childSnapshot.key ?: ""
+                        val nomeSintomo = if (languageCode == "it") {
+                            childSnapshot.child("nomeSintomo").getValue(String::class.java) ?: ""
+                        } else {
+                            childSnapshot.child("nomeSintomoTradotto").getValue(String::class.java) ?: ""
+                        }
+
+                        Sintomo(sintomoId, nomeSintomo)
                     }
                     sintomi.postValue(sintomiList)
                 }
@@ -73,7 +100,6 @@ class SintomoRepo {
             }
         })
     }
-
     fun caricaSintomi(
         sintomiList: MutableList<String>,
         sintomiIdList: MutableList<String>,
@@ -130,10 +156,7 @@ class SintomoRepo {
             onComplete(names)
         }.start()
     }
-
     fun rimuoviSintomo(idSintomo: String, onComplete: (Boolean) -> Unit) {
-        //val usersRef = FirebaseDatabase.getInstance().getReference("users")
-
         // Rimuovi il sintomo dal nodo dei sintomi
         sintomiRef.child(idSintomo).removeValue()
             .addOnSuccessListener {
@@ -154,7 +177,30 @@ class SintomoRepo {
                                     }
                             }
                         }
-                        onComplete(true)
+
+                        // Dopo aver rimosso il sintomo dal nodo users, rimuovilo anche dal nodo exaccount
+                        exAccountRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(exSnapshot: DataSnapshot) {
+                                for (exUserSnapshot in exSnapshot.children) {
+                                    val sintomiExUserRef = exUserSnapshot.child("sintomi").child(idSintomo)
+                                    if (sintomiExUserRef.exists()) {
+                                        exUserSnapshot.ref.child("sintomi").child(idSintomo).removeValue()
+                                            .addOnSuccessListener {
+                                                Log.d("sintrepo", "Sintomo $idSintomo rimosso per l'ex utente ${exUserSnapshot.key}")
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.e("sintrepo", "Errore nella rimozione del sintomo $idSintomo per l'ex utente ${exUserSnapshot.key}: $e")
+                                            }
+                                    }
+                                }
+                                onComplete(true)
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("sintrepo", "Errore durante la rimozione dai nodi exaccount: ${error.message}")
+                                onComplete(false)
+                            }
+                        })
                     }
 
                     override fun onCancelled(error: DatabaseError) {
@@ -168,8 +214,5 @@ class SintomoRepo {
                 onComplete(false)
             }
     }
-
-    //Todo rimuovi sintomo da nodo user
-
 
 }

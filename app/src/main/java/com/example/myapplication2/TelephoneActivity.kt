@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -22,6 +23,7 @@ import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.DatabaseReference
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 
@@ -42,6 +44,7 @@ class TelephoneActivity: AppCompatActivity()   {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+        loadLocale()
         // Nessun utente autenticato, mostra il layout di `MainActivity`
         setContentView(R.layout.telephoneactivity)
 
@@ -119,8 +122,28 @@ class TelephoneActivity: AppCompatActivity()   {
     }
 
 
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
 
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
 
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
 
     private fun sendVerificationCode(phoneNumber: String) {

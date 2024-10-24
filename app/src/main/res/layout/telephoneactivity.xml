@@ -11,26 +11,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Inserisci numero di telefono"
+        android:hint="@string/hint_inserisci_numero_telefono"
         android:inputType="phone"
         android:layout_marginBottom="16sp" />
 
-    <!-- Campo per Nome e Cognome -->
     <EditText
         android:id="@+id/nomeecognomephone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Nome e Cognome"
+        android:hint="@string/hint_nome_e_cognome"
         android:layout_marginBottom="16sp" />
 
-    <!-- Campo per Indirizzo -->
     <EditText
         android:id="@+id/indirizzophone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Indirizzo"
+        android:hint="@string/hint_indirizzotel"
         android:layout_marginBottom="16sp" />
 
     <EditText
@@ -38,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Inserisci un username"
+        android:hint="@string/hint_inserisci_username"
         android:layout_marginBottom="16sp" />
 
     <FrameLayout
@@ -50,7 +48,7 @@
             android:id="@+id/passwordTel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Password"
+            android:hint="@string/hint_passwordtel"
             android:inputType="textPassword"
             android:background="@drawable/edittext"
             android:paddingEnd="48dp" />
@@ -62,7 +60,7 @@
             android:layout_gravity="end|center_vertical"
             android:padding="8dp"
             android:src="@drawable/passwordicon"
-            android:contentDescription="Mostra Password"
+            android:contentDescription="@string/descr_mostra_password"
             android:layout_marginEnd="12dp"/>
     </FrameLayout>
 
@@ -76,7 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edittext"
-            android:hint="Conferma Password"
+            android:hint="@string/hint_conferma_password"
             android:inputType="textPassword"
             android:paddingEnd="48dp" />
 
@@ -87,7 +85,7 @@
             android:layout_gravity="end|center_vertical"
             android:padding="8dp"
             android:src="@drawable/passwordicon"
-            android:contentDescription="Mostra Conferma Password"
+            android:contentDescription="@string/descr_mostra_conferma_password"
             android:layout_marginEnd="12dp"/>
     </FrameLayout>
 
@@ -95,7 +93,7 @@
         android:id="@+id/sendCodeButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Invia Codice"
+        android:text="@string/button_invia_codice"
         style="@style/GreenButton"
         android:layout_marginBottom="16sp" />
 
@@ -104,15 +102,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/edittext"
-        android:hint="Inserisci codice di verifica"
+        android:hint="@string/hint_inserisci_codice"
         android:inputType="number"
         android:layout_marginBottom="16sp" />
-
 
     <Button
         android:id="@+id/verifyCodeButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Verifica codice e accedi "
+        android:text="@string/button_verifica_codice"
         style="@style/GreenButton" />
 </LinearLayout>

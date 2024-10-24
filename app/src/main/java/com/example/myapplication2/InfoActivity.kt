@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.FaqRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.util.Locale
 
 class InfoActivity:AppCompatActivity(), InfoView {
 
@@ -25,6 +27,7 @@ class InfoActivity:AppCompatActivity(), InfoView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.activityinfo)
 
 
@@ -57,6 +60,27 @@ class InfoActivity:AppCompatActivity(), InfoView {
 
 
     }
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
     override fun showFaqList(faqList: List<Faq>) {
         faqAdapter = FaqAdapter(faqList, false)
@@ -86,6 +110,10 @@ class InfoActivity:AppCompatActivity(), InfoView {
                 else -> false
             }
         }
+    }
+
+    override fun getContext(): Context {
+        return this // Restituisce il Contesto della page
     }
 
 

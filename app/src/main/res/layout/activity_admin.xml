@@ -1,149 +1,138 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    tools:context=".AdminActivity">
-
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="30sp"
-
-        android:layout_gravity="center">
-
-        <View
-            android:id="@+id/divisoresopra"
-            android:layout_width="match_parent"
-            android:layout_height="7sp"
-            android:layout_marginTop="30sp"
-            android:gravity="center"
-             />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="esporta i dati"
-            android:layout_marginTop="20sp"
-            android:id="@+id/exporttoexcel"
-            android:gravity="center"
-            style="@style/GreenButton"/>
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="aggiungi sintomo"
-            android:id="@+id/aggiungisintomo"
-            android:gravity="center"
-            android:layout_marginTop="16dp"
-            style="@style/GreenButton"/>
+        android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:fillViewport="true"
+        tools:context=".AdminActivity">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp">
+            android:orientation="vertical"
+            android:padding="30sp"
+            android:layout_gravity="center">
 
-            <EditText
-                android:id="@+id/editaggiuntasintomo"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:hint="Inserisci il nuovo sintomo"
-                android:padding="10dp"
-                android:visibility="gone"
-                android:background="@drawable/edittext"/>
+            <View
+                android:id="@+id/divisoresopra"
+                android:layout_width="match_parent"
+                android:layout_height="7sp"
+                android:layout_marginTop="30sp"
+                android:gravity="center" />
 
             <Button
-                android:id="@+id/buttonaggiuntanuovosintomo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Invia"
-                android:visibility="gone"
-                style="@style/GreenButton"/>
-        </LinearLayout>
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="rimuovi sintomo sintomo"
-            android:id="@+id/rimuovisintomo"
-            android:gravity="center"
-            android:layout_marginTop="16dp"
-            style="@style/GreenButton"/>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="30sp">
-
-            <Spinner
-                android:id="@+id/spinnerrimuovisintomo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/spinnerdrawable"
-                android:visibility="gone" />
+                android:text="@string/button_esporta_dati"
+                android:layout_marginTop="20sp"
+                android:id="@+id/exporttoexcel"
+                android:gravity="center"
+                style="@style/GreenButton"/>
 
-            <!-- Freccetta posizionata sopra lo Spinner -->
-            <ImageView
-                android:id="@+id/freccettaadmin"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:visibility="gone"
-                android:layout_gravity="end|center_vertical"
-                android:src="@drawable/freccetta"
-                android:layout_marginEnd="16dp" />
-        </FrameLayout>
-
-        <View
-            android:id="@+id/divisoresintomi"
-            android:layout_width="match_parent"
-            android:layout_height="2sp"
-            android:layout_below="@id/answerTextView"
-
-            android:layout_marginTop="12dp" />
-        <HorizontalScrollView
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="horizontal">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/button_aggiungi_sintomo"
+                android:id="@+id/aggiungisintomo"
+                android:gravity="center"
+                android:layout_marginTop="16dp"
+                style="@style/GreenButton"/>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_view_statistiche"
+                <EditText
+                    android:id="@+id/editaggiuntasintomo"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_inserisci_nuovo_sintomo"
+                    android:padding="10dp"
+                    android:visibility="gone"
+                    android:background="@drawable/edittext"/>
+
+                <Button
+                    android:id="@+id/buttonaggiuntanuovosintomo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/button_invia_sintomo"
+                    android:visibility="gone"
+                    style="@style/GreenButton"/>
+            </LinearLayout>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/button_rimuovi_sintomo"
+                android:id="@+id/rimuovisintomo"
+                android:gravity="center"
+                android:layout_marginTop="16dp"
+                style="@style/GreenButton"/>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="30sp">
+
+                <Spinner
+                    android:id="@+id/spinnerrimuovisintomo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:scrollbars="vertical" />
+                    android:background="@drawable/spinnerdrawable"
+                    android:visibility="gone" />
 
-            </LinearLayout>
-        </HorizontalScrollView>
+                <ImageView
+                    android:id="@+id/freccettaadmin"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:visibility="gone"
+                    android:layout_gravity="end|center_vertical"
+                    android:src="@drawable/freccetta"
+                    android:layout_marginEnd="16dp" />
+            </FrameLayout>
 
+            <View
+                android:id="@+id/divisoresintomi"
+                android:layout_width="match_parent"
+                android:layout_height="2sp"
+                android:layout_below="@id/answerTextView"
+                android:layout_marginTop="12dp" />
 
-    </LinearLayout>
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="horizontal">
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-</ScrollView>
-
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_view_statistiche"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="vertical" />
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+    </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_admin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-
         android:background="#4CAF50"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white"

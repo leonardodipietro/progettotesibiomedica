@@ -80,9 +80,9 @@ class SuperAdminPresenter (private val view: SuperAdminView){
         })
     }
 
-
     fun loadFaqData() {
-        faqRepo.fetchFaqList { faqList ->
+        val context = view.getContext() // Assicurati che la tua view possa restituire il Context
+        faqRepo.fetchFaqList(context) { faqList ->
             view.showFaqList(faqList)
         }
     }

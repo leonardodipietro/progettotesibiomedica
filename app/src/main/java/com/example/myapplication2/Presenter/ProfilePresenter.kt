@@ -1,6 +1,9 @@
 package com.example.myapplication2.Presenter
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
 import com.example.myapplication2.interfacepackage.ProfileView
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.UserRepo
@@ -15,13 +18,16 @@ import java.util.concurrent.TimeUnit
 import android.util.Log
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat.startActivity
+import com.example.myapplication2.ProfileActivity
 import com.example.myapplication2.R
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.repository.ExAccountRepo
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
+import java.util.Locale
 
-class ProfilePresenter(private val view: ProfileView, private val userRepo: UserRepo) {
+class ProfilePresenter(private val view: ProfileView, private val userRepo: UserRepo,private val context: Context) {
     private var verificationId: String? = null
     private var phoneNumber: String? = null
     private val exAccountRepo=ExAccountRepo()
@@ -34,6 +40,21 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
                 view.showError("Dati utente non trovati")
             }
         }
+    }
+    fun setLocale(languageCode: String) {
+        // Cambia la configurazione della lingua
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+
+        val config = Configuration(view.getContext().resources.configuration)
+        config.setLocale(locale)
+        view.getContext().resources.updateConfiguration(config, view.getContext().resources.displayMetrics)
+
+        // Salva la lingua selezionata nelle SharedPreferences
+        val sharedPref = view.getContext().getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString("LANGUAGE", languageCode)
+        editor.apply()
     }
     fun checkPhoneNumber(userId: String) {
         userRepo.getPhoneNumber(userId) { phoneNumber ->
@@ -74,38 +95,28 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         }
     }
     fun authenticateAndModifyPhoneNumber(userId: String, oldPhone: String, newPhone: String) {
-
-
-
         startPhoneVerificationModify(oldPhone, userId, true) { oldPhoneVerified ->
             if (oldPhoneVerified) {
-
                 startPhoneVerificationModify(newPhone, userId, false) { newPhoneVerified ->
                     if (newPhoneVerified) {
-
-
                         // Step 3: Aggiorna il numero di telefono nel database
                         userRepo.updatePhoneNumber(userId, newPhone) { success ->
                             if (success) {
-                                view.showSuccess("Numero di telefono aggiornato con successo")
-
+                                view.showSuccess(context.getString(R.string.dialog_success_phone_update)) // Usa la stringa localizzata
                             } else {
-                                view.showError("Errore nell'aggiornamento del numero di telefono")
-
+                                view.showError(context.getString(R.string.dialog_error_phone_update)) // Usa la stringa localizzata
                             }
                         }
                     } else {
-                        view.showError("Verifica del nuovo numero fallita.")
-
+                        view.showError(context.getString(R.string.dialog_error_new_phone_verification_failed)) // Usa la stringa localizzata
                     }
                 }
             } else {
-                //view.showError("Verifica del vecchio numero fallita.")
-
-                //Log.e("PhoneUpdate", "Verifica del vecchio numero fallita: $oldPhone")
+                view.showError(context.getString(R.string.dialog_error_old_phone_verification_failed)) // Usa la stringa localizzata
             }
         }
     }
+
 
 
     private fun startPhoneVerificationModify(phoneNumber: String, userId: String, isOldPhone: Boolean, onPhoneVerified: (Boolean) -> Unit = {}) {
@@ -185,12 +196,9 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         }
     }
 
-
-
     fun saveUserData(
         userId: String,
         email: String,
-        //phone: String,
         username: String,
         name: String,
         address: String,
@@ -198,83 +206,60 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
         newPassword: String,
         confirmPassword: String
     ) {
-
-            if (email.isNotEmpty()) {
-                if (oldPassword.isNotEmpty()) {
-                    // Step 1: Recupera l'email corrente
-                    userRepo.getUserEmail(userId) { currentEmail ->
-                        if (!currentEmail.isNullOrEmpty() && currentEmail != email) {
-                            // Step 2: Autentica temporaneamente l'utente con l'email corrente e oldPassword
-                            val credential = EmailAuthProvider.getCredential(currentEmail, oldPassword)
-                            FirebaseAuth.getInstance().signInWithCredential(credential)
-                                .addOnCompleteListener { authTask ->
-                                    if (authTask.isSuccessful) {
-                                        val firebaseUser = FirebaseAuth.getInstance().currentUser
-                                        firebaseUser?.verifyBeforeUpdateEmail(email)
-                                            ?.addOnCompleteListener { updateTask ->
-                                                if (updateTask.isSuccessful) {
-                                                    userRepo.updateUserEmail(userId, email) { success ->
-                                                        if (success) {
-                                                            view.showSuccess("Email di verifica inviata. Controlla la nuova email per confermare il cambiamento.")
-                                                        } else {
-                                                            view.showError("Errore nell'aggiornamento dell'email nel database")
-                                                        }
+        if (email.isNotEmpty()) {
+            if (oldPassword.isNotEmpty()) {
+                // Step 1: Recupera l'email corrente
+                userRepo.getUserEmail(userId) { currentEmail ->
+                    if (!currentEmail.isNullOrEmpty() && currentEmail != email) {
+                        // Step 2: Autentica temporaneamente l'utente con l'email corrente e oldPassword
+                        val credential = EmailAuthProvider.getCredential(currentEmail, oldPassword)
+                        FirebaseAuth.getInstance().signInWithCredential(credential)
+                            .addOnCompleteListener { authTask ->
+                                if (authTask.isSuccessful) {
+                                    val firebaseUser = FirebaseAuth.getInstance().currentUser
+                                    firebaseUser?.verifyBeforeUpdateEmail(email)
+                                        ?.addOnCompleteListener { updateTask ->
+                                            if (updateTask.isSuccessful) {
+                                                userRepo.updateUserEmail(userId, email) { success ->
+                                                    if (success) {
+                                                        view.showSuccess(context.getString(R.string.dialog_verification_email_sent)) // Usa la stringa localizzata
+                                                    } else {
+                                                        view.showError(context.getString(R.string.dialog_error_update_email_in_db)) // Usa la stringa localizzata
                                                     }
-                                                } else {
-                                                    view.showError("Errore nell'invio della richiesta di verifica")
-                                                    Log.e("verifyBeforeUpdateEmail", "Errore: ${updateTask.exception?.message ?: "Errore sconosciuto"}")
                                                 }
+                                            } else {
+                                                view.showError(context.getString(R.string.dialog_error_sending_verification_email)) // Usa la stringa localizzata
+                                                Log.e("verifyBeforeUpdateEmail", "Errore: ${updateTask.exception?.message ?: "Errore sconosciuto"}")
                                             }
-                                    } else {
-                                        //view.showError("Errore nell'autenticazione con le credenziali fornite")
-                                        updateEmailDirectly(userId, email)
-                                    }
+                                        }
+                                } else {
+                                    updateEmailDirectly(userId, email)
                                 }
-                        } else if (currentEmail.isNullOrEmpty()) {
-                            // Se l'email è vuota, chiama direttamente updateEmailDirectly
-                            updateEmailDirectly(userId, email)
-                        } else if (currentEmail == email) {
-                            view.showError("La nuova email coincide con quella attuale")
-                            updatePassword(userId, oldPassword, newPassword, confirmPassword)
-                        } else {
-                            view.showError("Impossibile recuperare l'email corrente")
-                            updatePassword(userId, oldPassword, newPassword, confirmPassword)
-                        }
+                            }
+                    } else if (currentEmail.isNullOrEmpty()) {
+                        // Se l'email è vuota, chiama direttamente updateEmailDirectly
+                        updateEmailDirectly(userId, email)
+                    } else if (currentEmail == email) {
+                        view.showError(context.getString(R.string.dialog_error_same_email)) // Usa la stringa localizzata
+                        updatePassword(userId, oldPassword, newPassword, confirmPassword)
+                    } else {
+                        view.showError(context.getString(R.string.dialog_error_retrieve_current_email)) // Usa la stringa localizzata
+                        updatePassword(userId, oldPassword, newPassword, confirmPassword)
                     }
-                } else {
-                    view.showError("Inserisci la vecchia password nell'apposito spazio")
                 }
             } else {
-                //view.showError("L'email non può essere vuota")
+                view.showError(context.getString(R.string.dialog_error_missing_old_password)) // Usa la stringa localizzata
             }
+        }
 
-
-
-
-
-        // Phone update
-        /*userRepo.getUserPhoneNumber(userId) { currentPhone ->
-            if (phone.isNotEmpty() && currentPhone != phone) {
-                userRepo.checkPhoneNumberExists(phone) { exists ->
-                    if (!exists) {
-                        userRepo.updatePhoneNumber(userId, phone) { success ->
-                            if (success) {
-                                view.showSuccess("Numero di telefono aggiornato")
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
-
-        // Username update
+        // Aggiornamento Username
         userRepo.getUsername(userId) { currentUsername ->
             if (username.isNotEmpty() && currentUsername != username) {
                 userRepo.checkUsernameExists(username) { exists ->
                     if (!exists) {
                         userRepo.updateUsername(userId, username) { success ->
                             if (success) {
-                                view.showSuccess("Username aggiornato")
+                                view.showSuccess(context.getString(R.string.dialog_success_update_username)) // Usa la stringa localizzata
                             }
                         }
                     }
@@ -282,65 +267,70 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
             }
         }
 
-        // Name update
+        // Aggiornamento Nome
         userRepo.getName(userId) { currentName ->
             if (name.isNotEmpty() && currentName != name) {
                 userRepo.updateName(userId, name) { success ->
                     if (success) {
-                        view.showSuccess("Nome aggiornato")
+                        view.showSuccess(context.getString(R.string.dialog_success_update_name)) // Usa la stringa localizzata
                     }
                 }
             }
         }
 
-        // Address update
+        // Aggiornamento Indirizzo
         userRepo.getAddress(userId) { currentAddress ->
             if (address.isNotEmpty() && currentAddress != address) {
                 userRepo.updateAddress(userId, address) { success ->
                     if (success) {
-                        view.showSuccess("Indirizzo aggiornato")
+                        view.showSuccess(context.getString(R.string.dialog_success_update_address)) // Usa la stringa localizzata
                     }
                 }
             }
         }
-        // Cambio password
+
+        // Cambio Password
         if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
             userRepo.changePassword(userId, oldPassword, newPassword) { success ->
-                if (success) view.showSuccess("Password aggiornata") else view.showError("Errore nel cambio password")
+                if (success) {
+                    view.showSuccess(context.getString(R.string.dialog_success_update_password)) // Usa la stringa localizzata
+                } else {
+                    view.showError(context.getString(R.string.dialog_error_update_password)) // Usa la stringa localizzata
+                }
             }
         } else if (newPassword != confirmPassword) {
-            view.showError("Le nuove password non coincidono")
+            view.showError(context.getString(R.string.dialog_error_passwords_not_matching)) // Usa la stringa localizzata
         }
     }
+
 
     fun logout() {
         view.navigateToHome()
     }
 
-
     fun confirmDeletion(user: Utente) {
         user?.id?.let {
             userRepo.deleteAccount(it) { success ->
                 if (success) {
-                    view.showSuccess("Account eliminato")
+                    view.showSuccess(context.getString(R.string.dialog_success_delete_account)) // Usa la stringa localizzata
                     view.navigateToHome()
                 } else {
-                    view.showError("Errore eliminazione account")
+                    view.showError(context.getString(R.string.dialog_error_delete_account)) // Usa la stringa localizzata
                 }
             }
         }
     }
+
 // Funzione per aggiornare direttamente l'email nel database se l'autenticazione fallisce
 private fun updateEmailDirectly(userId: String, email: String) {
     userRepo.updateUserEmail(userId, email) { success ->
         if (success) {
-            view.showSuccess("Email aggiornata correttamente")
+            view.showSuccess(context.getString(R.string.dialog_success_update_email)) // Usa la stringa localizzata
         } else {
-            view.showError("Errore nell'aggiornamento dell'email nel database")
+            view.showError(context.getString(R.string.dialog_error_update_email)) // Usa la stringa localizzata
         }
     }
 }
-
 // Funzione per aggiornare la password
 private fun updatePassword(userId: String, oldPassword: String, newPassword: String, confirmPassword: String) {
     if (newPassword.isNotEmpty() && newPassword == confirmPassword) {
@@ -358,46 +348,39 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
     }
     fun deleteAccount(user: Utente) {
         user.id?.let { userId ->
-
-
             userRepo.getUserData(userId) { userData ->
                 if (userData != null) {
                     Log.d("deleteAccount", "Dati utente recuperati: $userData")
 
                     if (userData.email != null && userData.password != null) {
-
                         view.showPasswordDialog(userData.email, userData.password) { password ->
                             if (BCrypt.checkpw(password, userData.password)) {
-
                                 auth.signInWithEmailAndPassword(userData.email, password)
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
-
                                             deleteUserAccount(userId)
                                         } else {
-
-                                            view.showError("Errore di autenticazione.")
+                                            view.showError(context.getString(R.string.dialog_error_authentication)) // Usa la stringa localizzata
                                         }
                                     }
                             } else {
-
-                                view.showError("Password non valida")
+                                view.showError(context.getString(R.string.dialog_error_invalid_password)) // Usa la stringa localizzata
                             }
                         }
                     } else if (userData.phoneNumber != null) {
-
                         startPhoneVerification(userData.phoneNumber)
                     } else {
-                        Log.e("deleteAccount", "Nessuna possibilita di auth")
+                        Log.e("deleteAccount", "Nessuna possibilità di auth")
                     }
                 } else {
-                    Log.e("deleteAccount", "Dati utente non recuperati ")
+                    Log.e("deleteAccount", "Dati utente non recuperati")
                 }
             }
         } ?: run {
             Log.e("deleteAccount", "ID utente non disponibile")
         }
     }
+
 
     fun startPhoneVerification(phoneNumber: String) {
         this.phoneNumber = phoneNumber
@@ -451,14 +434,14 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
                         userRepo.deleteAccount(userId) { success ->
                             if (success) {
                                 Log.d("deleteUserAccount", "Account eliminato dal db $userId")
-                                view.showSuccess("Account eliminato")
+                                view.showSuccess(context.getString(R.string.dialog_success_account_deleted)) // Usa la stringa localizzata
                                 view.navigateToHome()
                             } else {
-                                view.showError("Errore nell'eliminazione dell'account.")
+                                view.showError(context.getString(R.string.dialog_error_account_deletion)) // Usa la stringa localizzata
                             }
                         }
                     } else {
-                        view.showError("Errore nell'eliminazione dell'account.")
+                        view.showError(context.getString(R.string.dialog_error_account_deletion)) // Usa la stringa localizzata
                     }
                 }
             } else {
@@ -466,6 +449,7 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
             }
         }
     }
+
 
 
 }

@@ -23,6 +23,7 @@ import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import java.util.Locale
 
 class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
@@ -40,6 +41,7 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.superadminactivity)
 
         presenter = SuperAdminPresenter(this)
@@ -116,7 +118,28 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
 
     }
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
 
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
 
     override fun showError(message: String) {
@@ -155,11 +178,17 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
                 .setPositiveButton("Modifica") { _, _ ->
                     val question = faq.question
                     val answer = faq.answer
-                    showUpdateFaqDialog(faq.id, question, answer)
+                    faq.id?.let {
+                        if (question != null) {
+                            if (answer != null) {
+                                showUpdateFaqDialog(it, question, answer)
+                            }
+                        }
+                    }
                 }
                 .setNegativeButton("Elimina") { _, _ ->
 
-                    showDeleteConfirmationDialog(faq.id)
+                    faq.id?.let { showDeleteConfirmationDialog(it) }
                 }
                 .setNeutralButton("Annulla", null)
                 .create()
@@ -254,6 +283,11 @@ class SuperAdminActivity: AppCompatActivity(),SuperAdminView {
 
         passwordEditText.text.clear()
         confermaPasswordEditText.text.clear()
+    }
+
+
+    override fun getContext(): Context {
+        return this // Restituisce il Contesto della page
     }
 
 

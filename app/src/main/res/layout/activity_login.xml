@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
@@ -17,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="96dp"
-        android:hint="Username"
+        android:hint="@string/hint_username_login"
         android:inputType="textEmailAddress"
         android:selectAllOnFocus="true"
         android:background="@drawable/edittext" />
@@ -32,8 +31,8 @@
             android:id="@+id/pswlogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/prompt_password"
-            android:imeActionLabel="@string/action_sign_in_short"
+            android:hint="@string/prompt_passwordlog"
+            android:imeActionLabel="@string/action_sign_in_shortlog"
             android:imeOptions="actionDone"
             android:background="@drawable/edittext"
             android:inputType="textPassword"
@@ -47,7 +46,7 @@
             android:layout_gravity="end|center_vertical"
             android:padding="8dp"
             android:src="@drawable/passwordicon"
-            android:contentDescription="Mostra Password"
+            android:contentDescription="@string/descr_mostra_passwordlog"
             android:layout_marginEnd="12dp"/>
     </FrameLayout>
 
@@ -58,18 +57,20 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="20sp"
         android:enabled="true"
-        android:text="Accedi"
+        android:text="@string/button_accedi"
         style="@style/GreenButton" />
 
     <TextView
         android:id="@+id/iniziaresetpsw"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Password dimenticata? Nessun problema,clicca qui"
+        android:text="@string/text_password_dimenticata"
         android:textSize="15sp"
         android:clickable="true"
         android:layout_marginTop="10sp" />
 </LinearLayout>
+
+
 
     <!--
     <EditText

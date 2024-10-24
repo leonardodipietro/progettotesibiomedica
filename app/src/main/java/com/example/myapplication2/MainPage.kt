@@ -34,6 +34,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import com.example.myapplication2.repository.NotificaWorker
+import java.util.Locale
 
 
 class MainPage : AppCompatActivity(), MainPageView {
@@ -47,6 +48,7 @@ class MainPage : AppCompatActivity(), MainPageView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadLocale()
         setContentView(R.layout.mainpageactivity)
 
          //HINT TEXT DENTRO LO SPINNER
@@ -71,11 +73,32 @@ class MainPage : AppCompatActivity(), MainPageView {
         setupListeners()
         setupBottomNavigation()
 
-        presenter.loadSintomiList()
+        presenter.loadSintomiList(this)
 
         scheduleDailyNotification()
     }
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        val locale = Locale(languageCode ?: "it")
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
+    private fun loadLocale() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
+        if (languageCode != null) {
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+
+            val config = resources.configuration
+            config.setLocale(locale)
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
+    }
     private fun setupUI() {
         val recyclerView: RecyclerView = findViewById(R.id.recyclerSintomi)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -95,8 +118,9 @@ class MainPage : AppCompatActivity(), MainPageView {
 
             if (userId != null) {
                 presenter.submitSelectedSintomi(userId, selectedSintomi, allSintomi, distanzapasto)
+                Toast.makeText(this, getString(R.string.sintomi_inviati), Toast.LENGTH_SHORT).show()
             } else {
-                showError("Errore: Utente non autenticato.")
+                showError(getString(R.string.errore_utente_non_autenticato))
             }
         }
     }
@@ -140,7 +164,8 @@ class MainPage : AppCompatActivity(), MainPageView {
 
     // Implementazione dell'interfaccia MainPageView
     override fun showUserWelcomeMessage(username: String) {
-        findViewById<TextView>(R.id.titolo).text = "Benvenuto $username, come ti senti oggi?"
+        findViewById<TextView>(R.id.titolo).text = getString(R.string.mainpage_welcome_message) // Usa la stringa localizzata
+
     }
 
     override fun updateSintomiList(sintomiList: List<Sintomo>) {
