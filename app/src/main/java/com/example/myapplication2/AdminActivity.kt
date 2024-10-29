@@ -361,18 +361,18 @@ class AdminActivity : AppCompatActivity(), AdminView {
     }
 
 
-    override fun requestWritePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
-        } else {
-            presenter.onRequestPermissionsResult(true,this)
-        }
-    }
+
     override fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-
+    override fun requestWritePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            requestPermissions(arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE)
+        } else {
+            presenter.onRequestPermissionsResult(true, this) // Su Android 10 e successivi non richiediamo permessi
+        }
+    }
     override fun showPermissionDeniedError() {
         Log.e("Permission", "Permesso di scrittura negato")
     }
@@ -384,7 +384,12 @@ class AdminActivity : AppCompatActivity(), AdminView {
         }
     }
     override fun hasWritePermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Su Android 10+ non serve WRITE_EXTERNAL_STORAGE per usare MediaStore
+            true
+        } else {
+            ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     override fun showExportSuccessMessage() {

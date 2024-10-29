@@ -46,6 +46,13 @@
         android:layout_gravity="center_horizontal"
         android:paddingTop="16dp"/>
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_gotologin"
+        style="@style/GreenButton"
+        android:text="@string/btn_gotologinfrommain"
+        />
 
     <TextView
         android:id="@+id/sceglilingua"

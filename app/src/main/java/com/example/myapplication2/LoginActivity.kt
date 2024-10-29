@@ -136,7 +136,10 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
         }
 
         override fun showAccountLocked(remainingTime: Long) {
-            Toast.makeText(this, "Account bloccato. Riprova tra $remainingTime secondi.", Toast.LENGTH_LONG).show()
+
+            val minutes = remainingTime / 60
+            val seconds = remainingTime  % 60
+            Toast.makeText(this, "Account bloccato. Riprova tra $minutes minuti.", Toast.LENGTH_LONG).show()
         }
 
         override fun showResetPasswordEmailSent() {

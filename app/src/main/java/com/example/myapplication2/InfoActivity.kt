@@ -95,6 +95,7 @@ class InfoActivity:AppCompatActivity(), InfoView {
                 R.id.nav_home -> {
                     val intent = Intent(this, MainPage::class.java).apply {
                         putExtra("utente", currentUser)
+                        putExtra("skipAlert", true)
                     }
                     startActivity(intent)
                     true

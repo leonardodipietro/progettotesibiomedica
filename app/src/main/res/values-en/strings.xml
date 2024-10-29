@@ -12,9 +12,7 @@
     <string name="login_failed">Login failed</string>
     <string-array name="distanze_tempo_pasto">
         <item>Less than 1 hour</item>
-        <item>1 hour</item>
-        <item>2 hours</item>
-        <item>3 hours</item>
+        <item>From one to three hours</item>
         <item>More than 3 hours</item>
     </string-array>
     <string-array name="rimuovi_sintomo">
@@ -38,7 +36,7 @@
     <string name="tv_scegli_registrazione">Choose how to register</string>
     <string name="btn_registrati_email">Register with Email</string>
     <string name="btn_registrati_telefono">Register with Phone</string>
-    <string name="tv_gia_registrato">Already registered? Click here to log in</string>
+    <string name="tv_gia_registrato">Already registered? Click below to log in</string>
 
 
         <string name="hint_inserisci_numero_telefono">Enter phone number</string>
@@ -204,4 +202,20 @@
 
     <string name="sintomi_inviati">Symptoms submitted successfully</string>
     <string name="errore_utente_non_autenticato">Error: User not authenticated.</string>
+
+    <string name="file_saved_successfully">File saved successfully</string>
+    <string name="file_save_error">Error saving file</string>
+
+    <string name="btn_gotologinfrommain">Login</string>ù
+
+    <string name="contatta_medico">It is advisable to contact your personal doctor.</string>
+    <string name="hint_sintomo_aggiuntivo">enter here</string>
+    <string name="tv_nuovosintomoparticolare">Enter a new symptom below</string>
+    <string name="text_temopastodomanda">How long has it been since your last meal?6</string>
+
+    <string name="alert_title_cisonosintomi">Do you have symptoms?</string>
+    <string name="alert_message_cisonosintomi">Would you like to report any symptoms?</string>
+    <string name="alert_yes">Yes</string>
+    <string name="alert_no">No</string>
+
 </resources>

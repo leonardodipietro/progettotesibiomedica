@@ -119,7 +119,7 @@ class MainActivity: AppCompatActivity()  {
     private fun interfacciagrafica() {
        val mailpswdbutton = findViewById<Button>(R.id.btn_email)
        val phonebutton=findViewById<Button>(R.id.btn_phone)
-       val loginroot=findViewById<TextView>(R.id.tv_gotologin)
+       val loginroot=findViewById<Button>(R.id.btn_gotologin)
 
         // Configura i bottoni per la selezione della lingua
         val italianButton = findViewById<Button>(R.id.btn_italian)

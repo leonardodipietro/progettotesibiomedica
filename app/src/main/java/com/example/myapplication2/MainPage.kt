@@ -29,13 +29,16 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.util.concurrent.TimeUnit
 import com.google.gson.Gson
 import android.Manifest
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import com.example.myapplication2.repository.NotificaWorker
 import java.util.Locale
-
 
 class MainPage : AppCompatActivity(), MainPageView {
     companion object {
@@ -50,6 +53,14 @@ class MainPage : AppCompatActivity(), MainPageView {
         super.onCreate(savedInstanceState)
         loadLocale()
         setContentView(R.layout.mainpageactivity)
+
+
+        // Controllo se l'alert deve essere mostrato
+        val skipAlert = intent.getBooleanExtra("skipAlert", false)
+        if (!skipAlert) {
+            showSymptomAlertDialog()
+        }
+
 
          //HINT TEXT DENTRO LO SPINNER
         // Inizializza il presenter
@@ -77,6 +88,22 @@ class MainPage : AppCompatActivity(), MainPageView {
 
         scheduleDailyNotification()
     }
+    private fun showSymptomAlertDialog() {
+        val alertDialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.alert_title_cisonosintomi))
+            .setMessage(getString(R.string.alert_message_cisonosintomi))
+            .setPositiveButton(getString(R.string.alert_yes)) { dialog, _ ->
+                // Azione per "Sì"
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.alert_no)) { dialog, _ ->
+                // Azione per "No"
+                dialog.dismiss()
+            }
+            .create()
+        alertDialog.show()
+    }
+
     override fun attachBaseContext(newBase: Context) {
         val sharedPref = newBase.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
         val languageCode = sharedPref.getString("LANGUAGE", "it")
@@ -105,20 +132,45 @@ class MainPage : AppCompatActivity(), MainPageView {
         sintadapter = SintomiAdapter(emptyList())
         recyclerView.adapter = sintadapter
 
+
     }
     private fun setupListeners() {
         val inviaButton: Button = findViewById(R.id.inviadati)
         val spinnerDistanza: Spinner = findViewById(R.id.spinnerDistanzaUltimoPasto)
+        val editTextSintomoAggiuntivo: EditText = findViewById(R.id.editTextSintomoAggiuntivo)
 
         inviaButton.setOnClickListener {
             val distanzapasto = getDistanzaPastoFromSpinner(spinnerDistanza)
+            Log.d("DEBUGSPINNER", "Distanza pasto selezionata: $distanzapasto")
             val selectedSintomi = sintadapter.getSelectedSintomi()
-            val allSintomi = sintadapter.getAllSintomi()  // Ottieni la lista completa dei sintomi
+            val allSintomi = sintadapter.getAllSintomi()
             val userId = loadUserFromPreferences()?.id
+            val sintomoAggiuntivo = editTextSintomoAggiuntivo.text.toString().trim()
 
             if (userId != null) {
+                // Invio dei sintomi universali selezionati
                 presenter.submitSelectedSintomi(userId, selectedSintomi, allSintomi, distanzapasto)
                 Toast.makeText(this, getString(R.string.sintomi_inviati), Toast.LENGTH_SHORT).show()
+
+                // Mostra AlertDialog per sintomi con gravità elevata
+                val hasHighSeveritySintomi = selectedSintomi.any { it.gravità == 3 || it.gravità == 4 }
+                if (hasHighSeveritySintomi) {
+                    val alertDialog = AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.contatta_medico))
+                        .setCancelable(false)
+                        .create()
+                    alertDialog.show()
+                    Handler(Looper.getMainLooper()).postDelayed({ alertDialog.dismiss() }, 5000)
+                }
+
+                // Controllo e salvataggio del sintomo aggiuntivo
+                if (sintomoAggiuntivo.isNotEmpty()) {
+                    presenter.aggiungiSintomoAggiuntivo(sintomoAggiuntivo) { successo ->
+                        if (successo) {
+                            editTextSintomoAggiuntivo.text.clear()
+                        }
+                    }
+                }
             } else {
                 showError(getString(R.string.errore_utente_non_autenticato))
             }
@@ -152,12 +204,12 @@ class MainPage : AppCompatActivity(), MainPageView {
     }
 
     private fun getDistanzaPastoFromSpinner(spinner: Spinner): Int {
+        val selectedText = spinner.selectedItem.toString()
+        Log.d("DEBUGSPINNER", "Valore selezionato: $selectedText")
         return when (spinner.selectedItem.toString()) {
-            "Meno di 1 ora" -> 0
-            "1 ora" -> 1
-            "2 ore" -> 2
-            "3 ore" -> 3
-            "Più di 3 ore" -> 4
+            "Meno di 1 ora" -> 1
+            "Da 1 a 3 ore" -> 2
+            "Più di 3 ore" -> 3
             else -> 0
         }
     }
@@ -169,8 +221,9 @@ class MainPage : AppCompatActivity(), MainPageView {
     }
 
     override fun updateSintomiList(sintomiList: List<Sintomo>) {
-        sintadapter.submitlist(sintomiList)
+        sintadapter.submitlist(sintomiList)  // Carica solo i sintomi filtrati
     }
+
 
     override fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

@@ -11,9 +11,7 @@
     <string name="login_failed">"Login failed"</string>
     <string-array name="distanze_tempo_pasto">
         <item>Meno di 1 ora</item>
-        <item>1 ora</item>
-        <item>2 ore</item>
-        <item>3 ore</item>
+        <item>Da 1 a 3 ore</item>
         <item>Più di 3 ore</item>
     </string-array>
     <string-array name="rimuovi_sintomo">
@@ -39,7 +37,7 @@
         <string name="tv_scegli_registrazione">Scegli come registrarti</string>
         <string name="btn_registrati_email">Registrati con Email</string>
         <string name="btn_registrati_telefono">Registrati con Telefono</string>
-        <string name="tv_gia_registrato">Sei già registrato? Clicca qui per accedere</string>
+        <string name="tv_gia_registrato">Sei già registrato? Clicca qui sotto per accedere</string>
 
     <string name="hint_inserisci_numero_telefono">Inserisci numero di telefono</string>
     <string name="hint_nome_e_cognome">Nome e Cognome</string>
@@ -199,4 +197,20 @@
     <string name="errore_utente_non_autenticato">Errore: Utente non autenticato.</string>
 
     <string name="mainpage_welcome_message">Benvenuto, come ti senti oggi?</string>
+
+    <string name="file_saved_successfully">File salvato correttamente</string>
+    <string name="file_save_error">Errore nel salvataggio del file</string>
+
+    <string name="btn_gotologinfrommain">Accedi</string>
+
+    <string name="contatta_medico">Si consiglia di contattare il medico personale.</string>
+    <string name="hint_sintomo_aggiuntivo">Inserisci qui</string>
+    <string name="tv_nuovosintomoparticolare">Inserisci un nuovo sintomo qui sotto</string>
+
+    <string name="text_temopastodomanda"> Quanto tempo è trascordo dall\'ultimo pasto?</string>
+
+    <string name="alert_title_cisonosintomi">Hai sintomi?</string>
+    <string name="alert_message_cisonosintomi">Vuoi segnalare eventuali sintomi?</string>
+    <string name="alert_yes">Sì</string>
+    <string name="alert_no">No</string>
 </resources>

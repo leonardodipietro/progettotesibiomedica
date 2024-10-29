@@ -1,9 +1,14 @@
 package com.example.myapplication2.repository
 
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
+import com.example.myapplication2.R
 import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.model.UtenteEliminato
@@ -39,8 +44,10 @@ class ExportRepo {
                     for (userSnapshot in dataSnapshot.children) {
                         val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
                         val sintomiSnapshot = userSnapshot.child("sintomi")
+
                         for (sintomoIdSnapshot in sintomiSnapshot.children) {
                             val sintomoId = sintomoIdSnapshot.key ?: ""
+
                             for (yearSnapshot in sintomoIdSnapshot.children) {
                                 for (weekSnapshot in yearSnapshot.children) {
                                     for (dataSnapshot in weekSnapshot.children) {
@@ -51,16 +58,20 @@ class ExportRepo {
                                                 val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
 
                                                 if (sintomoData != null) {
-                                                    sintomoData.id = sintomoId // Assegna l'ID del sintomo recuperato
+                                                    sintomoData.id = sintomoId
                                                     sintomoData.dataSegnalazione = dataSegnalazione
                                                     sintomoData.oraSegnalazione = oraSnapshot.key ?: ""
 
+                                                    // Associa il nome del sintomo dalla lista globale usando l'ID e controlla il flag
+                                                    val globalSintomo = globalSintomiList.find { it.id == sintomoData.id }
 
-                                                    Log.d("SintomoDebug", "ID Sintomo: ${sintomoData.id}")
-
-                                                    // Associa il nome del sintomo dalla lista princ usando l'ID
-                                                    val nomeSintomo = globalSintomiList.find { it.id == sintomoData.id }?.nomeSintomo ?: "Sintomo sconosciuto"
-                                                    sintomoData.nomeSintomo = nomeSintomo
+                                                    if (globalSintomo != null) {
+                                                        sintomoData.nomeSintomo = globalSintomo.nomeSintomo
+                                                        sintomoData.isPersonalizzato = globalSintomo.isPersonalizzato
+                                                        Log.d("FetchReports", "Sintomo trovato: ${sintomoData.nomeSintomo}, isPersonalizzato: ${sintomoData.isPersonalizzato}")
+                                                    } else {
+                                                        sintomoData.nomeSintomo = "Sintomo sconosciuto"
+                                                    }
 
                                                     sintomiList.add(Pair(sintomoData, username))
                                                 }
@@ -72,7 +83,6 @@ class ExportRepo {
                         }
                     }
 
-
                     fetchExAccountReports(sintomiList, pastWeek, dateFormatter, globalSintomiList, callback)
                 }
 
@@ -83,8 +93,6 @@ class ExportRepo {
             })
         }
     }
-
-
     private fun fetchExAccountReports(
         sintomiList: MutableList<Pair<Sintomo, String>>,
         pastWeek: LocalDate,
@@ -322,15 +330,35 @@ class ExportRepo {
         })
     }
     fun saveFileToUserHome(context: Context, fileName: String): Boolean {
-        val srcFile = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports", fileName)
-        val destFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), fileName)
+        val contentResolver = context.contentResolver
+        val documentsCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Files.getContentUri("external")
+        }
+
+        val newFileDetails = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") // MIME per file Excel
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS) // Usa DIRECTORY_DOWNLOADS per Android 10 e successivi
+        }
 
         return try {
-            srcFile.copyTo(destFile, overwrite = true)
-            Log.d("FileSave", "File copiatoin home ${destFile.absolutePath}")
-            true
+            val fileUri = contentResolver.insert(documentsCollection, newFileDetails)
+            fileUri?.let {
+                contentResolver.openOutputStream(it)?.use { outputStream ->
+                    val srcFile = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports", fileName)
+                    srcFile.inputStream().use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                Log.d("FileSave", "File salvato correttamente: $fileName")
+                Toast.makeText(context, context.getString(R.string.file_saved_successfully), Toast.LENGTH_LONG).show()
+                true
+            } ?: false
         } catch (e: Exception) {
-
+            Log.e("FileSave", "Errore nel salvataggio del file: ${e.message}")
+            Toast.makeText(context, context.getString(R.string.file_save_error), Toast.LENGTH_LONG).show()
             false
         }
     }

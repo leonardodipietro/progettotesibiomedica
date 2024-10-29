@@ -1,76 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/mainpageroot"
-    tools:context=".MainPage">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/titolo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginLeft="20sp"
-        android:layout_marginTop="10sp"
-        android:text="@string/text_benvenuto"
-        />
-
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/titolo"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="20sp"
-        android:id="@+id/linearbuttespinn"
-        android:layout_marginTop="20dp"
-        android:layout_centerHorizontal="true">
+        android:layout_height="match_parent"
+
+        android:layout_above="@id/bottom_navigation"
+
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/titolo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20sp"
+                android:layout_marginTop="10sp"
+                android:text="@string/text_benvenuto"/>
+                <View
+                android:id="@+id/divisoresintomi"
+                android:layout_width="match_parent"
+                android:layout_height="2sp"
+                android:layout_below="@id/checkbox_layout"
+                android:background="#4CAF50"
+                android:layout_marginTop="12dp" />
+
+            <TextView
+                android:id="@+id/tempopastadomanada"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20sp"
+                android:layout_marginTop="10sp"
+                android:text="@string/text_temopastodomanda"/>
+
+             <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="16sp">
+
+                    <Spinner
+                        android:id="@+id/spinnerDistanzaUltimoPasto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:background="@drawable/spinnerdrawable"
+                        android:entries="@array/distanze_tempo_pasto"/>
+
+                    <ImageView
+                        android:id="@+id/freccetta"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:src="@drawable/freccetta"
+                        android:layout_marginEnd="16dp"/>
+                </FrameLayout>
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerSintomi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_nuovosintomoparticolare"
+                android:textSize="17sp"
+                android:layout_marginTop="20dp"
+                android:textStyle="bold"/>
+
+            <EditText
+                android:id="@+id/editTextSintomoAggiuntivo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edittext"
+                android:layout_marginTop="16dp"
+                android:hint="@string/hint_sintomo_aggiuntivo"/>
+
 
         <Button
             android:id="@+id/inviadati"
             style="@style/GreenButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center"
             android:text="@string/button_invia_dati"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            />
+            android:layout_marginEnd="8dp"/>
 
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp">
+        </LinearLayout>
 
-            <Spinner
-                android:id="@+id/spinnerDistanzaUltimoPasto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/spinnerdrawable"
-                android:entries="@array/distanze_tempo_pasto" />
-
-            <ImageView
-                android:id="@+id/freccetta"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="end|center_vertical"
-                android:src="@drawable/freccetta"
-                android:layout_marginEnd="16dp" />
-        </FrameLayout>
-    </LinearLayout>
-
-    <com.example.myapplication2.SwapRecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/linearbuttespinn"
-        android:layout_marginTop="20dp"
-        android:id="@+id/recyclerSintomi"
-        android:visibility="visible"
-        android:layout_above="@+id/bottom_navigation"
-        android:layout_centerHorizontal="true" />
+    </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -80,5 +117,6 @@
         app:menu="@menu/nav_bar"
         android:background="#4CAF50"
         app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white" />
+        app:itemTextColor="@android:color/white"/>
+
 </RelativeLayout>

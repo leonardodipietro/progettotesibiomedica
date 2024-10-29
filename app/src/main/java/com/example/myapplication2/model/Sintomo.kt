@@ -6,5 +6,6 @@ data class Sintomo (
     var gravità: Int = 0, //usiamo int poi cambiamo
     var tempoTrascorsoUltimoPasto: Int =0,
     var dataSegnalazione: String = "",
-    var oraSegnalazione: String = ""
+    var oraSegnalazione: String = "",
+    var isPersonalizzato: Boolean = false
 )

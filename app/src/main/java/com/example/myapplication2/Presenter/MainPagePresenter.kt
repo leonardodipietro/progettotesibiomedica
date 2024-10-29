@@ -7,6 +7,7 @@ import com.example.myapplication2.model.Sintomo
 import com.example.myapplication2.model.Utente
 import com.example.myapplication2.repository.SintomoRepo
 import com.example.myapplication2.repository.UserRepo
+import java.util.UUID
 
 class MainPagePresenter(
     private val view: MainPageView,
@@ -29,45 +30,64 @@ class MainPagePresenter(
 
         }
     }
-
     fun loadSintomiList(context: Context) {
         sintomoRepo.fetchSintomi(context)
         sintomoRepo.sintomi.observeForever { sintomiList ->
             if (sintomiList != null) {
-                view.updateSintomiList(sintomiList)
+                // Log del numero totale di sintomi caricati
+                Log.d("MainPagePresenter", "Numero totale di sintomi caricati: ${sintomiList.size}")
+
+                // Filtra per includere solo i sintomi "non personalizzati"
+                val sintomiUniversali = sintomiList.filter { it.isPersonalizzato == false }
+
+                // Log del numero di sintomi universali dopo il filtraggio
+                Log.d("MainPagePresenter", "Numero di sintomi universali (non personalizzati): ${sintomiUniversali.size}")
+
+                view.updateSintomiList(sintomiUniversali)
             } else {
                 view.showError("Errore nel caricamento dei sintomi.")
             }
         }
     }
 
-   /* fun submitSelectedSintomi(userId: String, selectedSintomi: List<Sintomo>, allSintomi: Int, distanzapasto: Int) {
-        selectedSintomi.forEach { it.tempoTrascorsoUltimoPasto = distanzapasto }
 
-        // Invia i sintomi selezionati
-        userRepo.submitSintomi(userId, selectedSintomi)
-
-        // Rimuovi sintomi deselezionati (quelli non inclusi nei sintomi selezionati)
-        val selectedSintomiIds = selectedSintomi.map { it.id }
-        val sintomiDaRimuovere = allSintomi.map { it.id }.minus(selectedSintomiIds)
-
-        sintomiDaRimuovere.forEach { sintomoId ->
-            userRepo.removeSintomo(userId, sintomoId)
+    fun aggiungiSintomoAggiuntivo(nomeSintomo: String, onComplete: (Boolean) -> Unit) {
+        sintomoRepo.aggiungiSintomo(nomeSintomo, isPersonalizzato = true) { successo ->
+            if (successo) {
+                val userId = view.loadUserFromPreferences()?.id ?: return@aggiungiSintomo
+                val nuovoSintomo = Sintomo(
+                    id = UUID.randomUUID().toString(),
+                    nomeSintomo = nomeSintomo,
+                    gravità = 0,
+                    tempoTrascorsoUltimoPasto = 0,
+                    isPersonalizzato = true  // Imposta isPersonalizzato a true
+                )
+                userRepo.submitSintomi(userId, listOf(nuovoSintomo))
+                onComplete(true)
+            } else {
+                onComplete(false)
+            }
         }
-    }*/
-    fun submitSelectedSintomi(userId: String, selectedSintomi: List<Sintomo>, allSintomi: List<Sintomo>, distanzapasto: Int) {
-        selectedSintomi.forEach { it.tempoTrascorsoUltimoPasto = distanzapasto }
+    }
 
-        // Invia i sintomi selezionati
-        userRepo.submitSintomi(userId, selectedSintomi)
+
+    fun submitSelectedSintomi(userId: String, selectedSintomi: List<Sintomo>, allSintomi: List<Sintomo>, distanzapasto: Int) {
+        Log.d("DEBUGSPINNER", "Distanza pasto trasmessa: $distanzapasto")
+        // Filtra solo i sintomi universali (non personalizzati) per evitare l'inclusione dei sintomi aggiuntivi nella RecyclerView
+        val sintomiUniversali = selectedSintomi.filter { it.isPersonalizzato != true }
+        sintomiUniversali.forEach { it.tempoTrascorsoUltimoPasto = distanzapasto }
+
+        // Invia i sintomi universali selezionati
+        userRepo.submitSintomi(userId, sintomiUniversali)
 
         // Rimuovi sintomi deselezionati
-        val selectedSintomiIds = selectedSintomi.map { it.id }
-        val sintomiDaRimuovere = allSintomi.map { it.id }.minus(selectedSintomiIds)
+        val selectedSintomiIds = sintomiUniversali.map { it.id }
+        val sintomiDaRimuovere = allSintomi.filter { it.isPersonalizzato != true }.map { it.id }.minus(selectedSintomiIds)
         sintomiDaRimuovere.forEach { sintomoId ->
             userRepo.removeSintomo(userId, sintomoId)
         }
     }
+
 
 
     private fun scheduleNotifications(userId: String?) {
