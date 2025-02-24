@@ -31,15 +31,13 @@ class SuperAdminPresenter (private val view: SuperAdminView){
                                     val user = Utente(
                                         id = userId,
                                         email = email,
-                                        name = name,
-                                        address = address,
                                         username = username,
                                         password = hashedPassword,
                                         ruolo = "admin",
                                         phoneNumber=""
                                     )
                                     view.clearInputFields()
-                                    userRepo.saveUserToFirebase(username, name, address, hashedPassword,"admin")
+                                    userRepo.saveUserToFirebase(username, hashedPassword,"admin")
                                     view.showSuccess("Admin registrato con successo")
                                 } else {
                                     view.showError("Registrazione fallita:")
@@ -71,20 +69,12 @@ class SuperAdminPresenter (private val view: SuperAdminView){
             view.showError("Domanda e risposta non possono essere vuoti")
         }
     }
-
     fun updateFaq(faqId: String, question: String, answer: String) {
         faqRepo.updateFaq(faqId, question, answer, {
             view.showSuccess("FAQ aggiornata con successo")
         }, { error ->
             view.showError("Errore update")
         })
-    }
-
-    fun loadFaqData() {
-        val context = view.getContext() // Assicurati che la tua view possa restituire il Context
-        faqRepo.fetchFaqList(context) { faqList ->
-            view.showFaqList(faqList)
-        }
     }
 
     fun deleteFaq(faqId: String) {
@@ -94,6 +84,17 @@ class SuperAdminPresenter (private val view: SuperAdminView){
             view.showError("Errore durante l'eliminazione ")
         })
     }
+
+    fun loadFaqData() {
+        val context = view.getContext()
+        faqRepo.fetchFaqList(context) { faqList ->
+            view.showFaqList(faqList)
+        }
+    }
+
+
+
+
     fun confirmLogout() {
         view.returnToMain()
     }

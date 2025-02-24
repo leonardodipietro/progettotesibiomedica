@@ -116,12 +116,6 @@ class AdminActivity : AppCompatActivity(), AdminView {
             ),
 
         )
-
-
-
-
-
-
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation_admin)
 
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->

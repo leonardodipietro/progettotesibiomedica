@@ -23,6 +23,32 @@
         <item></item>
     </string-array>
 
+    <string name="username_in_use">Username already in use, please choose another</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="fields_cannot_be_empty">Email, password, and confirm password cannot be empty</string>
+    <string name="registration_failed">Registration failed:</string>
+
+    <string name="enter_verification_code">Enter the verification code</string>
+    <string name="code_sent">Code sent</string>
+    <string name="wait_for_sms">Wait for the SMS to be sent</string>
+    <string name="authentication_failed">Authentication failed</string>
+
+    <string name="code_sent_to">Code sent to %1$s</string>
+    <string name="authentication_successful">Authentication successful</string>
+
+
+
+    <string name="dialog_verification_title">Phone Number Verification</string>
+    <string name="dialog_verification_message">Enter the OTP code received via SMS</string>
+    <string name="dialog_button_verify">Verify</string>
+    <string name="dialog_button_cancel">Cancel</string>
+    <string name="toast_error_verification_failed">Invalid OTP code. Please try again.</string>
+    <string name="toast_error_code_empty">Enter a valid OTP code.</string>
+
+
+
+
+
     <string name="hint_nomeecognome">First and Last Name</string>
     <string name="hint_indirizzo">Address</string>
     <string name="hint_username">Username</string>
@@ -111,7 +137,7 @@
 
     <string name="hint_nuova_password_reset">New password</string>
     <string name="hint_conferma_password_reset">Confirm password</string>
-    <string name="button_reimposta_password">Reset</string>
+    <string name="button_reimposta_password">Reset password</string>
 
 
     <string name="hint_modifica_domanda">Edit question</string>
@@ -129,6 +155,7 @@
     <string name="notification_title">Daily Notification</string>
     <string name="notification_text">How are you feeling today?!</string>
 
+    <string name="error_translation">Error in translating the response</string>
 
     <string name="dialog_title_phone_update">Update phone number</string>
     <string name="dialog_confirm">Confirm</string>

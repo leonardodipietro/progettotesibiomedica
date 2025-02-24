@@ -121,7 +121,6 @@ class ProfilePresenter(private val view: ProfileView, private val userRepo: User
 
     private fun startPhoneVerificationModify(phoneNumber: String, userId: String, isOldPhone: Boolean, onPhoneVerified: (Boolean) -> Unit = {}) {
 
-
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber(phoneNumber)
             .setTimeout(60L, TimeUnit.SECONDS)
@@ -341,45 +340,32 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
         view.showError("Le nuove password non coincidono")
     }
 }
-
     fun verifyPhone(code: String) {
         // Logica di verifica
         view.showSuccess("Numero verificato")
     }
     fun deleteAccount(user: Utente) {
-        user.id?.let { userId ->
-            userRepo.getUserData(userId) { userData ->
-                if (userData != null) {
-                    Log.d("deleteAccount", "Dati utente recuperati: $userData")
-
-                    if (userData.email != null && userData.password != null) {
+        user.id?.let { userId -> userRepo.getUserData(userId) { userData ->
+                if (userData != null) { if (userData.email != null && userData.password != null) {
                         view.showPasswordDialog(userData.email, userData.password) { password ->
                             if (BCrypt.checkpw(password, userData.password)) {
                                 auth.signInWithEmailAndPassword(userData.email, password)
                                     .addOnCompleteListener { task ->
-                                        if (task.isSuccessful) {
-                                            deleteUserAccount(userId)
-                                        } else {
-                                            view.showError(context.getString(R.string.dialog_error_authentication)) // Usa la stringa localizzata
-                                        }
-                                    }
-                            } else {
-                                view.showError(context.getString(R.string.dialog_error_invalid_password)) // Usa la stringa localizzata
-                            }
-                        }
-                    } else if (userData.phoneNumber != null) {
-                        startPhoneVerification(userData.phoneNumber)
-                    } else {
-                        Log.e("deleteAccount", "Nessuna possibilità di auth")
-                    }
-                } else {
-                    Log.e("deleteAccount", "Dati utente non recuperati")
-                }
-            }
-        } ?: run {
-            Log.e("deleteAccount", "ID utente non disponibile")
-        }
-    }
+                                        if (task.isSuccessful) { deleteUserAccount(userId) } else {
+                                            view.showError(context.getString(R.string.dialog_error_authentication)) } } } else {
+                                view.showError(context.getString(R.string.dialog_error_invalid_password))  } }
+                    } else if (userData.phoneNumber != null) { startPhoneVerification(userData.phoneNumber)
+                    }  }  } } ?: run {} }
+
+    private fun deleteUserAccount(userId: String) {
+        val exAccountRepo = ExAccountRepo()
+        exAccountRepo.creaUtenteEliminato(userId) { success ->
+            if (success) { auth.currentUser?.delete()?.addOnCompleteListener { deleteTask ->
+                    if (deleteTask.isSuccessful) { userRepo.deleteAccount(userId) { success ->
+                            if (success) { view.showSuccess(context.getString(R.string.dialog_success_account_deleted))
+                                view.navigateToHome()
+                            } else { view.showError(context.getString(R.string.dialog_error_account_deletion)) } }
+                    } else { view.showError(context.getString(R.string.dialog_error_account_deletion)) } } } } }
 
 
     fun startPhoneVerification(phoneNumber: String) {
@@ -422,33 +408,7 @@ private fun updatePassword(userId: String, oldPassword: String, newPassword: Str
             }
         }
     }
-    private fun deleteUserAccount(userId: String) {
-        val exAccountRepo = ExAccountRepo()
 
-        exAccountRepo.creaUtenteEliminato(userId) { success ->
-            if (success) {
-                auth.currentUser?.delete()?.addOnCompleteListener { deleteTask ->
-                    if (deleteTask.isSuccessful) {
-                        Log.d("deleteUserAccount", "Utente eliminato da Firebase Authentication: $userId")
-                        // Elimina anche l'account dal Realtime Database
-                        userRepo.deleteAccount(userId) { success ->
-                            if (success) {
-                                Log.d("deleteUserAccount", "Account eliminato dal db $userId")
-                                view.showSuccess(context.getString(R.string.dialog_success_account_deleted)) // Usa la stringa localizzata
-                                view.navigateToHome()
-                            } else {
-                                view.showError(context.getString(R.string.dialog_error_account_deletion)) // Usa la stringa localizzata
-                            }
-                        }
-                    } else {
-                        view.showError(context.getString(R.string.dialog_error_account_deletion)) // Usa la stringa localizzata
-                    }
-                }
-            } else {
-                Log.d("deleteUserAccount", "boh")
-            }
-        }
-    }
 
 
 

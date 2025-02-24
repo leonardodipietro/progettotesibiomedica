@@ -16,66 +16,38 @@ class SintomoRepo {
 
     private val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
     private val sintomiRef = database.getReference("sintomi")
-
-
-
-
     private val exAccountRef=database.getReference("exaccount")
     private val userRef=database.getReference("users")
     val sintomi: MutableLiveData<List<Sintomo>> = MutableLiveData()
+
     fun aggiungiSintomo(nomeSintomo: String, isPersonalizzato: Boolean = false, onComplete: (Boolean) -> Unit) {
         sintomiRef.orderByChild("nomeSintomo").equalTo(nomeSintomo).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    Log.d("sintrepo", "Sintomo già esistente")
                     onComplete(false)
                 } else {
                     val idSintomo = UUID.randomUUID().toString()
                     val sintomoData = mapOf(
-                        "id" to idSintomo,
-                        "nomeSintomo" to nomeSintomo,
-                        "isPersonalizzato" to isPersonalizzato  // Salva il flag isPersonalizzato nel database
-                    )
-
-                    // Salva il sintomo nel database
+                        "id" to idSintomo, "nomeSintomo" to nomeSintomo, "isPersonalizzato" to isPersonalizzato)
                     sintomiRef.child(idSintomo).setValue(sintomoData)
                         .addOnSuccessListener {
-                            Log.d("sintrepo", "Sintomo aggiunto")
-
-                            // Aggiungi la traduzione tramite TranslationRepo
                             val translationRepo = TranslationRepo()
                             translationRepo.translate(nomeSintomo, "en") { translatedText ->
                                 if (translatedText != null) {
-                                    Log.d("sintrepo", "Traduzione del sintomo: $translatedText")
-                                    // Salva il nome tradotto nel database
                                     sintomiRef.child(idSintomo).child("nomeSintomoTradotto").setValue(translatedText)
                                         .addOnSuccessListener {
-                                            Log.d("sintrepo", "Traduzione salvata nel database")
-                                            onComplete(true)
-                                        }
+                                            onComplete(true) }
                                         .addOnFailureListener { e ->
-                                            Log.d("sintrepo", "Errore nel salvataggio della traduzione: $e")
-                                            onComplete(false)
-                                        }
+                                            onComplete(false) }
                                 } else {
-                                    Log.d("sintrepo", "Errore nella traduzione del sintomo")
-                                    onComplete(false)
-                                }
-                            }
-                        }
+                                    onComplete(false) } } }
                         .addOnFailureListener { e ->
-                            Log.d("sintrepo", "Errore aggiunta sintomo: $e")
                             onComplete(false)
-                        }
-                }
-            }
-
+                        } } }
             override fun onCancelled(error: DatabaseError) {
                 Log.d("sintrepo", "Errore: ${error.message}")
                 onComplete(false)
-            }
-        })
-    }
+            } }) }
 
 
     fun aggiungiSintomoParticolare(nomeSintomo: String,isPersonalizzato: Boolean = true, onComplete: (Boolean) -> Unit) {
@@ -135,32 +107,19 @@ class SintomoRepo {
 
 
     fun fetchSintomi(context: Context) {
-        // Recupera la lingua dalle SharedPreferences
         val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-        val languageCode = sharedPref.getString("LANGUAGE", "it") // 'it' come default
-
+        val languageCode = sharedPref.getString("LANGUAGE", "it")
         database.getReference("sintomi").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val sintomiList = snapshot.children.map { childSnapshot ->
                     val sintomoId = childSnapshot.key ?: ""
                     val nomeSintomo = if (languageCode == "it") {
-                        childSnapshot.child("nomeSintomo").getValue(String::class.java) ?: ""
-                    } else {
-                        childSnapshot.child("nomeSintomoTradotto").getValue(String::class.java) ?: ""
-                    }
+                        childSnapshot.child("nomeSintomo").getValue(String::class.java) ?: "" } else {
+                        childSnapshot.child("nomeSintomoTradotto").getValue(String::class.java) ?: "" }
                     val isPersonalizzato = childSnapshot.child("isPersonalizzato").getValue(Boolean::class.java) ?: false
-
-                    // Crea l'oggetto Sintomo con nome e flag isPersonalizzato
-                    Sintomo(sintomoId, nomeSintomo, isPersonalizzato = isPersonalizzato)
-                }
-                sintomi.postValue(sintomiList)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseError", "Errore nel recupero dei sintomi: ${error.message}")
-            }
-        })
-    }
+                    Sintomo(sintomoId, nomeSintomo, isPersonalizzato = isPersonalizzato) }
+                sintomi.postValue(sintomiList) }
+            override fun onCancelled(error: DatabaseError) {} }) }
 
 
 

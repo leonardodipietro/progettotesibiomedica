@@ -8,22 +8,22 @@ data class Utente(
     val id: String? = null,
     val username: String? = null,
     val email: String? = null,
-    val name: String? = null,
-    val address: String? = null,
+    //val name: String? = null,
+    //val address: String? = null,
     val password: String? = null,
     val ruolo: String? = null,
     val phoneNumber: String? = null
 ) : Parcelable {
 
-    // Costruttore  Firebase
-    constructor() : this(null, null, null, null, null, null, null, null)
+    // Costruttore  Firebase.....reinserire due null per nome e indirizzo
+    constructor() : this(null, null, null,  null, null, null)
 
     constructor(parcel: Parcel) : this(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
+        /*parcel.readString(),
+        parcel.readString(),*/
         parcel.readString(),
         parcel.readString(),
         parcel.readString()
@@ -33,8 +33,8 @@ data class Utente(
         parcel.writeString(id)
         parcel.writeString(username)
         parcel.writeString(email)
-        parcel.writeString(name)
-        parcel.writeString(address)
+        /*parcel.writeString(name)
+        parcel.writeString(address)*/
         parcel.writeString(password)
         parcel.writeString(ruolo)
         parcel.writeString(phoneNumber)

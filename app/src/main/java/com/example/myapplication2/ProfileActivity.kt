@@ -41,10 +41,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var presenter: ProfilePresenter
     private lateinit var currentUser: Utente
     private lateinit var currentPhoneNumber: String
-
     private lateinit var userExperience: UserExperience
-
-    //
     // Variabili UI
     private lateinit var logoutButton: Button
     private lateinit var deleteButton: Button
@@ -54,7 +51,7 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     private lateinit var emailEditText: EditText
    // private lateinit var phoneEditText: EditText
     private lateinit var phoneTextView: TextView
-  private lateinit var italianButton:Button
+    private lateinit var italianButton:Button
     private lateinit var englishButton:Button
     private lateinit var oldPasswordEditText: EditText
     private lateinit var newPasswordEditText: EditText
@@ -142,8 +139,8 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         showConfirmPassword = findViewById(R.id.mostraConfermaPasswordUser)
         saveButton = findViewById(R.id.button_save)
         usernameEditText = findViewById(R.id.edit_username)
-        nameEditText = findViewById(R.id.edit_name)
-        addressEditText = findViewById(R.id.edit_address)
+        //nameEditText = findViewById(R.id.edit_name)
+       //addressEditText = findViewById(R.id.edit_address)
 
          italianButton = findViewById<Button>(R.id.btn_italian_profile)
          englishButton = findViewById<Button>(R.id.btn_english_profile)
@@ -212,9 +209,9 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         val newPhoneEditText = dialogView.findViewById<EditText>(R.id.edit_new_phone)
 
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.dialog_title_phone_update)) // Usa la stringa localizzata
+            .setTitle(getString(R.string.dialog_title_phone_update))
             .setView(dialogView)
-            .setPositiveButton(getString(R.string.dialog_confirm)) { _, _ -> // Usa la stringa localizzata
+            .setPositiveButton(getString(R.string.dialog_confirm)) { _, _ ->
                 val oldPhone = oldPhoneEditText.text.toString().trim()
                 val newPhone = newPhoneEditText.text.toString().trim()
 
@@ -321,15 +318,15 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     }
     private fun showDeleteDialog() {
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.dialog_title_delete_account)) // Usa la stringa localizzata
-            .setMessage(getString(R.string.dialog_message_delete_account)) // Usa la stringa localizzata
-            .setPositiveButton(getString(R.string.dialog_confirm_delete_account)) { _, _ -> // Usa la stringa localizzata
+            .setTitle(getString(R.string.dialog_title_delete_account))
+            .setMessage(getString(R.string.dialog_message_delete_account))
+            .setPositiveButton(getString(R.string.dialog_confirm_delete_account)) { _, _ ->
                 presenter.deleteAccount(currentUser)
                 clearUserPreferences()
                 stopNotification()
                 //navigateToHome()
             }
-            .setNegativeButton(getString(R.string.dialog_cancel_delete_account)) { dialog, _ -> dialog.dismiss() } // Usa la stringa localizzata
+            .setNegativeButton(getString(R.string.dialog_cancel_delete_account)) { dialog, _ -> dialog.dismiss() }
             .create()
             .show()
     }
@@ -345,7 +342,6 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
     override fun showPhoneEditText() {
         // Disabilita il click sulla TextView del telefono, ma non nasconderla
         phoneTextView.isClickable = false
-
         // Trova il parent layout dove vogliamo inserire l'EditText
         val parentLayout = findViewById<LinearLayout>(R.id.parentlayout)
 
@@ -426,8 +422,8 @@ class ProfileActivity : AppCompatActivity(), ProfileView {
         //TODO FORSE CI METTIAMO ALTRO
         //phoneEditText.hint = user.phoneNumber
         usernameEditText.hint = user.username
-        nameEditText.hint = user.name
-        addressEditText.hint = user.address
+        /*nameEditText.hint = user.name
+        addressEditText.hint = user.address*/
     }
     override fun showSuccess(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

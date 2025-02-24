@@ -5,10 +5,21 @@
     android:gravity="center"
     android:padding="16dp">
 
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Resetta la password"
+        android:textSize="24sp"
+        android:textStyle="bold"/>
+
+
     <EditText
         android:id="@+id/newPasswordresetpage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
         android:background="@drawable/edittext"
         android:hint="@string/hint_nuova_password_reset"
         android:inputType="textPassword" />
@@ -17,14 +28,18 @@
         android:id="@+id/confirmPasswordresetpage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
         android:background="@drawable/edittext"
         android:hint="@string/hint_conferma_password_reset"
         android:inputType="textPassword" />
 
     <Button
         android:id="@+id/resetButtonresetpage"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginTop="10sp"
         android:layout_height="wrap_content"
+        style="@style/GreenButton"
         android:text="@string/button_reimposta_password" />
+
 </LinearLayout>
 

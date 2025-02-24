@@ -32,59 +32,30 @@ class ExportRepo {
     private val exAccountRef = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app").reference
 
     fun fetchLastWeekReports(callback: (List<Pair<Sintomo, String>>, List<Sintomo>) -> Unit) {
-        fetchGlobalSintomi { globalSintomiList ->
-            val sintomiList = mutableListOf<Pair<Sintomo, String>>()
+        fetchGlobalSintomi { globalSintomiList ->  val sintomiList = mutableListOf<Pair<Sintomo, String>>()
             val currentDate = LocalDate.now()
             val pastWeek = currentDate.minusWeeks(1)
             val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
-
-            // Recupero delle segnalazioni dal nodo "users"
             database.reference.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    for (userSnapshot in dataSnapshot.children) {
-                        val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
+                override fun onDataChange(dataSnapshot: DataSnapshot) { for (userSnapshot in dataSnapshot.children) {
+                        val username = userSnapshot.child("username").getValue(String::class.java) ?: "Sconosciuto"
                         val sintomiSnapshot = userSnapshot.child("sintomi")
-
-                        for (sintomoIdSnapshot in sintomiSnapshot.children) {
-                            val sintomoId = sintomoIdSnapshot.key ?: ""
-
-                            for (yearSnapshot in sintomoIdSnapshot.children) {
-                                for (weekSnapshot in yearSnapshot.children) {
+                        for (sintomoIdSnapshot in sintomiSnapshot.children) { val sintomoId = sintomoIdSnapshot.key ?: ""
+                            for (yearSnapshot in sintomoIdSnapshot.children) { for (weekSnapshot in yearSnapshot.children) {
                                     for (dataSnapshot in weekSnapshot.children) {
                                         val dataSegnalazione = dataSnapshot.key ?: ""
-
                                         if (LocalDate.parse(dataSegnalazione, dateFormatter).isAfter(pastWeek)) {
                                             for (oraSnapshot in dataSnapshot.children) {
                                                 val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
-
-                                                if (sintomoData != null) {
-                                                    sintomoData.id = sintomoId
+                                                if (sintomoData != null) { sintomoData.id = sintomoId
                                                     sintomoData.dataSegnalazione = dataSegnalazione
                                                     sintomoData.oraSegnalazione = oraSnapshot.key ?: ""
-
-                                                    // Associa il nome del sintomo dalla lista globale usando l'ID e controlla il flag
                                                     val globalSintomo = globalSintomiList.find { it.id == sintomoData.id }
-
-                                                    if (globalSintomo != null) {
-                                                        sintomoData.nomeSintomo = globalSintomo.nomeSintomo
-                                                        sintomoData.isPersonalizzato = globalSintomo.isPersonalizzato
-                                                        Log.d("FetchReports", "Sintomo trovato: ${sintomoData.nomeSintomo}, isPersonalizzato: ${sintomoData.isPersonalizzato}")
-                                                    } else {
-                                                        sintomoData.nomeSintomo = "Sintomo sconosciuto"
-                                                    }
-
-                                                    sintomiList.add(Pair(sintomoData, username))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    fetchExAccountReports(sintomiList, pastWeek, dateFormatter, globalSintomiList, callback)
-                }
+                                                    if (globalSintomo != null) { sintomoData.nomeSintomo = globalSintomo.nomeSintomo
+                                                        sintomoData.isPersonalizzato = globalSintomo.isPersonalizzato }
+                                                    else { sintomoData.nomeSintomo = "Sintomo sconosciuto" }
+                                                    sintomiList.add(Pair(sintomoData, username)) } } } } } } } }
+                    fetchExAccountReports(sintomiList, pastWeek, dateFormatter, globalSintomiList, callback) }
 
                 override fun onCancelled(databaseError: DatabaseError) {
                     Log.e("Firebase", "Errore nel recupero dei dati: ${databaseError.message}")
@@ -112,21 +83,17 @@ class ExportRepo {
                             for (weekSnapshot in yearSnapshot.children) {
                                 for (dataSnapshot in weekSnapshot.children) {
                                     val dataSegnalazione = dataSnapshot.key ?: ""
-
                                     if (LocalDate.parse(dataSegnalazione, dateFormatter).isAfter(pastWeek)) {
                                         for (oraSnapshot in dataSnapshot.children) {
                                             val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
-
                                             if (sintomoData != null) {
                                                 sintomoData.dataSegnalazione = dataSegnalazione
                                                 sintomoData.oraSegnalazione = oraSnapshot.key ?: ""
-
                                                 // Verifica se il nome del sintomo è vuoto e recupera dalla lista globale
                                                 if (sintomoData.nomeSintomo.isEmpty()) {
                                                     val globalSintomo = globalSintomiList.find { it.id == sintomoData.id }
                                                     sintomoData.nomeSintomo = globalSintomo?.nomeSintomo ?: "Sintomo sconosciuto"
                                                 }
-
                                                 sintomiList.add(Pair(sintomoData, usernameEliminato))
                                             }
                                         }
@@ -146,70 +113,39 @@ class ExportRepo {
         })
     }
 
-    fun generateExcel(
-        context: Context,
-        sintomiData: List<Pair<Sintomo, String>>,
-        sintomiNomiGlobali: List<Sintomo>,
-        fileName: String
+    fun generateExcel(context: Context, sintomiData: List<Pair<Sintomo, String>>, sintomiNomiGlobali: List<Sintomo>, fileName: String
     ): Boolean {
         val path = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports")
-
-        if (!path.exists()) {
-            path.mkdirs()
-        }
-
+        if (!path.exists()) { path.mkdirs() }
         val file = File(path, fileName)
-
         return try {
-
             val workbook = XSSFWorkbook()
             val sheet = workbook.createSheet("Sintomi Report")
-
-            // Create the header row in the Excel sheet
             val headerRow = sheet.createRow(0)
             headerRow.createCell(0).setCellValue("Data")
             headerRow.createCell(1).setCellValue("Nome Utente")
             headerRow.createCell(2).setCellValue("Ora Rilevazione")
             headerRow.createCell(3).setCellValue("Ora Ultimo Pasto")
             headerRow.createCell(4).setCellValue("Gravità")
-
             sintomiNomiGlobali.map { it.nomeSintomo }.distinct().forEachIndexed { index, nomeSintomo ->
-                headerRow.createCell(5 + index).setCellValue(nomeSintomo)
-            }
-
+                headerRow.createCell(5 + index).setCellValue(nomeSintomo) }
             var rowCount = 1
-
             for ((sintomo, username) in sintomiData) {
                 val row = sheet.createRow(rowCount++)
-
-                // Insert the date and time of the report
                 row.createCell(0).setCellValue(sintomo.dataSegnalazione)
                 row.createCell(1).setCellValue(username)
                 row.createCell(2).setCellValue(sintomo.oraSegnalazione)
                 row.createCell(3).setCellValue(sintomo.tempoTrascorsoUltimoPasto.toDouble())
                 row.createCell(4).setCellValue(sintomo.gravità.toDouble())
-
                 val sintomoIndex = sintomiNomiGlobali.indexOfFirst { it.id == sintomo.id }
-
-                Log.d("ExcelDebug", "Sintomo segnalato ID: ${sintomo.id}")
-                Log.d("ExcelDebug", "Sintomi globali: ${sintomiNomiGlobali.map { it.id }}")
-
-                if (sintomoIndex != -1) {
-                    Log.d("ExcelDebug", "Sintomoin colonna index: $sintomoIndex con ID corrispondente: ${sintomiNomiGlobali[sintomoIndex].id}")
-                    // Inserics x
-                    row.createCell(5 + sintomoIndex).setCellValue("X")
-                } else {
-                    Log.d("ExcelDebug", "Nessun sintomo per a ID: ${sintomo.id}")
-                }
-            }
-            // Write the Excel file to disk
-            FileOutputStream(file).use { fileOut ->
+                if (sintomoIndex != -1) {row.createCell(5 + sintomoIndex).setCellValue("X") } }
+              FileOutputStream(file).use { fileOut ->
                 workbook.write(fileOut)
                 workbook.close()
             }
 
-            Log.d("Excel", "File saved at: ${file.absolutePath}")
-            true // Success
+            Log.d("Excel", "File salvato: ${file.absolutePath}")
+            true
         } catch (e: Exception) {
             Log.e("Excel", "Error generating Excel file", e)
             false // Error
@@ -217,36 +153,27 @@ class ExportRepo {
     }
     fun fetchDataAndGenerateExcel(context: Context) {
         val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
-
         // Recupero del nodo "users" con i relativi sintomi
         database.reference.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val sintomiList = mutableListOf<Pair<Sintomo, String>>()  // Sintomi con nome utente associato
-
-                // Recupera i sintomi dagli utenti attivi
                 for (userSnapshot in dataSnapshot.children) {
                     val username = userSnapshot.child("name").getValue(String::class.java) ?: "Sconosciuto"
-
-                    // Navigazione tra i nodi di sintomi -> anno -> settimana -> data -> ora
                     val sintomiSnapshot = userSnapshot.child("sintomi")
                     for (sintomoIdSnapshot in sintomiSnapshot.children) {
                         val sintomoId = sintomoIdSnapshot.key ?: ""
-
                         for (yearSnapshot in sintomoIdSnapshot.children) {
                             for (weekSnapshot in yearSnapshot.children) {
                                 for (dataSnapshot in weekSnapshot.children) {
                                     val dataSegnalazione = dataSnapshot.key ?: ""
-
                                     for (oraSnapshot in dataSnapshot.children) {
                                         val oraSegnalazione = oraSnapshot.key ?: ""
                                         val sintomoData = oraSnapshot.getValue(Sintomo::class.java)
-
                                         if (sintomoData != null) {
                                             sintomoData.id = sintomoId
                                             sintomoData.dataSegnalazione = dataSegnalazione
                                             sintomoData.oraSegnalazione = oraSegnalazione
 
-                                            Log.d("SintomoData", "Utente: $username, SintomoID: $sintomoId, Data: $dataSegnalazione, Ora: $oraSegnalazione")
                                             sintomiList.add(Pair(sintomoData, username))
                                         }
                                     }
@@ -333,29 +260,20 @@ class ExportRepo {
         val contentResolver = context.contentResolver
         val documentsCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        } else {
-            MediaStore.Files.getContentUri("external")
-        }
-
+        } else { MediaStore.Files.getContentUri("external") }
         val newFileDetails = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") // MIME per file Excel
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS) // Usa DIRECTORY_DOWNLOADS per Android 10 e successivi
-        }
-
+            put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)   }
         return try {
             val fileUri = contentResolver.insert(documentsCollection, newFileDetails)
             fileUri?.let {
                 contentResolver.openOutputStream(it)?.use { outputStream ->
                     val srcFile = File(context.getExternalFilesDir(null)?.absolutePath + "/Reports", fileName)
                     srcFile.inputStream().use { inputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
-                Log.d("FileSave", "File salvato correttamente: $fileName")
+                        inputStream.copyTo(outputStream) } }
                 Toast.makeText(context, context.getString(R.string.file_saved_successfully), Toast.LENGTH_LONG).show()
-                true
-            } ?: false
+                true } ?: false
         } catch (e: Exception) {
             Log.e("FileSave", "Errore nel salvataggio del file: ${e.message}")
             Toast.makeText(context, context.getString(R.string.file_save_error), Toast.LENGTH_LONG).show()
@@ -365,9 +283,7 @@ class ExportRepo {
 
 
     fun fetchGlobalSintomi(callback: (List<Sintomo>) -> Unit) {
-        val database = FirebaseDatabase.getInstance("https://myapplication2-7be0f-default-rtdb.europe-west1.firebasedatabase.app")
         val sintomiList = mutableListOf<Sintomo>()
-
         database.reference.child("sintomi").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(sintomiSnapshot: DataSnapshot) {
                 for (sintomoSnapshot in sintomiSnapshot.children) {
@@ -376,12 +292,12 @@ class ExportRepo {
                         sintomiList.add(sintomo)
                     }
                 }
-                Log.d("Firebase", "Sintomi globali recuperati: $sintomiList")
+                Log.d("FirebaseExport", "Sintomi recuperati: $sintomiList")
                 callback(sintomiList)
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("Firebase", "Errore nel recupero: ${databaseError.message}")
+                Log.e("FirebaseExport", "Errore nel recupero: ${databaseError.message}")
                 callback(emptyList())
             }
         })

@@ -11,12 +11,20 @@
     android:gravity="center"
     tools:context=".LoginActivity">
 
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textSize="24sp"
+        android:textStyle="bold"/>
+
     <EditText
         android:id="@+id/usernamelogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="96dp"
-        android:hint="@string/hint_username_login"
+        android:layout_marginTop="16dp"
+        android:hint="Username, Email o Numero di telefono"
         android:inputType="textEmailAddress"
         android:selectAllOnFocus="true"
         android:background="@drawable/edittext" />
@@ -52,7 +60,7 @@
 
     <Button
         android:id="@+id/loginconmail"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="20sp"
@@ -65,8 +73,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_password_dimenticata"
-        android:textSize="15sp"
+        android:textSize="18sp"
         android:clickable="true"
+        android:textStyle="bold"
         android:layout_marginTop="10sp" />
 </LinearLayout>
 

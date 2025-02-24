@@ -34,15 +34,7 @@ class MainPagePresenter(
         sintomoRepo.fetchSintomi(context)
         sintomoRepo.sintomi.observeForever { sintomiList ->
             if (sintomiList != null) {
-                // Log del numero totale di sintomi caricati
-                Log.d("MainPagePresenter", "Numero totale di sintomi caricati: ${sintomiList.size}")
-
-                // Filtra per includere solo i sintomi "non personalizzati"
                 val sintomiUniversali = sintomiList.filter { it.isPersonalizzato == false }
-
-                // Log del numero di sintomi universali dopo il filtraggio
-                Log.d("MainPagePresenter", "Numero di sintomi universali (non personalizzati): ${sintomiUniversali.size}")
-
                 view.updateSintomiList(sintomiUniversali)
             } else {
                 view.showError("Errore nel caricamento dei sintomi.")
@@ -57,36 +49,16 @@ class MainPagePresenter(
                 val userId = view.loadUserFromPreferences()?.id ?: return@aggiungiSintomo
                 val nuovoSintomo = Sintomo(
                     id = UUID.randomUUID().toString(),
-                    nomeSintomo = nomeSintomo,
-                    gravità = 0,
-                    tempoTrascorsoUltimoPasto = 0,
-                    isPersonalizzato = true  // Imposta isPersonalizzato a true
-                )
+                    nomeSintomo = nomeSintomo, gravità = 0,
+                    tempoTrascorsoUltimoPasto = 0, isPersonalizzato = true)
                 userRepo.submitSintomi(userId, listOf(nuovoSintomo))
-                onComplete(true)
-            } else {
-                onComplete(false)
-            }
-        }
-    }
-
-
+                onComplete(true) } else {
+                onComplete(false) } } }
     fun submitSelectedSintomi(userId: String, selectedSintomi: List<Sintomo>, allSintomi: List<Sintomo>, distanzapasto: Int) {
-        Log.d("DEBUGSPINNER", "Distanza pasto trasmessa: $distanzapasto")
-        // Filtra solo i sintomi universali (non personalizzati) per evitare l'inclusione dei sintomi aggiuntivi nella RecyclerView
         val sintomiUniversali = selectedSintomi.filter { it.isPersonalizzato != true }
         sintomiUniversali.forEach { it.tempoTrascorsoUltimoPasto = distanzapasto }
-
-        // Invia i sintomi universali selezionati
-        userRepo.submitSintomi(userId, sintomiUniversali)
-
-        // Rimuovi sintomi deselezionati
-        val selectedSintomiIds = sintomiUniversali.map { it.id }
-        val sintomiDaRimuovere = allSintomi.filter { it.isPersonalizzato != true }.map { it.id }.minus(selectedSintomiIds)
-        sintomiDaRimuovere.forEach { sintomoId ->
-            userRepo.removeSintomo(userId, sintomoId)
-        }
-    }
+        // Invia i sintomi selezionati
+        userRepo.submitSintomi(userId, sintomiUniversali) }
 
 
 
@@ -96,3 +68,17 @@ class MainPagePresenter(
         }
     }
 }
+
+/*    fun submitSelectedSintomi(userId: String, selectedSintomi: List<Sintomo>, allSintomi: List<Sintomo>, distanzapasto: Int) {
+        val sintomiUniversali = selectedSintomi.filter { it.isPersonalizzato != true }
+        sintomiUniversali.forEach { it.tempoTrascorsoUltimoPasto = distanzapasto }
+        // Invia i sintomi selezionati
+        userRepo.submitSintomi(userId, sintomiUniversali)
+        // Rimuove sintomi deselezionati
+        val selectedSintomiIds = sintomiUniversali.map { it.id }
+        val sintomiDaRimuovere = allSintomi.filter { it.isPersonalizzato != true }.map { it.id }.minus(selectedSintomiIds)
+        sintomiDaRimuovere.forEach { sintomoId ->
+            userRepo.removeSintomo(userId, sintomoId)
+        }
+    }
+*/

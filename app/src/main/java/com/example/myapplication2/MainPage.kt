@@ -131,28 +131,22 @@ class MainPage : AppCompatActivity(), MainPageView {
         recyclerView.layoutManager = LinearLayoutManager(this)
         sintadapter = SintomiAdapter(emptyList())
         recyclerView.adapter = sintadapter
-
-
     }
     private fun setupListeners() {
         val inviaButton: Button = findViewById(R.id.inviadati)
         val spinnerDistanza: Spinner = findViewById(R.id.spinnerDistanzaUltimoPasto)
         val editTextSintomoAggiuntivo: EditText = findViewById(R.id.editTextSintomoAggiuntivo)
-
         inviaButton.setOnClickListener {
             val distanzapasto = getDistanzaPastoFromSpinner(spinnerDistanza)
-            Log.d("DEBUGSPINNER", "Distanza pasto selezionata: $distanzapasto")
             val selectedSintomi = sintadapter.getSelectedSintomi()
             val allSintomi = sintadapter.getAllSintomi()
             val userId = loadUserFromPreferences()?.id
             val sintomoAggiuntivo = editTextSintomoAggiuntivo.text.toString().trim()
-
             if (userId != null) {
-                // Invio dei sintomi universali selezionati
+                // Invio dei sintomi selezionati da lista
                 presenter.submitSelectedSintomi(userId, selectedSintomi, allSintomi, distanzapasto)
                 Toast.makeText(this, getString(R.string.sintomi_inviati), Toast.LENGTH_SHORT).show()
-
-                // Mostra AlertDialog per sintomi con gravità elevata
+                // Mostra l'Alert per sintomi con gravità elevata
                 val hasHighSeveritySintomi = selectedSintomi.any { it.gravità == 3 || it.gravità == 4 }
                 if (hasHighSeveritySintomi) {
                     val alertDialog = AlertDialog.Builder(this)
@@ -162,8 +156,6 @@ class MainPage : AppCompatActivity(), MainPageView {
                     alertDialog.show()
                     Handler(Looper.getMainLooper()).postDelayed({ alertDialog.dismiss() }, 5000)
                 }
-
-                // Controllo e salvataggio del sintomo aggiuntivo
                 if (sintomoAggiuntivo.isNotEmpty()) {
                     presenter.aggiungiSintomoAggiuntivo(sintomoAggiuntivo) { successo ->
                         if (successo) {
@@ -237,7 +229,6 @@ class MainPage : AppCompatActivity(), MainPageView {
     }
     private fun setupNotificationChannelAndPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
             val name = "Daily Notification"
             val descriptionText = "Channel for daily notifications"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -247,20 +238,14 @@ class MainPage : AppCompatActivity(), MainPageView {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
             scheduleDailyNotification()
-
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE)
             } else {
-
                 scheduleDailyNotification()
             }
         } else {
-
             scheduleDailyNotification()
         }
     }
@@ -334,11 +319,6 @@ class MainPage : AppCompatActivity(), MainPageView {
             null
         }
     }
-
-
-
-
-
 
     override fun stopNotification() {
       //  WorkManager.getInstance(this).cancelUniqueWork("NotificaWorker")

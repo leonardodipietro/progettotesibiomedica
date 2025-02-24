@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application2</string>
+    <string name="app_name">La mia applicazione 2</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -22,6 +22,32 @@
         <item></item>
     </string-array>
 
+    <string name="username_in_use">Username già in uso, selezionare un altro</string>
+    <string name="passwords_do_not_match">Le password non corrispondono</string>
+    <string name="fields_cannot_be_empty">Email, password e conferma password non possono essere vuoti</string>
+    <string name="registration_failed">Registrazione fallita:</string>
+
+    <string name="enter_verification_code">Inserisci il codice di verifica</string>
+    <string name="code_sent">Codice inviato</string>
+    <string name="wait_for_sms">Attendi che l sms venga inviato</string>
+    <string name="authentication_failed">Autenticazione fallita</string>
+
+    <string name="code_sent_to">Codice inviato a %1$s</string>
+    <string name="authentication_successful">Autenticazione riuscita</string>
+
+
+    <string name="dialog_verification_title">Verifica numero di telefono</string>
+    <string name="dialog_verification_message">Inserisci il codice OTP ricevuto via SMS</string>
+    <string name="dialog_button_verify">Verifica</string>
+    <string name="dialog_button_cancel">Annulla</string>
+    <string name="toast_error_verification_failed">Codice OTP non valido. Riprova.</string>
+    <string name="toast_error_code_empty">Inserisci un codice OTP valido.</string>
+
+
+
+    <string name="error_translation">Errore nella traduzione della risposta</string>
+
+
 
     <string name="hint_nomeecognome">Nome e Cognome</string>
      <string name="hint_indirizzo">Indirizzo</string>
@@ -31,7 +57,7 @@
         <string name="hint_confirm_password">Conferma Password</string>
         <string name="show_password">Mostra Password</string>
         <string name="show_confirm_password">Mostra Conferma Password</string>
-        <string name="register_button">Registrati</string>
+        <string name="register_button">Registrati e accedi</string>
 
 
         <string name="tv_scegli_registrazione">Scegli come registrarti</string>
@@ -47,7 +73,7 @@
     <string name="hint_conferma_password">Conferma Password</string>
     <string name="descr_mostra_password">Mostra Password</string>
     <string name="descr_mostra_conferma_password">Mostra Conferma Password</string>
-    <string name="button_invia_codice">Invia Codice</string>
+    <string name="button_invia_codice">Invia codice di verifica</string>
     <string name="hint_inserisci_codice">Inserisci codice di verifica</string>
     <string name="button_verifica_codice">Verifica codice e accedi</string>
 
@@ -110,7 +136,7 @@
 
     <string name="hint_nuova_password_reset">Nuova password</string>
     <string name="hint_conferma_password_reset">Conferma password</string>
-    <string name="button_reimposta_password">Reimposta</string>
+    <string name="button_reimposta_password">Reimposta password</string>
 
 
     <string name="hint_modifica_domanda">Modifica domanda</string>

@@ -34,7 +34,6 @@ class ResetPasswordActivity : AppCompatActivity() {
             finish()
             return
         }
-
         resetButton.setOnClickListener {
             val newPassword = newPasswordEditText.text.toString()
             val confirmPassword = confirmPasswordEditText.text.toString()
@@ -42,7 +41,18 @@ class ResetPasswordActivity : AppCompatActivity() {
             if (newPassword == confirmPassword) {
                 saveNewPassword(newPassword)
             } else {
-                Toast.makeText(this, getString(R.string.toast_error_passwords_not_matching), Toast.LENGTH_SHORT).show() // Usa la stringa localizzata
+                Toast.makeText(this, getString(R.string.toast_error_passwords_not_matching), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    private fun saveNewPassword(password: String) {
+        val hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt())
+        userRepo.changePassword(username, hashedPassword) { success ->
+            if (success) {
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            } else {
+                Toast.makeText(this, getString(R.string.toast_error_saving_password), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -68,17 +78,4 @@ class ResetPasswordActivity : AppCompatActivity() {
         super.attachBaseContext(context)
     }
 
-    private fun saveNewPassword(password: String) {
-        // Cripta la password usando BCrypt
-        val hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt())
-
-        userRepo.changePassword(username, hashedPassword) { success ->
-            if (success) {
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            } else {
-                Toast.makeText(this, getString(R.string.toast_error_saving_password), Toast.LENGTH_SHORT).show() // Usa la stringa localizzata
-            }
-        }
-    }
 }

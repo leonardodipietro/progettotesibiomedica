@@ -9,6 +9,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
+
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -53,33 +55,19 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
             presenter = LoginPresenter(this, userRepo,this)
             userExperience= UserExperience()
             credentialEditText = findViewById(R.id.usernamelogin)
-            //userExperience.normalizeInputs(credentialEditText)
-            //userExperience.formatPhoneNumber(credentialEditText,(+39).toString())
-            //userExperience.validateEmailInput(credentialEditText)
             passwordEditText = findViewById(R.id.pswlogin)
             showPasswordImageView = findViewById(R.id.mostraPassword)
-
             findViewById<Button>(R.id.loginconmail).setOnClickListener {
                 onLoginClicked(credentialEditText.text.toString(), passwordEditText.text.toString())
             }
-
             findViewById<TextView>(R.id.iniziaresetpsw).setOnClickListener {
                 onResetPasswordClicked(credentialEditText.text.toString())
             }
-
             showPasswordImageView.setOnClickListener {
                 onShowPasswordClicked()
             }
 
         }
-
-        /*override fun showLoginSuccess(admin: Boolean, user: Utente?) {
-            val intent = Intent(this, if (admin) AdminActivity::class.java else MainPage::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("utente", user)
-            }
-            startActivity(intent)
-        }*/
         override fun showLoginSuccess(ruolo: String, user: Utente?) {
             Log.d("showLoginSuccess", "Utente ricevuto: $ruolo")
             Log.d("showLoginSuccess", "Utente ricevuto: ${user?.username ?: "Nessun utente"}")
@@ -95,7 +83,7 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
                 }
                 else -> {
                     Log.d("showLoginSuccess", "mainpage va con ${user?.username ?: "Nessun utente"}")
-                    MainPage::class.java
+                    MainPage::class.java //Pagina dello User
                 }
             }
 
@@ -136,7 +124,6 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
         }
 
         override fun showAccountLocked(remainingTime: Long) {
-
             val minutes = remainingTime / 60
             val seconds = remainingTime  % 60
             Toast.makeText(this, "Account bloccato. Riprova tra $minutes minuti.", Toast.LENGTH_LONG).show()
@@ -170,6 +157,7 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
 
         override fun onResetPasswordClicked(username: String) {
             presenter.handleResetPassword(username)
+            presenter.handleResetPasswordWithPhone(username)
         }
 
 
@@ -177,6 +165,127 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
             presenter.handleShowPassword()
         }
 
+    override fun showVerificationDialog(username: String, verificationId: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(getString(R.string.dialog_verification_title))
+        builder.setMessage(getString(R.string.dialog_verification_message))
+        val input = EditText(this)
+        input.inputType = InputType.TYPE_CLASS_NUMBER
+        builder.setView(input)
+        builder.setPositiveButton(getString(R.string.dialog_button_verify)) { _, _ ->
+            val code = input.text.toString()
+            if (code.isNotEmpty()) {
+                verifyPhoneCode(verificationId, code) { success ->
+                    if (success) {
+                        // Reindirizza l'utente alla ResetPasswordActivity
+                        val intent = Intent(this, ResetPasswordActivity::class.java).apply {
+                            putExtra("username", username)
+                        }
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.toast_error_verification_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, getString(R.string.toast_error_code_empty), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        builder.setNegativeButton(getString(R.string.dialog_button_cancel)) { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
+    private fun verifyPhoneCode(verificationId: String, code: String, callback: (Boolean) -> Unit) {
+        val credential = PhoneAuthProvider.getCredential(verificationId, code)
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+            }
+    }
+
+
+}
+
+/*override fun showVerificationDialog(username: String, verificationId: String) {
+    val builder = AlertDialog.Builder(this)
+    builder.setTitle(getString(R.string.dialog_verification_title)) // Titolo dialogo
+    builder.setMessage(getString(R.string.dialog_verification_message)) // Messaggio dialogo
+
+    // Campo di input per il codice OTP
+    val input = EditText(this)
+    input.inputType = InputType.TYPE_CLASS_NUMBER
+    builder.setView(input)
+
+    builder.setPositiveButton(getString(R.string.dialog_button_verify)) { _, _ ->
+        val code = input.text.toString()
+        if (code.isNotEmpty()) {
+            verifyPhoneCode(verificationId, code) { success ->
+                if (success) {
+                    // Reindirizza l'utente alla ResetPasswordActivity
+                    val intent = Intent(this, ResetPasswordActivity::class.java).apply {
+                        putExtra("username", username)
+                    }
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.toast_error_verification_failed),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        } else {
+            Toast.makeText(this, getString(R.string.toast_error_code_empty), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    builder.setNegativeButton(getString(R.string.dialog_button_cancel)) { dialog, _ ->
+        dialog.cancel()
+    }
+
+    builder.show()
+}
+
+      /*override fun showLoginSuccess(admin: Boolean, user: Utente?) {
+            val intent = Intent(this, if (admin) AdminActivity::class.java else MainPage::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("utente", user)
+            }
+            startActivity(intent)
+        }*/
+
+
+private fun verifyPhoneCode(verificationId: String, code: String, callback: (Boolean) -> Unit) {
+    val credential = PhoneAuthProvider.getCredential(verificationId, code)
+    FirebaseAuth.getInstance().signInWithCredential(credential)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(true)
+            } else {
+                callback(false)
+            }
+        }
+}
+
+
+
+
+
+
+*/
+
+/*CANALE VECCHIO DI NOTIFICA
     override fun showResetPasswordNotification(username: String) {
         // Crea il canale di notifica (solo per Android 8.0 e superiori)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -186,7 +295,6 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
             val notificationChannel = NotificationChannel(channelId, channelName, importance).apply {
                 description = "Canale per notifiche di reset password"
             }
-
             // Crea il canale nel NotificationManager
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(notificationChannel)
@@ -222,10 +330,7 @@ class LoginActivity : AppCompatActivity(), LoginInterface {
         NotificationManagerCompat.from(this).notify(1, notification)
 
     }
-
-}
-
-
+ */
 
 
 //todo vedere occhio

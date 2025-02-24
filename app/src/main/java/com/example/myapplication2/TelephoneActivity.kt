@@ -57,8 +57,8 @@ class TelephoneActivity: AppCompatActivity()   {
 
 
         val phoneEditText = findViewById<EditText>(R.id.phoneEditText)
-        val namesurnameEditText=findViewById<EditText>(R.id.nomeecognomephone)
-        val addressEditText=findViewById<EditText>(R.id.indirizzophone)
+        // val namesurnameEditText=findViewById<EditText>(R.id.nomeecognomephone)
+        //val addressEditText=findViewById<EditText>(R.id.indirizzophone)
         val usernameEditText = findViewById<EditText>(R.id.usernamepercellulare)
         val passwordEditText = findViewById<EditText>(R.id.passwordTel)
         val confirmPasswordEditText = findViewById<EditText>(R.id.confermapasswordtel)
@@ -68,57 +68,91 @@ class TelephoneActivity: AppCompatActivity()   {
         // Gestione della visibilità delle password
         showPasswordIcon = findViewById(R.id.showPasswordTel)
         showConfirmPasswordIcon = findViewById(R.id.showConfirmPasswordTel)
-
         showPasswordIcon.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
             userExperience.togglePasswordVisibility(passwordEditText, showPasswordIcon, isPasswordVisible)
         }
-
         showConfirmPasswordIcon.setOnClickListener {
             isConfirmPasswordVisible = !isConfirmPasswordVisible
             userExperience.togglePasswordVisibility(confirmPasswordEditText, showConfirmPasswordIcon, isConfirmPasswordVisible)
         }
-
         userExperience.formatPhoneNumber(phoneEditText, (+39).toString())
-        userExperience.normalizeInputs(namesurnameEditText,addressEditText,usernameEditText)
-
         sendCodeButton.setOnClickListener {
             val phoneNumber = phoneEditText.text.toString().trim()
             val username = usernameEditText.text.toString().trim()
-
-            val namesurname = namesurnameEditText.text.toString().trim()
-
-            val address = addressEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
             val confirmPassword = confirmPasswordEditText.text.toString().trim()
-
-            if (phoneNumber.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() &&
-                namesurname.isNotEmpty() && address.isNotEmpty()) {
-
+            if (phoneNumber.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
                 if (password == confirmPassword) {
                     userRepo.checkUsernameExists(username) { exists ->
                         if (exists) {
-                            Toast.makeText(this, "Username già in uso, selezionare un altro", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, getString(R.string.username_in_use), Toast.LENGTH_SHORT).show()
                         } else {
                             // Invia il codice di verifica solo se lo username è disponibile
                             sendVerificationCode(phoneNumber)
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "Le password non corrispondono", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this, "Inserisci tutti i campi", Toast.LENGTH_SHORT).show()
-            }
-        }
+                        } } } else {
+                    Toast.makeText(this, getString(R.string.passwords_do_not_match), Toast.LENGTH_SHORT).show() } } else {
+                Toast.makeText(this, getString(R.string.fields_cannot_be_empty), Toast.LENGTH_SHORT).show() } }
         verifyCodeButton.setOnClickListener {
             val code = codeEditText.text.toString().trim()
             if (code.isNotEmpty()) {
-                verifyVerificationCode(code)
-            } else {
-                Toast.makeText(this, "Inserisci il codice di verifica", Toast.LENGTH_SHORT).show()
+                verifyVerificationCode(code) } else {
+                Toast.makeText(this, getString(R.string.enter_verification_code), Toast.LENGTH_SHORT).show() } } }
+
+
+    private fun sendVerificationCode(phoneNumber: String) {
+        Toast.makeText(this, getString(R.string.code_sent_to, phoneNumber), Toast.LENGTH_SHORT).show()
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(this)
+            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks()
+            { override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                signInWithPhoneAuthCredential(credential)
             }
+                override fun onVerificationFailed(e: FirebaseException) {
+
+                    Log.d("MainActivity", "qualcosa non va $${e.message}")
+                }
+                override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+                    this@TelephoneActivity.code = verificationId
+                    Toast.makeText(this@TelephoneActivity, getString(R.string.code_sent), Toast.LENGTH_SHORT).show()
+                }
+            }).build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+    private fun verifyVerificationCode(code: String) {
+        if (this.code != null) {
+            val credential = PhoneAuthProvider.getCredential(this.code!!, code)
+            signInWithPhoneAuthCredential(credential)
+        } else {
+            Toast.makeText(this, getString(R.string.wait_for_sms), Toast.LENGTH_SHORT).show()
         }
+    }
+    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
+        userRepo = UserRepo()
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, getString(R.string.authentication_successful), Toast.LENGTH_SHORT).show()
+                    val username = findViewById<EditText>(R.id.usernamepercellulare).text.toString().trim()
+                    val password = findViewById<EditText>(R.id.passwordTel).text.toString().trim()
+                    val email= ""
+                    val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
+                    val user = Utente(
+                        id = auth.currentUser?.uid ?: "",
+                        email = email,
+                        username = username,
+                        password = hashedPassword,
+                        ruolo = "user",
+                        phoneNumber = credential.toString()
+                    )
+                    userRepo.savePhoneUserToFirebase(username, hashedPassword,email)
+                    startSecondActivity(user)
+                } else {
+                    Toast.makeText(this, getString(R.string.authentication_failed), Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
 
@@ -145,82 +179,6 @@ class TelephoneActivity: AppCompatActivity()   {
         super.attachBaseContext(context)
     }
 
-
-    private fun sendVerificationCode(phoneNumber: String) {
-        Toast.makeText(this, "Codice inviato a $phoneNumber", Toast.LENGTH_SHORT).show()
-        val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(phoneNumber)
-            .setTimeout(60L, TimeUnit.SECONDS) // Timeout per il codice di verifica
-            .setActivity(this)
-            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks()
-            {
-
-
-
-                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                    signInWithPhoneAuthCredential(credential)
-                }
-
-                override fun onVerificationFailed(e: FirebaseException) {
-
-                    Log.d("MainActivity", "qualcosa non va $${e.message}")
-                }
-
-                override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-                    this@TelephoneActivity.code = verificationId
-                    Toast.makeText(this@TelephoneActivity, "Codice inviato", Toast.LENGTH_SHORT).show()
-                }
-            }).build()
-
-        PhoneAuthProvider.verifyPhoneNumber(options)
-    }
-
-    private fun verifyVerificationCode(code: String) {
-        if (this.code != null) {
-            val credential = PhoneAuthProvider.getCredential(this.code!!, code)
-            signInWithPhoneAuthCredential(credential)
-        } else {
-            Toast.makeText(this, "Attendi che l'sms venga inviato", Toast.LENGTH_SHORT).show()
-            Log.d("MainActivity", "verificationId è null. Attendi che l'SMS venga inviato.")
-        }
-    }
-
-
-    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
-        userRepo = UserRepo()
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(this, "Autenticazione riuscita", Toast.LENGTH_SHORT).show()
-
-                    val username = findViewById<EditText>(R.id.usernamepercellulare).text.toString().trim()
-                    val password = findViewById<EditText>(R.id.passwordTel).text.toString().trim()
-                    val name = findViewById<EditText>(R.id.nomeecognomephone).text.toString().trim()
-                    val address = findViewById<EditText>(R.id.indirizzophone).text.toString().trim()
-                    val email= ""
-                    val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
-
-                    // Crea l'oggetto Utente
-                    val user = Utente(
-                        id = auth.currentUser?.uid ?: "",
-                        email = email,
-                        name = name,
-                        address = address,
-                        username = username,
-                        password = hashedPassword,
-                        ruolo = "user",
-                        phoneNumber = credential.toString()
-
-                    )
-
-                    // Salva l'utente nel database
-                    userRepo.savePhoneUserToFirebase(username, name, address, hashedPassword,email)
-                    startSecondActivity(user)
-                } else {
-                    Toast.makeText(this, "Autenticazione fallita", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }
     private fun startSecondActivity(user: Utente) {
         val intent = Intent(this, MainPage::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

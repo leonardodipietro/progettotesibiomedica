@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/button_esporta_dati"
-                android:layout_marginTop="20sp"
+                android:layout_marginTop="10sp"
                 android:id="@+id/exporttoexcel"
                 android:gravity="center"
                 style="@style/GreenButton"/>
@@ -41,14 +41,14 @@
                 android:text="@string/button_aggiungi_sintomo"
                 android:id="@+id/aggiungisintomo"
                 android:gravity="center"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="25dp"
                 style="@style/GreenButton"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="10dp">
 
                 <EditText
                     android:id="@+id/editaggiuntasintomo"
@@ -60,10 +60,12 @@
                     android:visibility="gone"
                     android:background="@drawable/edittext"/>
 
+
                 <Button
                     android:id="@+id/buttonaggiuntanuovosintomo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="10sp"
                     android:text="@string/button_invia_sintomo"
                     android:visibility="gone"
                     style="@style/GreenButton"/>

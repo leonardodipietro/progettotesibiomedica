@@ -48,16 +48,13 @@ class EmailPasswordActivity : AppCompatActivity() {
 
         val emailEditText = findViewById<EditText>(R.id.email)
         val usernameEditText = findViewById<EditText>(R.id.usernameregistrazione)
-        val namesurnameEditText=findViewById<EditText>(R.id.nomeecognome)
-        val addressEditText=findViewById<EditText>(R.id.indirizzo)
+        /*val namesurnameEditText=findViewById<EditText>(R.id.nomeecognome)
+        val addressEditText=findViewById<EditText>(R.id.indirizzo)*/
 
         val passwordEditText = findViewById<EditText>(R.id.password)
         val confermaPasswordEditText = findViewById<EditText>(R.id.confermapassword)
         showPasswordIcon = findViewById(R.id.showPassword)
         showConfirmPasswordIcon = findViewById(R.id.showConfirmPassword)
-
-
-
         showPasswordIcon.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
             togglePasswordVisibility(passwordEditText, showPasswordIcon, isPasswordVisible)
@@ -68,74 +65,35 @@ class EmailPasswordActivity : AppCompatActivity() {
             togglePasswordVisibility(confermaPasswordEditText, showConfirmPasswordIcon, isConfirmPasswordVisible)
         }
         val registerButton = findViewById<Button>(R.id.registerbutton)
-
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString()
-            val name = namesurnameEditText.text.toString()
-            val address = addressEditText.text.toString()
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
             val confermaPassword = confermaPasswordEditText.text.toString()
             val phoneNumber=""
-
-            /*Inserire qui condizioni sintattiche per i campi mail telefono username*/
-
-
-
-            //userExperience.normalizeInputs(usernameEditText, emailEditText, addressEditText)
             userExperience.validateEmailInput(emailEditText)
-
-            if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty() &&
-                name.isNotEmpty() && address.isNotEmpty()) {
-
-
-                if (password == confermaPassword) {
-                    userRepo.checkUsernameExists(username) { exists ->
+            if (email.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && confermaPassword.isNotEmpty()) {
+                if (password == confermaPassword) { userRepo.checkUsernameExists(username) { exists ->
                         if (exists) {
-                            Toast.makeText(this, "Username già in uso, selezionare un altro", Toast.LENGTH_SHORT).show()
-                        } else {
-
-                            // Procedi con la registrazione su Firebase Authentication
+                            Toast.makeText(this, getString(R.string.username_in_use), Toast.LENGTH_SHORT).show() }
+                        else { //Qui inizia la registrazione su Firebase Authentication
                             auth.createUserWithEmailAndPassword(email, password)
-                                .addOnCompleteListener(this) { task ->
-                                    if (task.isSuccessful) {
+                                .addOnCompleteListener(this) { task -> if (task.isSuccessful) {
                                         val userId = auth.currentUser?.uid ?: ""
                                         try {
                                             val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
-                                            val user = Utente(
-                                                id = userId,
-                                                email = email,
-                                                name = name,
-                                                address = address,
-                                                username = username,
-                                                password = hashedPassword,
-                                                //admin = false,
-                                                ruolo = "user",
-                                                phoneNumber=phoneNumber
-                                            )
-                                            userRepo.saveUserToFirebase(username, name, address, hashedPassword,ruolo="user")
+                                            val user = Utente(id = userId, email = email, username = username,
+                                                password = hashedPassword, ruolo = "user", phoneNumber=phoneNumber )
+                                            userRepo.saveUserToFirebase(username, hashedPassword,ruolo="user")
                                             val intent = Intent(this, MainPage::class.java).apply {
                                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                                putExtra("utente", user)
-                                            }
+                                                putExtra("utente", user) }
                                             startActivity(intent)
-                                            finish()
-                                        } catch (e: Exception) {
-                                            Log.e("MainActivity", "Errore ${e.message}")
-                                        }
-                                    } else {
-                                        Toast.makeText(this, "Registrazione fallita:",Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "Le password non corrispondono", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this, "Email, password e conferma password non possono essere vuoti", Toast.LENGTH_SHORT).show()
-            }
-        }
+                                            finish() } catch (e: Exception) {
+                                            Log.e("Eccezione", "Errore ${e.message}") } } else {
+                                     Toast.makeText(this, getString(R.string.registration_failed), Toast.LENGTH_SHORT).show() } } } } } else {
+                    Toast.makeText(this, getString(R.string.passwords_do_not_match), Toast.LENGTH_SHORT).show() } } else {
+                Toast.makeText(this, getString(R.string.fields_cannot_be_empty), Toast.LENGTH_SHORT).show() } }
 
 
     }

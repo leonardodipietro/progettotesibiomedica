@@ -41,6 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
+        android:textSize="20sp"
         android:layout_marginBottom="18sp"
         android:text="@string/tv_gia_registrato"
         android:layout_gravity="center_horizontal"
@@ -60,23 +61,24 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="18sp"
         android:textStyle="bold"
+        android:textSize="20sp"
         android:text="@string/tvsceglilinguamainact"
         android:layout_gravity="center_horizontal"
-        android:paddingTop="10dp"/>
+        android:layout_margin="10dp"/>
     <Button
         android:id="@+id/btn_italian"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Italiano"
         style="@style/GreenButton"
         android:layout_gravity="center"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="4dp"/>
 
     <Button
         android:id="@+id/btn_english"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="English"
+        android:text="Inglese"
         style="@style/GreenButton"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"/>
